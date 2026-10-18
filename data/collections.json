@@ -1,0 +1,8 @@
+[
+  {"id": "law", "name": "Law & Legal English", "description": "The language of rights, reason, and the rules that shape our world.", "icon": "scales"},
+  {"id": "travel", "name": "Transport & Travel", "description": "For unfamiliar places, new routes, and a world worth exploring.", "icon": "compass"},
+  {"id": "technology", "name": "Technology", "description": "Understand the ideas and systems moving the future forward.", "icon": "chip"},
+  {"id": "business", "name": "Business", "description": "Make room for bigger ideas, better conversations, and new possibilities.", "icon": "chart"},
+  {"id": "lifestyle", "name": "Lifestyle", "description": "A little more meaning in the things you do every day.", "icon": "sun"}
+]
+

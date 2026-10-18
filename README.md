@@ -1,2 +1,132 @@
 # LEXI
-**LEXI** is a personalized English vocabulary learning platform that helps users discover one new word every day based on their interests. With interactive definitions, examples, and a daily word widget, LEXI makes learning English simple, engaging, and part of everyday life.  **One day. One word. A little more knowledge.**
+
+**One day. One word. A little more knowledge.**
+
+Персональный английский словарь: одно слово в день из выбранных интересов. Редактируемый MVP на Flask, HTML, CSS и JavaScript — без сборки, регистрации, платного API или внешней базы данных.
+
+**Начинаете программировать? Откройте [NOTES_FOR_ADA.md](NOTES_FOR_ADA.md).** Там пошагово объяснены запуск, изменение слов, коллекций, дизайна и публикация.
+
+## Возможности
+
+- Пять коллекций и 30 статических учебных записей. Новые коллекции появляются из JSON автоматически.
+- Первое знакомство с выбором нескольких интересов; изменить их можно в Collections.
+- Ежедневное слово, расширенное объяснение, примеры и различия синонимов.
+- Noir, Studio и Experimental. Смена оформления не меняет слово.
+- Saved с удалением и счетчиком; History содержит только просмотренные слова и даты.
+- Поиск по Saved/History, произношение средствами браузера, отправка ссылки или копирование.
+- Уменьшение движения, экспорт локальных данных, сброс с подтверждением.
+- Адаптивность, клавиатурная навигация и локальные лицензированные шрифты.
+- PWA-манифест и offline-кеш после первого успешного онлайн-открытия.
+- Четыре контакта в подвале из одного файла.
+
+Предпочтения и история остаются в `localStorage` конкретного браузера. Синхронизации нет. Экспорт сохраняет JSON для личного архива; импорт в MVP не предусмотрен. При первом открытии офлайн словарь еще недоступен. Произношение зависит от голосов устройства.
+
+## Windows / VS Code
+
+Нужен Python **3.12 или новее**. Распакуйте ZIP, откройте папку с `app.py` в VS Code и выберите **Terminal → New Terminal**.
+
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe app.py
+```
+
+Откройте `http://localhost:5000`. Остановка: **Ctrl+C**. Активировать среду необязательно: команды используют ее Python напрямую, без изменения PowerShell ExecutionPolicy.
+
+На macOS / Linux:
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python app.py
+```
+
+VS Code Go Live не запускает Flask и API.
+
+## Проверки
+
+Windows:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -p "test_*.py" -v
+```
+
+macOS / Linux:
+
+```sh
+.venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v
+```
+
+Для отдельной проверки интерфейса `tests/browser_smoke.py` дополнительно установите Playwright и Chromium. Они не нужны сайту или Render:
+
+```sh
+python -m pip install playwright
+python -m playwright install chromium
+python tests/browser_smoke.py
+```
+
+Сайт должен быть запущен в другом терминале. Необязательные настройки: `LEXI_TEST_URL`, `CHROMIUM_PATH`. Скриншоты сохраняются в игнорируемую папку `test-results/`.
+
+## Структура
+
+```text
+LEXI/
+├── app.py                     # Flask, API, HTTP-заголовки
+├── requirements.txt           # Python-зависимости
+├── render.yaml                # Render
+├── NOTES_FOR_ADA.md            # Учебник простыми словами
+├── lexi/
+│   ├── catalog.py             # Чтение и проверка JSON
+│   └── selection.py           # Чистый алгоритм выбора слова
+├── data/
+│   ├── collections.json       # Названия, описания, значки коллекций
+│   ├── words.json             # Слова, значения, примеры и ссылки
+│   └── site.json              # Контакты и текст подвала
+├── templates/index.html       # HTML-оболочка
+├── static/
+│   ├── css/style.css          # Темы, адаптивность, анимации
+│   ├── js/app.js              # Интерфейс
+│   ├── js/selection.js        # Выбор слова офлайн
+│   ├── js/storage.js          # Хранение предпочтений
+│   ├── js/icons.js            # SVG-значки
+│   ├── js/theme-init.js       # Тема до первого отображения
+│   ├── fonts/                 # Syne, DM Sans и лицензии SIL OFL
+│   ├── assets/orbit.svg       # Геометрия
+│   ├── icons/                 # Иконки PWA
+│   ├── manifest.webmanifest   # Установка на домашний экран
+│   └── sw.js                  # Кеш для офлайн
+├── docs/SELECTION.md           # Алгоритм, API, будущее Android
+└── tests/                     # Проверки
+```
+
+Сборки JavaScript нет: сохраните файл и обновите страницу. JSON перечитывается при запросе API. После изменения Python перезапустите сервер. Service Worker сначала обращается к сети, а при отсутствии соединения использует кеш; при изменении схемы кеша увеличьте версию в `static/sw.js`.
+
+## Ежедневный выбор
+
+Часовой пояс — **Asia/Bishkek (UTC+6)**. Слово меняется в полночь по Бишкеку. Сайт проверяет дату каждые 30 секунд и при возвращении на вкладку. Региональные настройки Windows не меняют выбранный пояс.
+
+Коллекции берутся в порядке `collections.json`. Их слова чередуются в порядке `words.json`: первое из каждой коллекции, второе из каждой и так далее. Исчерпанные коллекции пропускаются. Индекс — число календарных дней с **2025-01-01** по модулю длины списка. До конца списка слова не повторяются; затем начинается новый круг.
+
+Изменение интересов может показать ранее встречавшееся слово. Добавление и перестановка записей меняют календарь. Подробности и перенос на Kotlin: [docs/SELECTION.md](docs/SELECTION.md).
+
+Данные — статические учебные формулировки и примеры со ссылками для дополнительного чтения. Определения не генерируются при запуске. Юридические примеры объясняют язык и не заменяют консультацию по праву конкретной страны. Для учебного курса рекомендуется дополнительная редактура преподавателем.
+
+## Render
+
+1. Загрузите проект в GitHub, не включая `.venv` и `.env`.
+2. В Render выберите **New → Web Service** и подключите репозиторий.
+3. Runtime: **Python 3**. Build Command: `pip install -r requirements.txt`.
+4. Start Command: `gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 60`.
+5. Health Check Path: `/health`. Переменная `LEXI_TIMEZONE`: `Asia/Bishkek`.
+6. Альтернатива: **New → Blueprint** с готовым `render.yaml`.
+7. Проверьте главную страницу, `/health` и `/api/daily` после деплоя.
+
+Gunicorn используется в Linux на Render; для Windows достаточно `python app.py`. Debugger выключен. HTTPS предоставляет Render. Бесплатный план может засыпать и медленно отвечать на первый запрос; проверьте актуальные условия Render. Автодеплой обновляет сайт после отправки изменений в подключенную ветку GitHub. ZIP и локальный запуск сами сайт не публикуют.
+
+## PWA и Android
+
+Установка сайта на домашний экран — PWA, а не нативный Android-виджет. Для виджета нужен отдельный Kotlin-проект с Jetpack Glance после проверки веб-MVP. JSON и алгоритм подготовлены для переноса: `docs/SELECTION.md`.
+
+## Шрифты
+
+Syne и DM Sans получены из официального репозитория Google Fonts и распространяются под **SIL Open Font License 1.1**. Лицензии лежат рядом со шрифтами. Внешней загрузки Google Fonts при использовании сайта нет.

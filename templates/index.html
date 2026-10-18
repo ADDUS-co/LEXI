@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en" data-theme="noir">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111216">
+  <meta name="description" content="One day. One word. A little more knowledge. LEXI is a personal daily English vocabulary ritual, built around your interests.">
+  <title>LEXI — A little more knowledge.</title>
+  <link rel="icon" href="/static/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preload" href="/static/fonts/Syne.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="/static/fonts/DMSans.ttf" as="font" type="font/ttf" crossorigin>
+  <script src="/static/js/theme-init.js"></script>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script type="module" src="/static/js/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <div id="offline-banner" class="offline-banner" role="status" hidden>You're offline. Your cached words and local collection are still here.</div>
+  <header class="site-header page-width">
+    <a class="brand" href="#home" aria-label="LEXI Home"><span class="brand-symbol" data-icon="asterisk" aria-hidden="true"></span>LEXI<span class="brand-dot">.</span></a>
+    <nav class="primary-nav" aria-label="Main navigation">
+      <a href="#home" data-nav="home"><span class="nav-icon" data-icon="home"></span>Home</a>
+      <a href="#collections" data-nav="collections"><span class="nav-icon" data-icon="grid"></span>Collections</a>
+      <a href="#history" data-nav="history"><span class="nav-icon" data-icon="history"></span>History</a>
+    </nav>
+    <div class="header-tools">
+      <a class="saved-link" href="#saved" data-nav="saved" aria-label="Saved words, 0 saved"><span data-icon="bookmark"></span><span class="saved-label">Saved</span><span id="saved-count" class="count">0</span></a>
+      <span class="header-divider" aria-hidden="true"></span>
+      <a class="icon-button settings-link" href="#settings" data-nav="settings" aria-label="Settings"><span data-icon="settings"></span></a>
+    </div>
+  </header>
+  <main id="main-content" tabindex="-1">
+    <div class="loading-state page-width" role="status"><span class="eyebrow">A LITTLE MORE KNOWLEDGE</span><h1>A new perspective<br>is on its way<span class="accent">.</span></h1><p>Finding your daily word…</p></div>
+  </main>
+  <footer id="site-footer" class="site-footer"></footer>
+  <dialog id="onboarding-dialog" class="onboarding-dialog" aria-labelledby="onboarding-title">
+    <div class="onboarding-content">
+      <div class="onboarding-heading"><span class="eyebrow">YOUR NEXT CHAPTER STARTS HERE</span><span class="onboarding-mark" data-icon="asterisk" aria-hidden="true"></span></div>
+      <h1 id="onboarding-title">Welcome to LEXI<span class="accent">.</span></h1>
+      <p class="onboarding-subtitle">Words that match your world.</p>
+      <div class="onboarding-prompt"><h2>What interests you?</h2><span>Choose one or more. Follow your curiosity.</span></div>
+      <div id="onboarding-collections" class="onboarding-grid"></div>
+      <div class="onboarding-bottom"><p>No account. No pressure.<br>Just one good word, every day.</p><button id="begin-button" class="button button-primary" disabled>Discover my word <span data-icon="arrow"></span></button></div>
+    </div>
+  </dialog>
+  <dialog id="detail-dialog" class="detail-dialog" aria-labelledby="detail-title"></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <noscript><div class="noscript-message">LEXI needs JavaScript for daily selection and browser-local preferences. Please enable JavaScript and reload.</div></noscript>
+</body>
+</html>

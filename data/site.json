@@ -1,0 +1,12 @@
+{
+  "name": "LEXI",
+  "tagline": "Expand your world, one word at a time.",
+  "description": "A daily vocabulary ritual for curious minds. One word, chosen around the things that make you, you.",
+  "contacts": [
+    {"label": "Instagram", "text": "@arddashh", "url": "https://www.instagram.com/arddashh/", "icon": "instagram"},
+    {"label": "Telegram", "text": "@whynotifye1", "url": "https://t.me/whynotifye1", "icon": "send"},
+    {"label": "Phone", "text": "+7 705 873 3464", "url": "tel:+77058733464", "icon": "phone"},
+    {"label": "Email", "text": "ardaksok@mail.ru", "url": "mailto:ardaksok@mail.ru", "icon": "mail"}
+  ]
+}
+

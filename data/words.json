@@ -1,0 +1,1232 @@
+[
+  {
+    "id": "law-verdict",
+    "collectionId": "law",
+    "word": "Verdict",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈvɜː.dɪkt/",
+    "shortDefinition": "A formal decision about the facts of a case, made by a jury or judge.",
+    "fullDefinition": "In a trial, a verdict is the formal finding on an issue of fact. In a criminal case it commonly states whether the accused is guilty or not guilty. The exact role of a jury or judge depends on the legal system.",
+    "simpleExplanation": "It is the official answer at the end of a trial: what did the court decide about the facts?",
+    "synonyms": [
+      {
+        "word": "finding",
+        "definition": "A conclusion reached after considering evidence; it can concern one issue rather than an entire case."
+      },
+      {
+        "word": "decision",
+        "definition": "A broad word for a conclusion or choice, including those made outside a court."
+      }
+    ],
+    "examples": [
+      "The jury returned a verdict of not guilty.",
+      "Everyone in the courtroom waited for the verdict.",
+      "The report offered no clear verdict on the policy's success."
+    ],
+    "relatedWords": [
+      {
+        "word": "jury",
+        "definition": "A group of people appointed to consider evidence and decide questions of fact in a trial."
+      },
+      {
+        "word": "trial",
+        "definition": "A court proceeding in which evidence and legal arguments are examined."
+      }
+    ],
+    "usageNote": "A verdict and a sentence are different. A sentence is the punishment imposed following a criminal conviction.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/verdict#English"
+    }
+  },
+  {
+    "id": "law-liability",
+    "collectionId": "law",
+    "word": "Liability",
+    "partOfSpeech": "noun",
+    "ipa": "/ˌlaɪ.əˈbɪl.ə.ti/",
+    "shortDefinition": "Legal responsibility for something, especially damage or a debt.",
+    "fullDefinition": "Liability is a person's or organization's legal responsibility to meet an obligation or answer for a loss or injury. It can arise from a contract or from conduct that causes harm. The rules and limits depend on the jurisdiction.",
+    "simpleExplanation": "If you have liability, the law may require you to pay for a debt or for harm you caused.",
+    "synonyms": [
+      {
+        "word": "responsibility",
+        "definition": "A broader duty to deal with something; it does not always involve a legal obligation."
+      },
+      {
+        "word": "accountability",
+        "definition": "The obligation to explain or justify actions, often to other people or an institution."
+      }
+    ],
+    "examples": [
+      "The contract limits the company's liability for accidental damage.",
+      "The insurer disputed liability for the claim.",
+      "The business recorded its outstanding liabilities."
+    ],
+    "relatedWords": [
+      {
+        "word": "damages",
+        "definition": "Money awarded as compensation for a legally recognized loss or injury."
+      },
+      {
+        "word": "obligation",
+        "definition": "A duty arising from a rule, agreement, or commitment."
+      }
+    ],
+    "usageNote": "Liability for damage usually describes legal responsibility. In accounting, liabilities are debts or other financial obligations.",
+    "difficulty": "C1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/liability#English"
+    }
+  },
+  {
+    "id": "law-testimony",
+    "collectionId": "law",
+    "word": "Testimony",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈtes.tɪ.mə.ni/",
+    "shortDefinition": "A formal statement of evidence, especially one given by a witness in court.",
+    "fullDefinition": "Testimony is evidence expressed in a formal statement by a witness, often under oath in legal proceedings. It describes what the witness knows or experienced and may be questioned by the parties involved.",
+    "simpleExplanation": "A witness tells the court what they know. That formal account is their testimony.",
+    "synonyms": [
+      {
+        "word": "evidence",
+        "definition": "Information used to establish facts; it can include documents and physical objects as well as statements."
+      },
+      {
+        "word": "statement",
+        "definition": "An account expressed in words, which may be informal and need not be given in court."
+      }
+    ],
+    "examples": [
+      "Her testimony helped establish the sequence of events.",
+      "The witness gave testimony under oath.",
+      "The committee heard testimony from local residents."
+    ],
+    "relatedWords": [
+      {
+        "word": "witness",
+        "definition": "A person who has knowledge of an event or gives evidence about it."
+      },
+      {
+        "word": "oath",
+        "definition": "A formal promise to tell the truth or fulfill a duty."
+      }
+    ],
+    "usageNote": "Testimony is usually uncountable in general legal English: 'give testimony', rather than 'give a testimony'.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/testimony#English"
+    }
+  },
+  {
+    "id": "law-jurisdiction",
+    "collectionId": "law",
+    "word": "Jurisdiction",
+    "partOfSpeech": "noun",
+    "ipa": "/ˌdʒʊə.rɪsˈdɪk.ʃən/",
+    "shortDefinition": "The legal authority of a court or institution to deal with a matter.",
+    "fullDefinition": "Jurisdiction is the legal power to hear and decide a case or exercise authority over people, places, or subjects. The word also describes the territory within which that authority applies.",
+    "simpleExplanation": "It tells you which court or authority has the power to handle a particular issue.",
+    "synonyms": [
+      {
+        "word": "authority",
+        "definition": "The power or right to act, decide, or give orders; broader than a court's legal competence."
+      },
+      {
+        "word": "remit",
+        "definition": "The area of work or responsibility assigned to a person or organization."
+      }
+    ],
+    "examples": [
+      "The court decided that it had jurisdiction over the dispute.",
+      "The incident occurred outside the agency's jurisdiction.",
+      "Different jurisdictions may apply different consumer laws."
+    ],
+    "relatedWords": [
+      {
+        "word": "court",
+        "definition": "An institution with authority to hear and decide legal cases."
+      },
+      {
+        "word": "appeal",
+        "definition": "A request for a decision to be reviewed by a higher court or other authority."
+      }
+    ],
+    "usageNote": "Common patterns include 'jurisdiction over a case' and 'within the jurisdiction of a court'.",
+    "difficulty": "C1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/jurisdiction#English"
+    }
+  },
+  {
+    "id": "law-statute",
+    "collectionId": "law",
+    "word": "Statute",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈstætʃ.uːt/",
+    "shortDefinition": "A written law formally passed by a legislative body.",
+    "fullDefinition": "A statute is a law enacted by a legislature, such as a parliament. It is distinguished from other sources of law, including judicial decisions and, in many systems, regulations made under delegated authority.",
+    "simpleExplanation": "It is a law that lawmakers have formally written and passed.",
+    "synonyms": [
+      {
+        "word": "law",
+        "definition": "A general term for an enforceable rule or the legal system as a whole."
+      },
+      {
+        "word": "act",
+        "definition": "A formal law passed by a legislature; often used in the title of a specific statute."
+      }
+    ],
+    "examples": [
+      "The new statute protects consumers from misleading advertising.",
+      "The lawyer referred to a provision of the statute.",
+      "The right is recognized by statute."
+    ],
+    "relatedWords": [
+      {
+        "word": "legislature",
+        "definition": "The branch or body of government responsible for making laws."
+      },
+      {
+        "word": "provision",
+        "definition": "A specific clause or requirement in a legal text."
+      }
+    ],
+    "usageNote": "Statute means a law. Statue, with no second 't', means a sculpture.",
+    "difficulty": "C1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/statute#English"
+    }
+  },
+  {
+    "id": "law-precedent",
+    "collectionId": "law",
+    "word": "Precedent",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈpres.ɪ.dənt/",
+    "shortDefinition": "An earlier decision that guides how similar situations are handled in the future.",
+    "fullDefinition": "A precedent is an earlier event or decision used as a guide for a later, similar situation. In law, a court's reasoning in an earlier case may guide or bind courts in later cases, depending on the legal system and the courts involved.",
+    "simpleExplanation": "When a similar situation happens again, people look at what was decided before. That earlier decision becomes a guide.",
+    "synonyms": [
+      {
+        "word": "example",
+        "definition": "Something used to illustrate an idea. A precedent has the added sense that an earlier action can guide a later one."
+      },
+      {
+        "word": "model",
+        "definition": "A pattern to follow or imitate. A model need not come from a previous real decision."
+      }
+    ],
+    "examples": [
+      "The court's decision set a precedent for future cases.",
+      "Allowing an exception could create an unwanted precedent.",
+      "There is no clear precedent for a project of this scale."
+    ],
+    "relatedWords": [
+      {
+        "word": "case law",
+        "definition": "Law developed through court decisions, rather than only through legislation."
+      },
+      {
+        "word": "ruling",
+        "definition": "An official decision, especially one made by a court."
+      }
+    ],
+    "usageNote": "Use 'set a precedent' or 'follow a precedent'. Do not confuse precedent with president, the leader of a country or organization.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/precedent#English"
+    }
+  },
+  {
+    "id": "travel-itinerary",
+    "collectionId": "travel",
+    "word": "Itinerary",
+    "partOfSpeech": "noun",
+    "ipa": "/aɪˈtɪn.ər.ər.i/",
+    "shortDefinition": "A plan of a journey, including the places you will visit.",
+    "fullDefinition": "An itinerary is a planned route or schedule for a journey. It may list destinations, travel times, accommodation, and activities in the order in which they are expected to occur.",
+    "simpleExplanation": "It is your travel plan: where you are going and what you will do along the way.",
+    "synonyms": [
+      {
+        "word": "schedule",
+        "definition": "A plan of times for activities; it need not involve travel."
+      },
+      {
+        "word": "route",
+        "definition": "The path taken between places, rather than the full plan for a trip."
+      }
+    ],
+    "examples": [
+      "Our itinerary includes two days in Kyoto.",
+      "She emailed the updated itinerary to the group.",
+      "We left room in the itinerary for unexpected discoveries."
+    ],
+    "relatedWords": [
+      {
+        "word": "destination",
+        "definition": "The place to which someone or something is going."
+      },
+      {
+        "word": "reservation",
+        "definition": "An arrangement to keep a seat, room, or service available for you."
+      }
+    ],
+    "usageNote": "The plural is itineraries. An itinerary can be detailed or flexible.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/itinerary#English"
+    }
+  },
+  {
+    "id": "travel-layover",
+    "collectionId": "travel",
+    "word": "Layover",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈleɪˌəʊ.vər/",
+    "shortDefinition": "A short stay between parts of a journey, especially between flights.",
+    "fullDefinition": "A layover is a period spent waiting at an intermediate place before continuing a journey. It is especially common in air travel when a passenger changes from one flight to another.",
+    "simpleExplanation": "You land at one airport and wait there before taking your next flight.",
+    "synonyms": [
+      {
+        "word": "stopover",
+        "definition": "A stop during a journey, often used for a longer stay; airline definitions vary."
+      },
+      {
+        "word": "connection",
+        "definition": "The next service that allows a traveler to continue a journey."
+      }
+    ],
+    "examples": [
+      "We have a three-hour layover in Istanbul.",
+      "She read a book during the layover.",
+      "A longer layover gave them time for a meal."
+    ],
+    "relatedWords": [
+      {
+        "word": "transit",
+        "definition": "Travel through a place on the way to another destination."
+      },
+      {
+        "word": "boarding",
+        "definition": "The process of getting onto a plane, ship, or other vehicle."
+      }
+    ],
+    "usageNote": "Airlines may use layover and stopover differently. Check the conditions of your ticket.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/layover#English"
+    }
+  },
+  {
+    "id": "travel-departure",
+    "collectionId": "travel",
+    "word": "Departure",
+    "partOfSpeech": "noun",
+    "ipa": "/dɪˈpɑː.tʃər/",
+    "shortDefinition": "The act of leaving a place, or the time a journey begins.",
+    "fullDefinition": "Departure means leaving a place, particularly at the start of a trip. In transport information, it can refer to a scheduled service or its planned leaving time. It can also mean a change from a usual practice.",
+    "simpleExplanation": "It is when you leave, or when your train, bus, or plane is expected to leave.",
+    "synonyms": [
+      {
+        "word": "leaving",
+        "definition": "A general word for going away from a place."
+      },
+      {
+        "word": "exit",
+        "definition": "The act or place of going out; it does not usually describe a scheduled journey."
+      }
+    ],
+    "examples": [
+      "Please arrive two hours before departure.",
+      "The departure board showed a short delay.",
+      "The design marks a departure from the company's usual style."
+    ],
+    "relatedWords": [
+      {
+        "word": "arrival",
+        "definition": "The act of reaching a place, or the time this happens."
+      },
+      {
+        "word": "terminal",
+        "definition": "A building where passengers begin or end a journey."
+      }
+    ],
+    "usageNote": "Use 'departure from' a place and 'departure for' a destination.",
+    "difficulty": "B1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/departure#English"
+    }
+  },
+  {
+    "id": "travel-fare",
+    "collectionId": "travel",
+    "word": "Fare",
+    "partOfSpeech": "noun",
+    "ipa": "/feər/",
+    "shortDefinition": "The money you pay for a journey on public or hired transport.",
+    "fullDefinition": "A fare is the price charged for traveling on a bus, train, aircraft, taxi, or similar service. Different fares may have different rules for refunds, changes, luggage, and travel times.",
+    "simpleExplanation": "It is the price of your ride or transport ticket.",
+    "synonyms": [
+      {
+        "word": "price",
+        "definition": "The amount of money charged for anything, not just transport."
+      },
+      {
+        "word": "charge",
+        "definition": "An amount requested for a service or item."
+      }
+    ],
+    "examples": [
+      "The bus fare is included in the travel pass.",
+      "We compared train fares before booking.",
+      "The taxi fare was higher during the night."
+    ],
+    "relatedWords": [
+      {
+        "word": "ticket",
+        "definition": "A document or digital record giving permission to travel or enter."
+      },
+      {
+        "word": "refund",
+        "definition": "Money returned after a purchase or payment."
+      }
+    ],
+    "usageNote": "Fare relates to a travel price. Fair can mean reasonable, equal, or an exhibition.",
+    "difficulty": "B1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/fare#English"
+    }
+  },
+  {
+    "id": "travel-detour",
+    "collectionId": "travel",
+    "word": "Detour",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈdiː.tʊər/",
+    "shortDefinition": "A different, usually longer route taken to avoid something or visit another place.",
+    "fullDefinition": "A detour is a deviation from a direct or usual route. It may be necessary because of a closed road or other obstacle, or chosen to make an additional visit during a journey.",
+    "simpleExplanation": "You take another way because the usual road is blocked, or because you want to see something else.",
+    "synonyms": [
+      {
+        "word": "diversion",
+        "definition": "An alternative route, especially one officially marked because a road is closed."
+      },
+      {
+        "word": "alternative route",
+        "definition": "Another possible way to reach a destination."
+      }
+    ],
+    "examples": [
+      "Roadworks forced us to take a detour.",
+      "We made a short detour to see the coast.",
+      "The detour added twenty minutes to the journey."
+    ],
+    "relatedWords": [
+      {
+        "word": "junction",
+        "definition": "A point where roads or other routes meet."
+      },
+      {
+        "word": "roadworks",
+        "definition": "Work carried out to build or repair a road."
+      }
+    ],
+    "usageNote": "Common phrases are 'take a detour' and 'make a detour'.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/detour#English"
+    }
+  },
+  {
+    "id": "travel-wanderlust",
+    "collectionId": "travel",
+    "word": "Wanderlust",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈwɒn.də.lʌst/",
+    "shortDefinition": "A strong desire to travel and explore new places.",
+    "fullDefinition": "Wanderlust is a powerful wish to travel, often associated with curiosity about unfamiliar places and experiences. It describes a feeling or motivation, rather than a specific journey.",
+    "simpleExplanation": "It is the feeling that makes you want to pack a bag and discover somewhere new.",
+    "synonyms": [
+      {
+        "word": "itchy feet",
+        "definition": "An informal expression for a desire to travel or move to a different place."
+      },
+      {
+        "word": "restlessness",
+        "definition": "Difficulty feeling settled or satisfied; it may have nothing to do with travel."
+      }
+    ],
+    "examples": [
+      "The photographs awakened her wanderlust.",
+      "His wanderlust took him across several continents.",
+      "Reading travel journals helped satisfy a little of my wanderlust."
+    ],
+    "relatedWords": [
+      {
+        "word": "exploration",
+        "definition": "The activity of traveling through or investigating something unfamiliar."
+      },
+      {
+        "word": "voyage",
+        "definition": "A long journey, especially by sea or in space."
+      }
+    ],
+    "usageNote": "Wanderlust is normally uncountable: 'a sense of wanderlust', rather than 'a wanderlust'.",
+    "difficulty": "C1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/wanderlust#English"
+    }
+  },
+  {
+    "id": "technology-algorithm",
+    "collectionId": "technology",
+    "word": "Algorithm",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈæl.ɡə.rɪ.ðəm/",
+    "shortDefinition": "A set of ordered steps for solving a problem or completing a task.",
+    "fullDefinition": "An algorithm is a precisely described sequence of steps used to perform a calculation, solve a problem, or produce a result. Algorithms can be followed by people or implemented as computer programs.",
+    "simpleExplanation": "It is a clear set of instructions that tells you what to do, step by step.",
+    "synonyms": [
+      {
+        "word": "procedure",
+        "definition": "An established way to perform a task; it may be less mathematically precise."
+      },
+      {
+        "word": "method",
+        "definition": "A general way of doing something, which may not specify every step."
+      }
+    ],
+    "examples": [
+      "The algorithm sorts the words alphabetically.",
+      "We tested the algorithm with an empty list.",
+      "LEXI uses a deterministic algorithm to choose a daily word."
+    ],
+    "relatedWords": [
+      {
+        "word": "input",
+        "definition": "Data supplied to a program or process."
+      },
+      {
+        "word": "output",
+        "definition": "The result produced by a program or process."
+      }
+    ],
+    "usageNote": "An algorithm is an idea or sequence of steps; code is one way to implement it.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/algorithm#English"
+    }
+  },
+  {
+    "id": "technology-bandwidth",
+    "collectionId": "technology",
+    "word": "Bandwidth",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈbænd.wɪdθ/",
+    "shortDefinition": "The data-carrying capacity of a connection or communication channel.",
+    "fullDefinition": "In computing and networking, bandwidth describes a connection's capacity to transfer data, usually expressed as a rate such as megabits per second. Actual transfer speed also depends on congestion, latency, and other conditions.",
+    "simpleExplanation": "It describes how much data a connection can carry in a given time.",
+    "synonyms": [
+      {
+        "word": "capacity",
+        "definition": "The amount something can contain or handle; a broader term than network bandwidth."
+      },
+      {
+        "word": "throughput",
+        "definition": "The amount of data actually transferred in a given time, rather than the theoretical capacity."
+      }
+    ],
+    "examples": [
+      "Video calls require more bandwidth than text messages.",
+      "Several downloads were sharing the available bandwidth.",
+      "I do not have the bandwidth to take on another project this week."
+    ],
+    "relatedWords": [
+      {
+        "word": "latency",
+        "definition": "The delay before data or a response reaches its destination."
+      },
+      {
+        "word": "network",
+        "definition": "A set of connected devices or systems that exchange information."
+      }
+    ],
+    "usageNote": "In informal workplace English, bandwidth can also mean a person's available time or mental capacity.",
+    "difficulty": "C1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/bandwidth#English"
+    }
+  },
+  {
+    "id": "technology-interface",
+    "collectionId": "technology",
+    "word": "Interface",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈɪn.tə.feɪs/",
+    "shortDefinition": "A point of interaction between people, programs, or systems.",
+    "fullDefinition": "An interface is a boundary or means through which two things interact. A user interface lets a person operate software, while a programming interface defines how software components communicate.",
+    "simpleExplanation": "It is the part that lets you work with a system, or lets two systems work together.",
+    "synonyms": [
+      {
+        "word": "connection",
+        "definition": "A link between things, without necessarily defining how interaction works."
+      },
+      {
+        "word": "interaction point",
+        "definition": "A place or mechanism where an exchange takes place."
+      }
+    ],
+    "examples": [
+      "The app has a simple, keyboard-friendly interface.",
+      "The interface between the services is documented.",
+      "We redesigned the mobile interface after testing it."
+    ],
+    "relatedWords": [
+      {
+        "word": "usability",
+        "definition": "How effectively and comfortably people can use a product."
+      },
+      {
+        "word": "API",
+        "definition": "An application programming interface: defined ways for software to interact."
+      }
+    ],
+    "usageNote": "A user interface includes behavior as well as appearance.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/interface#English"
+    }
+  },
+  {
+    "id": "technology-encryption",
+    "collectionId": "technology",
+    "word": "Encryption",
+    "partOfSpeech": "noun",
+    "ipa": "/ɪnˈkrɪp.ʃən/",
+    "shortDefinition": "The process of turning readable information into a protected coded form.",
+    "fullDefinition": "Encryption transforms readable data into ciphertext using a cryptographic algorithm and a key. Recovering the original information generally requires the appropriate key. Encryption helps protect confidentiality but does not solve every security problem.",
+    "simpleExplanation": "It scrambles information so that only someone with the right key can read it.",
+    "synonyms": [
+      {
+        "word": "enciphering",
+        "definition": "Another term for converting information into a cipher or encrypted form."
+      },
+      {
+        "word": "encoding",
+        "definition": "Changing the representation of data; it does not necessarily keep the data secret."
+      }
+    ],
+    "examples": [
+      "The service uses encryption to protect data in transit.",
+      "Keep the encryption key in a secure place.",
+      "Encryption alone does not prevent someone from sharing a password."
+    ],
+    "relatedWords": [
+      {
+        "word": "ciphertext",
+        "definition": "Data in its encrypted form."
+      },
+      {
+        "word": "decryption",
+        "definition": "The process of converting encrypted data back into readable form."
+      }
+    ],
+    "usageNote": "Encoding and encryption are different. Base64 encoding, for example, is not encryption.",
+    "difficulty": "C1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/encryption#English"
+    }
+  },
+  {
+    "id": "technology-protocol",
+    "collectionId": "technology",
+    "word": "Protocol",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈprəʊ.tə.kɒl/",
+    "shortDefinition": "An agreed set of rules for how systems communicate or tasks are carried out.",
+    "fullDefinition": "In computing, a protocol specifies conventions for exchanging information, such as message formats and expected responses. More generally, protocol can mean the official rules or established procedure for an activity.",
+    "simpleExplanation": "It is a shared rulebook that helps different devices or people understand what to do.",
+    "synonyms": [
+      {
+        "word": "convention",
+        "definition": "An agreed or customary way to do something, which may be informal."
+      },
+      {
+        "word": "procedure",
+        "definition": "A defined series of actions for carrying out a task."
+      }
+    ],
+    "examples": [
+      "The devices communicate using the same protocol.",
+      "HTTPS uses security mechanisms to protect web traffic.",
+      "The laboratory follows a strict safety protocol."
+    ],
+    "relatedWords": [
+      {
+        "word": "request",
+        "definition": "A message asking a system to perform an action or return information."
+      },
+      {
+        "word": "response",
+        "definition": "A reply to a request."
+      }
+    ],
+    "usageNote": "Protocol is used in technology, science, medicine, and diplomacy. Its precise meaning depends on context.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/protocol#English"
+    }
+  },
+  {
+    "id": "technology-scalability",
+    "collectionId": "technology",
+    "word": "Scalability",
+    "partOfSpeech": "noun",
+    "ipa": "/ˌskeɪ.ləˈbɪl.ə.ti/",
+    "shortDefinition": "The ability of a system to handle growth without losing acceptable performance.",
+    "fullDefinition": "Scalability is the capacity of a system, process, or organization to accommodate more work or users by adapting its resources. A scalable design aims to maintain acceptable behavior as demand increases.",
+    "simpleExplanation": "It means something can grow and still work well.",
+    "synonyms": [
+      {
+        "word": "expandability",
+        "definition": "The ability to add parts or capacity to something."
+      },
+      {
+        "word": "adaptability",
+        "definition": "The ability to adjust to changing conditions, which may not involve growth."
+      }
+    ],
+    "examples": [
+      "The team tested the platform's scalability before launch.",
+      "Caching can improve scalability for read-heavy applications.",
+      "We chose a design that leaves room for future scalability."
+    ],
+    "relatedWords": [
+      {
+        "word": "load",
+        "definition": "The amount of work a system is asked to perform."
+      },
+      {
+        "word": "capacity",
+        "definition": "The amount of work or data that something can handle."
+      }
+    ],
+    "usageNote": "Scalability is about behavior as demand changes; a fast result with one user does not establish scalability.",
+    "difficulty": "C1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/scalability#English"
+    }
+  },
+  {
+    "id": "business-revenue",
+    "collectionId": "business",
+    "word": "Revenue",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈrev.ən.juː/",
+    "shortDefinition": "Income received by a business or organization from its activities.",
+    "fullDefinition": "Revenue is the income an organization earns from its normal activities, such as selling goods or services, before relevant expenses are deducted. Governments also use the term for income from taxes and other sources.",
+    "simpleExplanation": "It is the money coming in from what a business does, before you work out its profit.",
+    "synonyms": [
+      {
+        "word": "income",
+        "definition": "Money received by a person or organization; its accounting meaning depends on context."
+      },
+      {
+        "word": "sales",
+        "definition": "Income specifically from selling goods or services, rather than every possible revenue source."
+      }
+    ],
+    "examples": [
+      "Subscription revenue increased this quarter.",
+      "Higher revenue did not result in higher profit.",
+      "The museum earns revenue from ticket sales."
+    ],
+    "relatedWords": [
+      {
+        "word": "profit",
+        "definition": "The amount remaining when relevant costs are subtracted from income."
+      },
+      {
+        "word": "expense",
+        "definition": "A cost incurred in operating or carrying out an activity."
+      }
+    ],
+    "usageNote": "Revenue is not the same as profit. A business can have substantial revenue and still make a loss.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/revenue#English"
+    }
+  },
+  {
+    "id": "business-stakeholder",
+    "collectionId": "business",
+    "word": "Stakeholder",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈsteɪkˌhəʊl.dər/",
+    "shortDefinition": "A person or group affected by, or interested in, an organization's activities.",
+    "fullDefinition": "A stakeholder has an interest in, influences, or is affected by a project or organization. Stakeholders may include employees, customers, investors, suppliers, and members of the wider community.",
+    "simpleExplanation": "It is someone whose needs or interests matter because a decision may affect them.",
+    "synonyms": [
+      {
+        "word": "interested party",
+        "definition": "A person or group with an interest in a matter or its outcome."
+      },
+      {
+        "word": "participant",
+        "definition": "Someone who actively takes part; a stakeholder may be affected without participating."
+      }
+    ],
+    "examples": [
+      "The team interviewed stakeholders before redesigning the service.",
+      "Local residents are important stakeholders in the project.",
+      "The proposal considers the needs of several stakeholder groups."
+    ],
+    "relatedWords": [
+      {
+        "word": "shareholder",
+        "definition": "A person or organization that owns shares in a company."
+      },
+      {
+        "word": "consultation",
+        "definition": "The process of seeking and discussing opinions before making a decision."
+      }
+    ],
+    "usageNote": "A shareholder owns shares. A stakeholder is a broader category and does not need to own part of the business.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/stakeholder#English"
+    }
+  },
+  {
+    "id": "business-negotiation",
+    "collectionId": "business",
+    "word": "Negotiation",
+    "partOfSpeech": "noun",
+    "ipa": "/nɪˌɡəʊ.ʃiˈeɪ.ʃən/",
+    "shortDefinition": "Discussion intended to help people reach an agreement.",
+    "fullDefinition": "Negotiation is a process in which two or more parties discuss their interests and possible terms with the aim of reaching an agreement. It often involves offers, questions, and compromises.",
+    "simpleExplanation": "People talk about what they each need and try to find terms they can accept.",
+    "synonyms": [
+      {
+        "word": "bargaining",
+        "definition": "Discussion focused especially on price or the terms of an exchange."
+      },
+      {
+        "word": "discussion",
+        "definition": "An exchange of views, which need not aim at an agreement."
+      }
+    ],
+    "examples": [
+      "The contract is still under negotiation.",
+      "Both sides prepared carefully for the negotiation.",
+      "The negotiations resulted in a revised delivery schedule."
+    ],
+    "relatedWords": [
+      {
+        "word": "compromise",
+        "definition": "An agreement in which parties accept less than everything they originally wanted."
+      },
+      {
+        "word": "proposal",
+        "definition": "A suggested plan or set of terms for consideration."
+      }
+    ],
+    "usageNote": "Use 'negotiate with' a person and 'negotiate over' or 'negotiate on' an issue.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/negotiation#English"
+    }
+  },
+  {
+    "id": "business-equity",
+    "collectionId": "business",
+    "word": "Equity",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈek.wɪ.ti/",
+    "shortDefinition": "An ownership interest in a business or asset after relevant debts are considered.",
+    "fullDefinition": "In finance, equity is an ownership interest in an asset or business. In accounting, it commonly refers to the residual interest in assets after liabilities are deducted. In other contexts, equity can mean fairness or a body of legal principles.",
+    "simpleExplanation": "It is the ownership value left after subtracting what is owed.",
+    "synonyms": [
+      {
+        "word": "ownership interest",
+        "definition": "A share of the legal or financial ownership of something."
+      },
+      {
+        "word": "net worth",
+        "definition": "The value of assets minus liabilities for a person or entity."
+      }
+    ],
+    "examples": [
+      "The founders offered an equity stake to the investor.",
+      "The homeowner built equity by repaying the mortgage.",
+      "The balance sheet lists assets, liabilities, and equity."
+    ],
+    "relatedWords": [
+      {
+        "word": "asset",
+        "definition": "Something of value owned or controlled by a person or organization."
+      },
+      {
+        "word": "liability",
+        "definition": "A financial obligation or legal responsibility."
+      }
+    ],
+    "usageNote": "Check the context: equity can refer to ownership value, fairness, or a distinct legal tradition.",
+    "difficulty": "C1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/equity#English"
+    }
+  },
+  {
+    "id": "business-forecast",
+    "collectionId": "business",
+    "word": "Forecast",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈfɔː.kɑːst/",
+    "shortDefinition": "An estimate of what is likely to happen in the future.",
+    "fullDefinition": "A forecast is a prediction about future conditions based on available information and assumptions. In business it may estimate sales, costs, demand, or cash flow. It is uncertain and may be revised as new information arrives.",
+    "simpleExplanation": "It is an informed estimate of what might happen next.",
+    "synonyms": [
+      {
+        "word": "prediction",
+        "definition": "A statement about a future event, with or without a formal method."
+      },
+      {
+        "word": "projection",
+        "definition": "An estimate based on stated assumptions, often extending existing trends."
+      }
+    ],
+    "examples": [
+      "The sales forecast was updated after the launch.",
+      "Our forecast assumes that demand remains stable.",
+      "Actual results differed from the original forecast."
+    ],
+    "relatedWords": [
+      {
+        "word": "assumption",
+        "definition": "Something accepted as a starting point for reasoning or planning."
+      },
+      {
+        "word": "demand",
+        "definition": "The amount of a product or service that people are willing and able to buy."
+      }
+    ],
+    "usageNote": "A forecast is an estimate, not a promise or guaranteed result.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/forecast#English"
+    }
+  },
+  {
+    "id": "business-resilience",
+    "collectionId": "business",
+    "word": "Resilience",
+    "partOfSpeech": "noun",
+    "ipa": "/rɪˈzɪl.i.əns/",
+    "shortDefinition": "The ability to recover or adapt after difficulty, disruption, or change.",
+    "fullDefinition": "Resilience is the capacity to withstand, recover from, or adapt to challenging conditions. For a business, it may involve maintaining essential operations and learning from disruption rather than simply returning to the previous state.",
+    "simpleExplanation": "It is the ability to find your footing and keep going when things become difficult.",
+    "synonyms": [
+      {
+        "word": "adaptability",
+        "definition": "The ability to adjust to new circumstances."
+      },
+      {
+        "word": "toughness",
+        "definition": "The ability to endure difficult conditions; it emphasizes resistance more than recovery."
+      }
+    ],
+    "examples": [
+      "The company showed resilience during a difficult year.",
+      "A diverse supplier network can improve operational resilience.",
+      "Rest and support can help people build resilience."
+    ],
+    "relatedWords": [
+      {
+        "word": "recovery",
+        "definition": "The process of returning to a more usual or healthy condition."
+      },
+      {
+        "word": "contingency",
+        "definition": "A possible event for which plans may need to be made."
+      }
+    ],
+    "usageNote": "Resilience does not mean that a person or organization never struggles.",
+    "difficulty": "C1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/resilience#English"
+    }
+  },
+  {
+    "id": "lifestyle-serendipity",
+    "collectionId": "lifestyle",
+    "word": "Serendipity",
+    "partOfSpeech": "noun",
+    "ipa": "/ˌser.ənˈdɪp.ə.ti/",
+    "shortDefinition": "The chance discovery of something valuable or pleasant when you were not looking for it.",
+    "fullDefinition": "Serendipity is the occurrence of a fortunate discovery or happy event by chance, especially when something useful or meaningful is found while pursuing something else. It combines chance with the ability to notice an unexpected opportunity.",
+    "simpleExplanation": "You are looking for one thing and unexpectedly find something wonderful instead.",
+    "synonyms": [
+      {
+        "word": "chance",
+        "definition": "An unplanned occurrence, which may be fortunate, unfortunate, or neutral."
+      },
+      {
+        "word": "good fortune",
+        "definition": "A favorable event or situation; it need not involve an unexpected discovery."
+      }
+    ],
+    "examples": [
+      "Finding that little bookshop was pure serendipity.",
+      "Their collaboration began with a moment of serendipity.",
+      "Leave a little space in your plans for serendipity."
+    ],
+    "relatedWords": [
+      {
+        "word": "discovery",
+        "definition": "The act of finding or learning something previously unknown to you."
+      },
+      {
+        "word": "coincidence",
+        "definition": "Events that happen together without an obvious planned connection."
+      }
+    ],
+    "usageNote": "Serendipity is usually uncountable. The adjective is serendipitous.",
+    "difficulty": "C1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/serendipity#English"
+    }
+  },
+  {
+    "id": "lifestyle-mindfulness",
+    "collectionId": "lifestyle",
+    "word": "Mindfulness",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈmaɪnd.fəl.nəs/",
+    "shortDefinition": "Deliberate attention to your present experience, without rushing to judge it.",
+    "fullDefinition": "Mindfulness is the practice or quality of paying attention to present thoughts, feelings, and surroundings with awareness and a less judgmental attitude. It can be practiced during meditation or ordinary daily activities.",
+    "simpleExplanation": "You notice what is happening right now instead of moving through the moment on autopilot.",
+    "synonyms": [
+      {
+        "word": "awareness",
+        "definition": "Knowledge or perception of something; it need not involve a deliberate practice."
+      },
+      {
+        "word": "attentiveness",
+        "definition": "The quality of paying close attention to someone or something."
+      }
+    ],
+    "examples": [
+      "She practices mindfulness during her morning walk.",
+      "The session introduced a short mindfulness exercise.",
+      "Mindfulness helped him notice when his attention wandered."
+    ],
+    "relatedWords": [
+      {
+        "word": "attention",
+        "definition": "The act of directing your mind toward something."
+      },
+      {
+        "word": "meditation",
+        "definition": "A practice of focusing or training attention and awareness."
+      }
+    ],
+    "usageNote": "Mindfulness is a practice, not a promise of a particular health outcome.",
+    "difficulty": "C1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/mindfulness#English"
+    }
+  },
+  {
+    "id": "lifestyle-ritual",
+    "collectionId": "lifestyle",
+    "word": "Ritual",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈrɪtʃ.u.əl/",
+    "shortDefinition": "An action or series of actions repeated in a meaningful, familiar way.",
+    "fullDefinition": "A ritual is a set of actions performed in an established way, often with cultural, religious, or personal significance. In everyday language, it can describe a familiar routine that feels intentional or meaningful.",
+    "simpleExplanation": "It is something you do in a familiar way because the act itself has meaning for you.",
+    "synonyms": [
+      {
+        "word": "routine",
+        "definition": "A regular sequence of activities, which may be purely practical."
+      },
+      {
+        "word": "custom",
+        "definition": "An established practice shared by a group or community."
+      }
+    ],
+    "examples": [
+      "Making tea became a quiet evening ritual.",
+      "Reading one new word is part of my daily ritual.",
+      "The festival includes several traditional rituals."
+    ],
+    "relatedWords": [
+      {
+        "word": "habit",
+        "definition": "A behavior repeated often enough to become familiar or automatic."
+      },
+      {
+        "word": "intention",
+        "definition": "An aim or purpose behind an action."
+      }
+    ],
+    "usageNote": "Ritual can have religious significance, but everyday rituals do not have to be religious.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/ritual#English"
+    }
+  },
+  {
+    "id": "lifestyle-curiosity",
+    "collectionId": "lifestyle",
+    "word": "Curiosity",
+    "partOfSpeech": "noun",
+    "ipa": "/ˌkjʊə.riˈɒs.ə.ti/",
+    "shortDefinition": "A strong desire to know, learn, or understand more.",
+    "fullDefinition": "Curiosity is an interest in discovering information, exploring possibilities, or understanding something unfamiliar. It motivates questions, observation, and learning. A curiosity can also mean an unusual object or fact.",
+    "simpleExplanation": "It is the feeling that makes you ask 'why?' and want to find out more.",
+    "synonyms": [
+      {
+        "word": "interest",
+        "definition": "A feeling of wanting to give attention to something."
+      },
+      {
+        "word": "inquisitiveness",
+        "definition": "An eager tendency to ask questions and investigate."
+      }
+    ],
+    "examples": [
+      "Curiosity led her to study a new language.",
+      "He opened the old notebook out of curiosity.",
+      "The exhibition encourages children's natural curiosity."
+    ],
+    "relatedWords": [
+      {
+        "word": "inquiry",
+        "definition": "The act or process of asking questions and investigating."
+      },
+      {
+        "word": "wonder",
+        "definition": "A feeling of surprise and interest in something remarkable."
+      }
+    ],
+    "usageNote": "Use 'curiosity about' a subject and 'out of curiosity' to explain why you asked a question.",
+    "difficulty": "B1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/curiosity#English"
+    }
+  },
+  {
+    "id": "lifestyle-solitude",
+    "collectionId": "lifestyle",
+    "word": "Solitude",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈsɒl.ɪ.tjuːd/",
+    "shortDefinition": "The state of being alone, especially when it is chosen or enjoyed.",
+    "fullDefinition": "Solitude is the condition of being apart from other people. It often describes a chosen opportunity for quiet, reflection, or rest, although the word itself does not always imply a positive experience.",
+    "simpleExplanation": "It is time on your own, with space to think or simply be.",
+    "synonyms": [
+      {
+        "word": "seclusion",
+        "definition": "Being away from other people or activity, often in a private or isolated place."
+      },
+      {
+        "word": "aloneness",
+        "definition": "The state of being alone, without specifying how it feels."
+      }
+    ],
+    "examples": [
+      "She enjoyed the solitude of the early morning.",
+      "He sought a little solitude after a busy week.",
+      "The cabin offered quiet and solitude."
+    ],
+    "relatedWords": [
+      {
+        "word": "reflection",
+        "definition": "Careful thought about an experience, idea, or feeling."
+      },
+      {
+        "word": "loneliness",
+        "definition": "An unhappy feeling associated with a lack of desired connection."
+      }
+    ],
+    "usageNote": "Solitude and loneliness are not interchangeable: being alone does not necessarily mean feeling lonely.",
+    "difficulty": "C1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/solitude#English"
+    }
+  },
+  {
+    "id": "lifestyle-balance",
+    "collectionId": "lifestyle",
+    "word": "Balance",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈbæl.əns/",
+    "shortDefinition": "A state in which different needs, forces, or activities are given suitable weight.",
+    "fullDefinition": "Balance is a condition of stability or an appropriate relationship between different parts. In everyday life, it can describe giving enough attention to several needs without allowing one to overwhelm the others.",
+    "simpleExplanation": "It means making room for different things that matter, in a way that works for you.",
+    "synonyms": [
+      {
+        "word": "equilibrium",
+        "definition": "A stable state in which opposing forces or influences are matched."
+      },
+      {
+        "word": "proportion",
+        "definition": "The relationship in size or amount between different parts."
+      }
+    ],
+    "examples": [
+      "She is looking for a better balance between work and rest.",
+      "The design strikes a balance between simplicity and detail.",
+      "He lost his balance on the uneven path."
+    ],
+    "relatedWords": [
+      {
+        "word": "priority",
+        "definition": "Something considered more important or urgent than other things."
+      },
+      {
+        "word": "well-being",
+        "definition": "A person's general state of comfort, health, or satisfaction."
+      }
+    ],
+    "usageNote": "Useful patterns are 'a balance between A and B' and 'strike a balance'. Balance need not mean equal amounts.",
+    "difficulty": "B1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/balance#English"
+    }
+  }
+]
