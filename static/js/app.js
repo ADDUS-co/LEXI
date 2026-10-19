@@ -1,6 +1,8 @@
-import {dateInTimezone, selectWord} from './selection.js';
+import {selectWord} from './selection.js';
 import {readStore, updateStore, resetStore, storageAvailable} from './storage.js';
 import {icon} from './icons.js';
+import {dailySchedule, deviceTimezone, validUpdateTime} from './schedule.js';
+import {answerMatches, withoutAnswer} from './recall.js';
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const main = $('#main-content');
@@ -25,6 +27,65 @@ let observer;
 let installPrompt;
 let initialized = false;
 let speaking = false;
+let schedule;
+let flipping = false;
+let lastTouch;
+let ignoreDoubleClickUntil = 0;
+let revealPressAt = 0;
+
+function isHidden(word) { return preferences.hiddenWords.includes(word.id); }
+function motionReduced() { return preferences.reduceMotion || matchMedia('(prefers-reduced-motion: reduce)').matches; }
+
+function scheduleFields(prefix) {
+  const timezone = deviceTimezone(catalog?.timezone);
+  return `<div class="schedule-fields"><label for="${prefix}-update-time"><span class="micro">A NEW WORD AT</span><input type="time" id="${prefix}-update-time" name="updateTime" required value="${preferences.updateTime}"></label><div class="schedule-timezone">${icon('clock')}<div><span class="micro">YOUR DEVICE TIMEZONE</span><strong>${escape(timezone.replaceAll('_',' '))}</strong><span>Follows your device when you travel.</span></div></div></div>`;
+}
+
+function rhythmSection() {
+  return `<section class="settings-section"><div class="settings-section-heading"><div><h2>Your daily rhythm</h2><p>A small discovery, at a time that fits your day.</p></div>${icon('clock')}</div><form id="schedule-form">${scheduleFields('settings')}<div class="schedule-save"><p>Before your chosen time, yesterday’s word stays with you. Changing the time can recalculate the current word.</p><button type="submit" class="button button-primary">Save daily rhythm ${icon('check')}</button></div><p id="schedule-feedback" class="schedule-feedback" role="status"></p></form><p class="privacy-note">When the browser is closed, your next visit applies the schedule. No background notification is sent.</p></section>`;
+}
+
+function nextWordLabel() {
+  if (!schedule) return '';
+  const tomorrow = schedule.date === today;
+  return `Next word ${tomorrow ? 'tomorrow' : 'today'} at ${preferences.updateTime}`;
+}
+
+function renderRecall(word, archived) {
+  const collection = collectionFor(word);
+  const clue = withoutAnswer(word.shortDefinition, word.word);
+  return `<section class="hero recall-hero page-width" aria-labelledby="recall-title"><div class="hero-topline"><span class="eyebrow"><span class="live-dot"></span>MAKE IT A MEMORY</span><time datetime="${today}">${formatDate(today,{day:'numeric',month:'long'})}</time></div><div class="word-stage recall-stage" data-flip-surface="back"><div class="collection-tag">${icon(collection.icon)}<span>${escape(collection.name)}</span><span class="word-class">${escape(word.partOfSpeech)}</span></div><div class="recall-top"><span class="micro">THE OTHER SIDE / RECALL PRACTICE</span><span class="recall-orbit" aria-hidden="true">${icon('flip')}</span></div><h1 id="recall-title" tabindex="-1">Let it<br><em>come back.</em></h1><p class="recall-clue">${escape(clue)}</p><form id="recall-form" class="recall-form"><label for="recall-answer">What’s the English word?</label><div class="recall-input-row"><input id="recall-answer" name="answer" type="text" placeholder="Type it from memory…" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" required maxlength="200" aria-describedby="recall-feedback"><button type="submit" class="button button-primary">Check my word ${icon('arrow')}</button></div><p id="recall-feedback" class="recall-feedback" role="status" aria-live="polite">A correct answer turns the card back. Capital letters don’t matter.</p></form><div class="recall-alternative"><span class="micro">OR DOUBLE-TAP THIS CARD</span><button class="recall-double-button text-link" data-action="reveal-twice">${icon('flip')}<span>Press twice to reveal</span></button></div><p class="recall-memory-note">${icon('bookmark')}${storageAvailable ? 'This side is remembered, even after you close your browser.' : 'Storage is unavailable. This side is remembered for this visit only.'}</p></div><div class="hero-bottom"><a class="text-link" href="#${archived ? 'history' : 'settings'}">${archived ? 'Back to your history' : 'Your daily rhythm'} ${icon('arrowUp')}</a><span class="next-word-label micro">${escape(nextWordLabel())}</span></div></section>`;
+}
+
+async function flipCard(hidden, successMessage) {
+  if (!currentWord || flipping) return;
+  const word = currentWord;
+  const route = location.hash;
+  flipping = true;
+  revealPressAt = 0;
+  preferences = updateStore({hiddenWords: hidden ? [...new Set([...preferences.hiddenWords,word.id])] : preferences.hiddenWords.filter(id => id !== word.id)});
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  speaking = false;
+  if (detail.open) detail.close();
+  try {
+    const oldFace = $('.word-stage');
+    if (oldFace && !motionReduced() && oldFace.animate) {
+      await oldFace.animate([{transform:'perspective(1400px) rotateX(0deg)',opacity:1},{transform:'perspective(1400px) rotateX(-85deg)',opacity:.1}],{duration:180,easing:'ease-in',fill:'forwards'}).finished;
+    }
+    if (currentWord?.id !== word.id || location.hash !== route) return;
+    renderApp({scroll:false});
+    const newFace = $('.word-stage');
+    if (newFace && !motionReduced() && newFace.animate) {
+      // The incoming visual may finish while the new face is already usable.
+      newFace.animate([{transform:'perspective(1400px) rotateX(85deg)',opacity:.1},{transform:'perspective(1400px) rotateX(0deg)',opacity:1}],{duration:260,easing:'cubic-bezier(.16,1,.3,1)'});
+    }
+    if (hidden) $('#recall-answer')?.focus({preventScroll:true});
+    else $('#daily-word')?.focus({preventScroll:true});
+    toast(!storageAvailable ? 'Browser storage is unavailable. This card position lasts for this visit only.' : successMessage || (hidden ? 'Word hidden. Come back to it from memory.' : 'A familiar word, back in your world.'));
+  } catch (error) {
+    if (currentWord?.id === word.id && location.hash === route) renderApp({scroll:false});
+  } finally { flipping = false; }
+}
 
 document.querySelectorAll('[data-icon]').forEach(element => element.innerHTML = icon(element.dataset.icon));
 
@@ -45,7 +106,11 @@ function formatDate(day, options = {month: 'long', day: 'numeric', year: 'numeri
 }
 
 function updateHeader() {
+  const previousCount = $('#saved-count').textContent;
   $('#saved-count').textContent = preferences.saved.length;
+  if (previousCount !== String(preferences.saved.length) && !motionReduced()) {
+    $('#saved-count').animate?.([{transform:'scale(1)'},{transform:'scale(1.22)'},{transform:'scale(1)'}],{duration:300});
+  }
   $('.saved-link').setAttribute('aria-label', `Saved words, ${preferences.saved.length} saved`);
   const route = readRoute().page;
   document.querySelectorAll('[data-nav]').forEach(link => {
@@ -62,9 +127,10 @@ function applyAppearance() {
 }
 
 function calculateDaily() {
-  today = dateInTimezone(catalog.timezone);
+  schedule = dailySchedule(deviceTimezone(catalog.timezone), preferences.updateTime);
+  today = schedule.calendarDate;
   const selected = preferences.interests.length ? preferences.interests : catalog.collections.map(collection => collection.id);
-  dailyWord = selectWord(catalog.collections, catalog.words, selected, today);
+  dailyWord = selectWord(catalog.collections, catalog.words, selected, schedule.date);
 }
 
 function recordView(word) {
@@ -93,6 +159,7 @@ function saveButton(word, extraClass = '') {
 }
 
 function renderHome(word, archived = false) {
+  if (isHidden(word)) return renderRecall(word, archived);
   const collection = collectionFor(word);
   const synonyms = word.synonyms || [];
   const related = word.relatedWords || [];
@@ -101,14 +168,16 @@ function renderHome(word, archived = false) {
   return `
     <section class="hero page-width" aria-labelledby="daily-word">
       <div class="hero-topline"><div class="eyebrow"><span class="live-dot"></span>${archived ? 'A WORD WORTH REVISITING' : 'WORD OF THE DAY'}</div><time datetime="${today}">${formatDate(today, {weekday: 'long', day: 'numeric', month: 'long'})}<span class="date-year"> / ${today.slice(0, 4)}</span></time></div>
-      <div class="word-stage">
+      <div class="word-stage" data-flip-surface="front">
         <div class="collection-tag">${icon(collection.icon)}<span>${escape(collection.name)}</span><span class="collection-index">${categoryIndex} / ${String(catalog.collections.length).padStart(2, '0')}</span></div>
         <div class="orbit-art" aria-hidden="true"><img src="/static/assets/orbit.svg" alt=""></div>
+        <div class="studio-art" aria-hidden="true"><i></i><i></i><i></i></div>
         <div class="word-wrap"><h1 id="daily-word" class="hero-word" tabindex="-1">${escape(word.word)}<span class="word-period">.</span></h1></div>
         <div class="word-under"><div class="pronunciation"><button class="listen-button" data-action="pronounce" aria-label="Listen to ${escape(word.word)}">${icon('volume')}</button><span class="ipa">${escape(word.ipa)}</span><span class="word-class">${escape(word.partOfSpeech)}</span></div><div class="word-tools">${saveButton(word)}<button class="icon-button share-button" data-action="share" aria-label="Share ${escape(word.word)}">${icon('share')}</button></div></div>
+        <div class="card-practice-bar"><span class="micro">DOUBLE-TAP THE WORD TO TURN IT OVER</span><button class="text-link" data-action="hide-word">Test my memory ${icon('flip')}</button></div>
       </div>
       <div class="hero-meaning"><div class="meaning-caption"><span class="micro">THE MEANING</span><span class="small-index">/ ${number}</span></div><div class="meaning-content"><p class="short-definition">${escape(word.shortDefinition)}</p><div class="synonym-pills"><span class="micro muted">CLOSE IN MEANING</span>${synonyms.map((item, index) => `<button class="synonym" data-action="synonym" data-index="${index}">${escape(item.word)} ${icon('arrowUp')}</button>`).join('')}</div><p class="hero-example">“${escape(word.examples[0])}”</p></div></div>
-      <div class="hero-bottom"><span class="micro muted">ONE DAY. ONE WORD.<br><span class="hero-motto">A LITTLE MORE KNOWLEDGE.</span></span><button class="scroll-discover" data-action="explore"><span>SCROLL TO EXPLORE</span><span class="scroll-circle">${icon('down')}</span></button></div>
+      <div class="hero-bottom"><span class="micro muted">ONE DAY. ONE WORD.<br><span class="hero-motto">A LITTLE MORE KNOWLEDGE.</span></span><span class="next-word-label micro">${escape(nextWordLabel())}</span><button class="scroll-discover" data-action="explore"><span>SCROLL TO EXPLORE</span><span class="scroll-circle">${icon('down')}</span></button></div>
     </section>
     <section id="beyond-word" class="beyond-section" aria-labelledby="beyond-title"><div class="page-width">
       <div class="section-label reveal"><span class="eyebrow">BEYOND THE WORD</span><span class="micro">/ 01</span></div>
@@ -152,7 +221,7 @@ function listRecords(page, query = '') {
       lastDate = date;
       heading = `<h2 class="history-date micro">${date === today ? 'TODAY · ' : ''}${formatDate(date)}</h2>`;
     }
-    return `${heading}<article class="word-card"><a class="word-card-main" href="#word/${escape(word.id)}"><span class="micro muted">${escape(collectionFor(word).name)}</span><h${page === 'history' ? '3' : '2'}>${escape(word.word)}<span class="list-word-class">${escape(word.partOfSpeech)}</span></h${page === 'history' ? '3' : '2'}><p>${escape(word.shortDefinition)}</p></a><div class="word-card-actions">${page === 'saved' ? `<button class="icon-button is-saved" data-action="save" data-word="${escape(word.id)}" aria-label="Remove ${escape(word.word)} from Saved">${icon('bookmark')}</button>` : ''}<a class="icon-button" href="#word/${escape(word.id)}" aria-label="Read ${escape(word.word)}">${icon('arrowUp')}</a></div></article>`;
+    return `${heading}<article class="word-card"><a class="word-card-main" href="#word/${escape(word.id)}"><span class="micro muted">${escape(collectionFor(word).name)}</span><h${page === 'history' ? '3' : '2'}>${isHidden(word) ? 'A word to recall' : escape(word.word)}<span class="list-word-class">${escape(word.partOfSpeech)}</span></h${page === 'history' ? '3' : '2'}><p>${escape(isHidden(word) ? withoutAnswer(word.shortDefinition,word.word) : word.shortDefinition)}</p></a><div class="word-card-actions">${page === 'saved' ? `<button class="icon-button is-saved" data-action="save" data-word="${escape(word.id)}" aria-label="Remove ${isHidden(word) ? 'this word' : escape(word.word)} from Saved">${icon('bookmark')}</button>` : ''}<a class="icon-button" href="#word/${escape(word.id)}" aria-label="${isHidden(word) ? 'Practice this word' : 'Read ' + escape(word.word)}">${icon('arrowUp')}</a></div></article>`;
   }).join('');
 }
 
@@ -163,12 +232,12 @@ function renderList(page) {
 }
 
 function renderSettings() {
-  return `<section class="interior-page settings-page page-width"><div class="section-label"><span class="eyebrow">MAKE YOURSELF AT HOME</span><span class="micro">SETTINGS</span></div><div class="page-heading"><h1 tabindex="-1">Your world.<br><span class="accent">Your atmosphere.</span></h1><p>A few thoughtful details.<br>Just the way you like them.</p></div><section class="settings-section"><div class="settings-section-heading"><h2>Choose your atmosphere</h2><p>Same word. A different point of view.</p></div><div class="theme-grid">${[['noir', '01', 'Noir', 'Quiet confidence. After dark.'], ['studio', '02', 'Studio', 'Warm light. A clear mind.'], ['experimental', '03', 'Experimental', 'A little outside the ordinary.']].map(([id, number, name, description]) => `<button class="theme-card" data-theme-choice="${id}" aria-pressed="${preferences.theme === id}"><span class="theme-preview theme-preview-${id}"><span class="micro">LEXI / ${number}</span><span class="theme-preview-word">Aa<span>.</span></span><span class="theme-preview-line"></span></span><span class="theme-name">${name}<span class="theme-check">${icon('check')}</span></span><span class="theme-description">${description}</span></button>`).join('')}</div></section><section class="settings-section"><div class="settings-row"><div><h2>A gentler pace</h2><p>Reduce animations and decorative movement.<br>Your device’s reduced-motion setting is always respected.</p></div><label class="switch"><input id="motion-toggle" type="checkbox" role="switch" ${preferences.reduceMotion ? 'checked' : ''}><span class="switch-track"></span><span class="sr-only">Reduce motion</span></label></div><div class="settings-row"><div><h2>Follow your interests</h2><p>${preferences.interests.length} collections shape your daily discoveries.</p></div><a class="text-link" href="#collections">Edit collections ${icon('arrowUp')}</a></div><div class="settings-row"><div><h2>One shared daily rhythm</h2><p>Words change at midnight in ${escape(catalog.timezone)}.<br>The interface and learning content are in English.</p></div><span class="timezone-badge">${escape(catalog.timezone)}</span></div></section><section class="settings-section"><div class="settings-row"><div><h2>A little closer, every day</h2><p>Install LEXI from your browser menu: “Add to Home Screen” or “Install app”.<br>After your first online visit, cached words are available offline.</p></div><button id="install-button" class="button button-outline" data-action="install" ${installPrompt ? '' : 'hidden'}>Install LEXI ${icon('download')}</button></div></section><section class="settings-section local-data-section"><div><span class="micro">YOUR BROWSER, YOUR DATA</span><h2>Small rituals. Local memories.</h2><p>Interests, saved words, and history stay on this device. Export a personal backup before clearing browser data.</p></div><div class="data-actions"><button class="button button-outline" data-action="export">Export my data ${icon('download')}</button><button class="text-link danger-link" data-action="reset">Reset local data ${icon('trash')}</button></div></section></section>`;
+  return `<section class="interior-page settings-page page-width"><div class="section-label"><span class="eyebrow">MAKE YOURSELF AT HOME</span><span class="micro">SETTINGS</span></div><div class="page-heading"><h1 tabindex="-1">Your world.<br><span class="accent">Your atmosphere.</span></h1><p>A few thoughtful details.<br>Just the way you like them.</p></div><section class="settings-section"><div class="settings-section-heading"><h2>Choose your atmosphere</h2><p>Same word. A different point of view.</p></div><div class="theme-grid">${[['noir', '01', 'Noir', 'Quiet confidence. After dark.'], ['studio', '02', 'Studio', 'Warm light. A clear mind.'], ['experimental', '03', 'Experimental', 'A little outside the ordinary.']].map(([id, number, name, description]) => `<button class="theme-card" data-theme-choice="${id}" aria-pressed="${preferences.theme === id}"><span class="theme-preview theme-preview-${id}"><span class="micro">LEXI / ${number}</span><span class="theme-preview-word">Aa<span>.</span></span><span class="theme-preview-line"></span></span><span class="theme-name">${name}<span class="theme-check">${icon('check')}</span></span><span class="theme-description">${description}</span></button>`).join('')}</div></section><section class="settings-section"><div class="settings-row"><div><h2>A gentler pace</h2><p>Reduce animations and decorative movement.<br>Your device’s reduced-motion setting is always respected.</p></div><label class="switch"><input id="motion-toggle" type="checkbox" role="switch" ${preferences.reduceMotion ? 'checked' : ''}><span class="switch-track"></span><span class="sr-only">Reduce motion</span></label></div><div class="settings-row"><div><h2>Follow your interests</h2><p>${preferences.interests.length} collections shape your daily discoveries.</p></div><a class="text-link" href="#collections">Edit collections ${icon('arrowUp')}</a></div><div class="settings-row"><div><h2>Make it a memory</h2><p>Double-tap a word to turn it over. Bring it back with the correct spelling, or another double-tap.<br>Your card position is saved in this browser.</p></div><a class="text-link" href="#home">Practice your word ${icon('flip')}</a></div></section>${rhythmSection()}<section class="settings-section"><div class="settings-row"><div><h2>A little closer, every day</h2><p>Install LEXI from your browser menu: “Add to Home Screen” or “Install app”.<br>After your first online visit, cached words are available offline.</p></div><button id="install-button" class="button button-outline" data-action="install" ${installPrompt ? '' : 'hidden'}>Install LEXI ${icon('download')}</button></div></section><section class="settings-section local-data-section"><div><span class="micro">YOUR BROWSER, YOUR DATA</span><h2>Small rituals. Local memories.</h2><p>Interests, saved words, and history stay on this device. Export a personal backup before clearing browser data.</p></div><div class="data-actions"><button class="button button-outline" data-action="export">Export my data ${icon('download')}</button><button class="text-link danger-link" data-action="reset">Reset local data ${icon('trash')}</button></div></section></section>`;
 }
 
 function renderFooter() {
   const site = catalog.site;
-  $('#site-footer').innerHTML = `<div class="page-width"><div class="footer-top"><div><span class="eyebrow">A SMALL RITUAL. AN EXPANDING WORLD.</span><h2>${escape(site.tagline)}</h2><p>${escape(site.description)}</p></div><div class="footer-contacts">${(site.contacts || []).map(contact => `<a href="${safeUrl(contact.url, true)}" ${contact.url.startsWith('https:') ? 'target="_blank" rel="noopener noreferrer"' : ''}><span>${icon(contact.icon)}<span><span class="micro">${escape(contact.label)}</span><span>${escape(contact.text)}</span></span></span>${icon('arrowUp')}</a>`).join('')}</div></div><a class="footer-wordmark" href="#home" aria-label="LEXI Home">LEXI<span>${icon('asterisk')}</span></a><div class="footer-bottom"><span>© ${today.slice(0, 4)} LEXI. A little more knowledge.</span><span>MADE FOR CURIOUS MINDS.</span><a href="#settings">Your preferences ${icon('arrowUp')}</a></div></div>`;
+  $('#site-footer').innerHTML = `<div class="page-width"><div class="footer-top reveal"><div><span class="eyebrow">A SMALL RITUAL. AN EXPANDING WORLD.</span><h2>${escape(site.tagline)}</h2><p>${escape(site.description)}</p></div><div class="footer-contacts">${(site.contacts || []).map(contact => `<a href="${safeUrl(contact.url, true)}" ${contact.url.startsWith('https:') ? 'target="_blank" rel="noopener noreferrer"' : ''}><span>${icon(contact.icon)}<span><span class="micro">${escape(contact.label)}</span><span>${escape(contact.text)}</span></span></span>${icon('arrowUp')}</a>`).join('')}</div></div><a class="footer-wordmark reveal" href="#home" aria-label="LEXI Home">LEXI<span>${icon('asterisk')}</span></a><div class="footer-bottom"><span>© ${today.slice(0, 4)} LEXI. A little more knowledge.</span><span>MADE FOR CURIOUS MINDS.</span><a href="#settings">Your preferences ${icon('arrowUp')}</a></div></div>`;
 }
 
 function renderApp({scroll = true} = {}) {
@@ -181,7 +250,7 @@ function renderApp({scroll = true} = {}) {
       currentWord = word;
       recordView(word);
       main.innerHTML = renderHome(word, route.page === 'word');
-      document.title = `${word.word} — LEXI`;
+      document.title = isHidden(word) ? 'Recall practice — LEXI' : `${word.word} — LEXI`;
     } else {
       main.innerHTML = `<section class="interior-page page-width empty-state"><h1 tabindex="-1">That word isn’t here yet.</h1><p>The link may be outdated, or the entry may have been removed.</p><a class="button button-primary" href="#home">Back to today ${icon('arrow')}</a></section>`;
     }
@@ -190,6 +259,8 @@ function renderApp({scroll = true} = {}) {
     document.title = `${route.page[0].toUpperCase() + route.page.slice(1)} — LEXI`;
   }
   updateHeader();
+  main.classList.remove('page-enter');
+  requestAnimationFrame(() => main.classList.add('page-enter'));
   observeReveals();
   requestAnimationFrame(fitWord);
   document.fonts.ready.then(fitWord);
@@ -222,13 +293,15 @@ function observeReveals() {
   observer = new IntersectionObserver(entries => entries.forEach(entry => {
     if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); }
   }), {threshold: 0.08});
-  document.querySelectorAll('.reveal').forEach(element => {
+  document.querySelectorAll('.reveal').forEach((element, index) => {
+    element.dataset.revealStyle = ['rise','slide','scale'][index % 3];
     element.classList.add('will-reveal');
     observer.observe(element);
   });
 }
 
 function showOnboarding() {
+  $('#onboarding-schedule').innerHTML = scheduleFields('onboarding');
   $('#onboarding-collections').innerHTML = catalog.collections.map((collection, index) => collectionCard(collection, index, preferences.interests.includes(collection.id), 'onboarding')).join('');
   $('#begin-button').disabled = !preferences.interests.length;
   if (!onboarding.open) onboarding.showModal();
@@ -262,11 +335,12 @@ function toggleSave(id) {
       requestAnimationFrame(() => button.classList.add('save-pop'));
     });
   }
-  toast(had ? `${word.word} removed from Saved.` : `${word.word} saved. A little knowledge, kept.`);
+  const label = isHidden(word) ? 'Word' : word.word;
+  toast(had ? `${label} removed from Saved.` : `${label} saved. A little knowledge, kept.`);
 }
 
 function pronounce() {
-  if (!currentWord) return;
+  if (!currentWord || isHidden(currentWord)) return;
   if (!('speechSynthesis' in window)) { toast('Pronunciation is not supported in this browser. The IPA transcription is shown beside the button.'); return; }
   if (speaking) { speechSynthesis.cancel(); speaking = false; return; }
   const utterance = new SpeechSynthesisUtterance(currentWord.word);
@@ -285,7 +359,7 @@ function pronounce() {
 }
 
 async function shareWord() {
-  if (!currentWord) return;
+  if (!currentWord || isHidden(currentWord)) return;
   const url = `${location.origin}/#word/${encodeURIComponent(currentWord.id)}`;
   const payload = {title: `${currentWord.word} — LEXI`, text: `${currentWord.word}: ${currentWord.shortDefinition}`, url};
   try {
@@ -308,6 +382,24 @@ document.addEventListener('click', async event => {
   const button = event.target.closest('[data-action]');
   if (!button || button.disabled) return;
   switch (button.dataset.action) {
+    case 'hide-word': await flipCard(true); break;
+    case 'reveal-twice': {
+      if (!currentWord || !isHidden(currentWord)) break;
+      const now = performance.now();
+      if (revealPressAt > 0 && now - revealPressAt < 1800) await flipCard(false);
+      else {
+        revealPressAt = now;
+        $('span',button).textContent = 'Once more to reveal';
+        setTimeout(() => {
+          if (revealPressAt === now) {
+            revealPressAt = 0;
+            const label = $('[data-action="reveal-twice"] span');
+            if (label) label.textContent = 'Press twice to reveal';
+          }
+        },1800);
+      }
+      break;
+    }
     case 'save': toggleSave(button.dataset.word); break;
     case 'pronounce': pronounce(); break;
     case 'share': await shareWord(); break;
@@ -358,7 +450,7 @@ document.addEventListener('click', async event => {
 document.addEventListener('change', event => {
   const input = event.target;
   if (input.name === 'onboarding') {
-    $('#begin-button').disabled = !onboarding.querySelectorAll('input[name="onboarding"]:checked').length;
+    $('#begin-button').disabled = !onboarding.querySelectorAll('input[name="onboarding"]:checked').length || !validUpdateTime($('#onboarding-update-time').value);
   } else if (input.name === 'interests') {
     if (input.checked) collectionDraft.add(input.value); else collectionDraft.delete(input.value);
     $('#selection-summary').textContent = collectionDraft.size ? `${collectionDraft.size} ${collectionDraft.size === 1 ? 'collection' : 'collections'} selected. A new perspective, every day.` : 'Choose at least one collection to continue.';
@@ -372,12 +464,65 @@ document.addEventListener('change', event => {
 
 document.addEventListener('input', event => {
   if (event.target.id === 'word-search') $('#word-list').innerHTML = listRecords(readRoute().page, event.target.value);
+  if (event.target.id === 'onboarding-update-time') $('#begin-button').disabled = !onboarding.querySelectorAll('input[name="onboarding"]:checked').length || !validUpdateTime(event.target.value);
+});
+
+document.addEventListener('submit', async event => {
+  if (event.target.id === 'recall-form') {
+    event.preventDefault();
+    if (!currentWord || !isHidden(currentWord) || flipping) return;
+    const answer = $('#recall-answer');
+    if (answerMatches(answer.value,currentWord.word)) await flipCard(false,'You recalled it. That word is becoming yours.');
+    else {
+      answer.setAttribute('aria-invalid','true');
+      $('#recall-feedback').textContent = 'Not quite. Check the spelling and try again, or double-tap the card to reveal.';
+      answer.focus();
+      if (!motionReduced()) answer.animate?.([{transform:'translateX(0)'},{transform:'translateX(-5px)'},{transform:'translateX(5px)'},{transform:'translateX(0)'}],{duration:220});
+    }
+  } else if (event.target.id === 'schedule-form') {
+    event.preventDefault();
+    const input = $('#settings-update-time');
+    if (!validUpdateTime(input.value)) { input.reportValidity(); return; }
+    preferences = updateStore({updateTime:input.value});
+    calculateDaily();
+    renderApp({scroll:false});
+    $('#schedule-feedback').textContent = `${nextWordLabel()} · ${schedule.timezone.replaceAll('_',' ')}`;
+    $('#schedule-form button[type="submit"]').focus({preventScroll:true});
+    toast(storageAvailable ? `Daily rhythm saved: ${preferences.updateTime}, in your device’s timezone.` : 'Browser storage is unavailable. This schedule lasts for this visit only.');
+  }
+});
+
+function surfaceFrom(event) {
+  if (event.target.closest('button,a,input,select,textarea,label,form')) return null;
+  return event.target.closest('[data-flip-surface]');
+}
+
+document.addEventListener('dblclick', event => {
+  if (performance.now() < ignoreDoubleClickUntil || !surfaceFrom(event)) return;
+  event.preventDefault();
+  if (currentWord) flipCard(!isHidden(currentWord));
+});
+
+document.addEventListener('pointerup', event => {
+  if (event.pointerType !== 'touch' || !event.isPrimary) return;
+  const surface = surfaceFrom(event);
+  if (!surface || !currentWord) { lastTouch = null; return; }
+  const now = performance.now();
+  const tap = {id:currentWord.id, face:surface.dataset.flipSurface, at:now, x:event.clientX, y:event.clientY};
+  if (lastTouch && lastTouch.id === tap.id && lastTouch.face === tap.face && now-lastTouch.at <= 380 && Math.hypot(tap.x-lastTouch.x,tap.y-lastTouch.y)<30) {
+    event.preventDefault();
+    ignoreDoubleClickUntil = now + 650;
+    lastTouch = null;
+    flipCard(!isHidden(currentWord));
+  } else lastTouch = tap;
 });
 
 $('#begin-button').addEventListener('click', () => {
   const selected = [...onboarding.querySelectorAll('input[name="onboarding"]:checked')].map(input => input.value);
   if (!selected.length) return;
-  preferences = updateStore({interests: selected, onboarded: true});
+  const timeInput = $('#onboarding-update-time');
+  if (!validUpdateTime(timeInput.value)) { timeInput.reportValidity(); return; }
+  preferences = updateStore({interests: selected, updateTime:timeInput.value, onboarded: true});
   calculateDaily();
   onboarding.close();
   renderApp();
@@ -423,11 +568,14 @@ window.addEventListener('beforeinstallprompt', event => {
 });
 
 function checkDay() {
-  if (!catalog || dateInTimezone(catalog.timezone) === today) return;
+  if (!catalog) return;
+  const latest = dailySchedule(deviceTimezone(catalog.timezone),preferences.updateTime);
+  if (latest.date === schedule.date && latest.calendarDate === today && latest.timezone === schedule.timezone) return;
+  const previousWord = dailyWord?.id;
   calculateDaily();
   renderFooter();
   renderApp({scroll: false});
-  toast('A new day. A new word to make your own.');
+  if (dailyWord?.id !== previousWord) toast('A new day. A new word to make your own.');
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) checkDay(); });
 setInterval(checkDay, 30000);
@@ -440,6 +588,7 @@ function sanitizePreferences() {
     interests,
     saved: preferences.saved.filter(id => wordIds.has(id)),
     history: preferences.history.filter(item => wordIds.has(item.id)),
+    hiddenWords: preferences.hiddenWords.filter(id => wordIds.has(id)),
     onboarded: preferences.onboarded && interests.length > 0,
   });
 }

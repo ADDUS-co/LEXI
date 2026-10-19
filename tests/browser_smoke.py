@@ -52,7 +52,7 @@ def run():
     with sync_playwright() as p:
         executable = os.environ.get("CHROMIUM_PATH") or shutil.which("chromium") or shutil.which("google-chrome")
         browser = p.chromium.launch(executable_path=executable, args=["--no-sandbox", "--disable-dev-shm-usage"])
-        context = browser.new_context(viewport={"width": 1440, "height": 1000}, service_workers="block", permissions=["clipboard-read", "clipboard-write"])
+        context = browser.new_context(viewport={"width": 1440, "height": 1000}, service_workers="block", timezone_id="Asia/Bishkek", permissions=["clipboard-read", "clipboard-write"])
         page = context.new_page()
         errors = []
         page.on("pageerror", lambda error: errors.append(str(error)))
@@ -60,6 +60,7 @@ def run():
         expect(page.locator("#onboarding-dialog")).to_be_visible()
         check(page.locator("#begin-button").is_disabled(), "First visit requires at least one interest")
         check(state(page)["history"] == [], "Onboarding preview does not record a word")
+        page.locator("#onboarding-update-time").fill("00:00")
         for collection in ("law", "technology"):
             page.locator(f'input[name="onboarding"][value="{collection}"]').check()
         page.locator("#begin-button").click()
@@ -228,7 +229,7 @@ def run():
         page.goto(BASE,wait_until="networkidle")
         page.evaluate("navigator.serviceWorker.ready")
         page.wait_for_function("navigator.serviceWorker.controller !== null")
-        page.wait_for_function("async()=>Boolean(await (await caches.open('lexi-shell-v1')).match('/api/catalog'))")
+        page.wait_for_function("async()=>Boolean(await (await caches.open('lexi-shell-v2')).match('/api/catalog'))")
         before = page.locator("#daily-word").inner_text()
         context.set_offline(True)
         page.reload(wait_until="networkidle")

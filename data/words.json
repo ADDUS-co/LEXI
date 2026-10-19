@@ -1228,5 +1228,965 @@
       "label": "Wiktionary · further reading",
       "url": "https://en.wiktionary.org/wiki/balance#English"
     }
+  },
+  {
+    "id": "ielts-coherent",
+    "collectionId": "ielts",
+    "word": "Coherent",
+    "partOfSpeech": "adjective",
+    "ipa": "/kəʊˈhɪə.rənt/",
+    "shortDefinition": "Clear and logical, with ideas that fit together well.",
+    "fullDefinition": "A coherent argument, explanation, or piece of writing has ideas that connect in an understandable and logically consistent way. Its parts support an overall meaning rather than appearing as unrelated statements.",
+    "simpleExplanation": "The ideas make sense together, and the reader can follow the connection between them.",
+    "synonyms": [
+      {
+        "word": "logical",
+        "definition": "Following a reasonable sequence of ideas; it emphasizes reasoning."
+      },
+      {
+        "word": "consistent",
+        "definition": "Not contradicting itself; something consistent may still be unclear."
+      }
+    ],
+    "examples": [
+      "The essay presents a coherent argument for investing in public transport.",
+      "Group related points into paragraphs to make your explanation more coherent."
+    ],
+    "relatedWords": [
+      {
+        "word": "cohesion",
+        "definition": "Connections between parts of a text, such as references and linking expressions."
+      },
+      {
+        "word": "argument",
+        "definition": "Reasons and evidence offered in support of a position."
+      }
+    ],
+    "usageNote": "Coherence concerns the overall meaning. Adding linking words alone does not make an argument coherent.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/coherent#English"
+    }
+  },
+  {
+    "id": "ielts-substantial",
+    "collectionId": "ielts",
+    "word": "Substantial",
+    "partOfSpeech": "adjective",
+    "ipa": "/səbˈstæn.ʃəl/",
+    "shortDefinition": "Large or important enough to deserve attention.",
+    "fullDefinition": "Substantial describes an amount, degree, or effect that is considerable rather than small. It can also describe something solid or strongly supported, depending on the context.",
+    "simpleExplanation": "It is a meaningful amount or change, not just a small difference.",
+    "synonyms": [
+      {
+        "word": "considerable",
+        "definition": "Large in amount, extent, or importance."
+      },
+      {
+        "word": "significant",
+        "definition": "Important or meaningful; in statistics it has a more specific technical meaning."
+      }
+    ],
+    "examples": [
+      "The city reported a substantial increase in bicycle journeys.",
+      "The plan would require substantial investment in training."
+    ],
+    "relatedWords": [
+      {
+        "word": "proportion",
+        "definition": "The relationship of one amount or part to a whole."
+      },
+      {
+        "word": "investment",
+        "definition": "The use of money, time, or resources with an expectation of future benefit."
+      }
+    ],
+    "usageNote": "Useful combinations include substantial increase, substantial evidence, and substantial investment.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/substantial#English"
+    }
+  },
+  {
+    "id": "ielts-consequently",
+    "collectionId": "ielts",
+    "word": "Consequently",
+    "partOfSpeech": "adverb",
+    "ipa": "/ˈkɒn.sɪ.kwənt.li/",
+    "shortDefinition": "As a result of something that has just been described.",
+    "fullDefinition": "Consequently introduces an outcome that follows from an earlier event, situation, or line of reasoning. It makes a cause-and-result relationship explicit and is common in formal writing.",
+    "simpleExplanation": "One thing happened, and this next thing happened because of it.",
+    "synonyms": [
+      {
+        "word": "therefore",
+        "definition": "For that reason; often introduces a logical conclusion."
+      },
+      {
+        "word": "as a result",
+        "definition": "A common phrase introducing an effect or consequence."
+      }
+    ],
+    "examples": [
+      "Demand fell sharply; consequently, the company reduced production.",
+      "The bus service was improved. Consequently, more residents chose public transport."
+    ],
+    "relatedWords": [
+      {
+        "word": "consequence",
+        "definition": "A result or effect of an action or situation."
+      },
+      {
+        "word": "causation",
+        "definition": "The relationship in which one event or condition produces another."
+      }
+    ],
+    "usageNote": "Do not confuse consequently, meaning as a result, with subsequently, meaning later in time.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/consequently#English"
+    }
+  },
+  {
+    "id": "ielts-mitigate",
+    "collectionId": "ielts",
+    "word": "Mitigate",
+    "partOfSpeech": "verb",
+    "ipa": "/ˈmɪt.ɪ.ɡeɪt/",
+    "shortDefinition": "To make a harmful effect or difficult situation less severe.",
+    "fullDefinition": "To mitigate something is to reduce its severity, seriousness, or damaging effects. Mitigation limits harm; it does not necessarily remove the underlying problem or prevent it entirely.",
+    "simpleExplanation": "You cannot always remove a problem, but you can make its effects less harmful.",
+    "synonyms": [
+      {
+        "word": "alleviate",
+        "definition": "To ease pain, difficulty, or suffering."
+      },
+      {
+        "word": "reduce",
+        "definition": "To make something smaller in amount or degree; a broader word."
+      }
+    ],
+    "examples": [
+      "Planting trees can help mitigate the effects of urban heat.",
+      "The policy aims to mitigate the impact of rising energy costs."
+    ],
+    "relatedWords": [
+      {
+        "word": "impact",
+        "definition": "An effect or influence that one thing has on another."
+      },
+      {
+        "word": "adaptation",
+        "definition": "An adjustment made in response to conditions or change."
+      }
+    ],
+    "usageNote": "Mitigate is usually transitive: mitigate a risk or mitigate an effect. Avoid adding against in this meaning.",
+    "difficulty": "C1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/mitigate#English"
+    }
+  },
+  {
+    "id": "ielts-feasible",
+    "collectionId": "ielts",
+    "word": "Feasible",
+    "partOfSpeech": "adjective",
+    "ipa": "/ˈfiː.zə.bəl/",
+    "shortDefinition": "Possible to carry out successfully under the circumstances.",
+    "fullDefinition": "A feasible plan or proposal can realistically be put into practice with the available resources and conditions. Something may be technically possible without being financially or practically feasible.",
+    "simpleExplanation": "It is a plan that could actually work with the time, money, and resources you have.",
+    "synonyms": [
+      {
+        "word": "practicable",
+        "definition": "Capable of being carried out in practice."
+      },
+      {
+        "word": "viable",
+        "definition": "Able to work or continue successfully, especially over time."
+      }
+    ],
+    "examples": [
+      "A pilot study will test whether the proposal is feasible.",
+      "The longer route is not financially feasible for a small operator."
+    ],
+    "relatedWords": [
+      {
+        "word": "constraint",
+        "definition": "A limit that restricts what can be done."
+      },
+      {
+        "word": "feasibility",
+        "definition": "The extent to which a proposal can realistically be carried out."
+      }
+    ],
+    "usageNote": "Feasible describes whether something can be done; desirable describes whether doing it would be a good idea.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/feasible#English"
+    }
+  },
+  {
+    "id": "ielts-perspective",
+    "collectionId": "ielts",
+    "word": "Perspective",
+    "partOfSpeech": "noun",
+    "ipa": "/pəˈspek.tɪv/",
+    "shortDefinition": "A particular way of understanding or considering something.",
+    "fullDefinition": "A perspective is a viewpoint shaped by a person’s experiences, assumptions, or position. Considering different perspectives can reveal how the same situation is understood in different ways.",
+    "simpleExplanation": "It is the angle from which you look at an idea or situation.",
+    "synonyms": [
+      {
+        "word": "viewpoint",
+        "definition": "A particular opinion or position from which something is considered."
+      },
+      {
+        "word": "outlook",
+        "definition": "A general attitude toward life or a situation, often including expectations."
+      }
+    ],
+    "examples": [
+      "The discussion considers the issue from an economic perspective.",
+      "Living abroad gave her a different perspective on education."
+    ],
+    "relatedWords": [
+      {
+        "word": "assumption",
+        "definition": "An idea accepted as a starting point for reasoning."
+      },
+      {
+        "word": "evaluation",
+        "definition": "The process of examining the value or quality of something."
+      }
+    ],
+    "usageNote": "Use from a perspective, for example from a social perspective. A different perspective is not automatically a different fact.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/perspective#English"
+    }
+  },
+  {
+    "id": "science-hypothesis",
+    "collectionId": "science",
+    "word": "Hypothesis",
+    "partOfSpeech": "noun",
+    "ipa": "/haɪˈpɒθ.ə.sɪs/",
+    "shortDefinition": "A proposed explanation that can be investigated through evidence.",
+    "fullDefinition": "A scientific hypothesis is a tentative explanation or proposed relationship that can be examined using observation or experiment. Evidence may support it or lead researchers to revise or reject it.",
+    "simpleExplanation": "It is an idea about how something works that you can test.",
+    "synonyms": [
+      {
+        "word": "proposition",
+        "definition": "A statement put forward for consideration or investigation."
+      },
+      {
+        "word": "conjecture",
+        "definition": "An idea formed with incomplete evidence; it need not be scientifically testable."
+      }
+    ],
+    "examples": [
+      "The researchers designed an experiment to test their hypothesis.",
+      "The results did not support the original hypothesis."
+    ],
+    "relatedWords": [
+      {
+        "word": "evidence",
+        "definition": "Information used to assess whether a claim is supported."
+      },
+      {
+        "word": "experiment",
+        "definition": "A planned investigation used to test an idea or observe an effect."
+      }
+    ],
+    "usageNote": "The plural is hypotheses. A scientific theory is a broader explanatory framework, not simply an untested guess.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/hypothesis#English"
+    }
+  },
+  {
+    "id": "science-ecosystem",
+    "collectionId": "science",
+    "word": "Ecosystem",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈiː.kəʊˌsɪs.təm/",
+    "shortDefinition": "A community of organisms interacting with their physical environment.",
+    "fullDefinition": "An ecosystem includes living organisms and the nonliving parts of their environment, connected through interactions such as energy flow and nutrient cycling. Ecosystems may be described at different scales.",
+    "simpleExplanation": "Plants, animals, other living things, water, soil, and air form a connected system.",
+    "synonyms": [
+      {
+        "word": "ecological system",
+        "definition": "A system of interactions between organisms and their surroundings."
+      },
+      {
+        "word": "habitat",
+        "definition": "The place where an organism lives; it is not the whole network of ecosystem interactions."
+      }
+    ],
+    "examples": [
+      "Wetlands support a rich and complex ecosystem.",
+      "A change in water quality can affect the entire ecosystem."
+    ],
+    "relatedWords": [
+      {
+        "word": "organism",
+        "definition": "An individual living thing."
+      },
+      {
+        "word": "nutrient",
+        "definition": "A substance that organisms need for growth and other life processes."
+      }
+    ],
+    "usageNote": "An ecosystem includes nonliving conditions as well as living organisms.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/ecosystem#English"
+    }
+  },
+  {
+    "id": "science-biodiversity",
+    "collectionId": "science",
+    "word": "Biodiversity",
+    "partOfSpeech": "noun",
+    "ipa": "/ˌbaɪ.əʊ.daɪˈvɜː.sə.ti/",
+    "shortDefinition": "The variety of living things, including diversity within and between species.",
+    "fullDefinition": "Biodiversity describes variation in life at levels including genes, species, and ecosystems. It includes the differences within species as well as the variety of species and ecological systems.",
+    "simpleExplanation": "It is the many different forms of life and the differences among them.",
+    "synonyms": [
+      {
+        "word": "biological diversity",
+        "definition": "The full expression for the variety of life at multiple levels."
+      },
+      {
+        "word": "species richness",
+        "definition": "The number of different species in an area; one aspect of biodiversity."
+      }
+    ],
+    "examples": [
+      "The survey documents biodiversity in the forest.",
+      "Protecting a range of habitats can help conserve biodiversity."
+    ],
+    "relatedWords": [
+      {
+        "word": "conservation",
+        "definition": "The protection and careful management of natural environments and resources."
+      },
+      {
+        "word": "species",
+        "definition": "A biological grouping of organisms; its precise definition varies by context."
+      }
+    ],
+    "usageNote": "Biodiversity is broader than simply counting the number of species.",
+    "difficulty": "C1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/biodiversity#English"
+    }
+  },
+  {
+    "id": "science-sustainable",
+    "collectionId": "science",
+    "word": "Sustainable",
+    "partOfSpeech": "adjective",
+    "ipa": "/səˈsteɪ.nə.bəl/",
+    "shortDefinition": "Able to continue over time without exhausting the resources it depends on.",
+    "fullDefinition": "Sustainable describes an activity or system that can be maintained over time. In environmental contexts, it emphasizes using resources in ways that limit lasting depletion and harm while considering future needs.",
+    "simpleExplanation": "It can keep working without using up or damaging the things that make it possible.",
+    "synonyms": [
+      {
+        "word": "maintainable",
+        "definition": "Able to be continued or kept in a suitable condition."
+      },
+      {
+        "word": "lasting",
+        "definition": "Continuing for a long time, without necessarily being environmentally responsible."
+      }
+    ],
+    "examples": [
+      "The region is exploring more sustainable ways to manage water.",
+      "A sustainable workload leaves time for rest and recovery."
+    ],
+    "relatedWords": [
+      {
+        "word": "renewable",
+        "definition": "Capable of being replenished naturally on a relevant timescale."
+      },
+      {
+        "word": "resource",
+        "definition": "Something available for use in meeting a need or achieving a goal."
+      }
+    ],
+    "usageNote": "A sustainability claim needs context and evidence; a green label alone does not establish it.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/sustainable#English"
+    }
+  },
+  {
+    "id": "science-adaptation",
+    "collectionId": "science",
+    "word": "Adaptation",
+    "partOfSpeech": "noun",
+    "ipa": "/ˌæd.æpˈteɪ.ʃən/",
+    "shortDefinition": "An adjustment to conditions, or a feature associated with survival and reproduction.",
+    "fullDefinition": "Adaptation can describe adjustment to changed conditions. In evolutionary biology, it also describes a heritable feature shaped by natural selection that contributes to survival or reproduction in a particular environment.",
+    "simpleExplanation": "It is a change or feature that helps something fit the conditions around it.",
+    "synonyms": [
+      {
+        "word": "adjustment",
+        "definition": "A change made in response to circumstances."
+      },
+      {
+        "word": "acclimatization",
+        "definition": "An individual organism’s adjustment to environmental conditions, rather than evolutionary change across generations."
+      }
+    ],
+    "examples": [
+      "The project studies adaptation to changing rainfall patterns.",
+      "Camouflage can be an adaptation that helps an animal avoid predators."
+    ],
+    "relatedWords": [
+      {
+        "word": "natural selection",
+        "definition": "A process in which inherited differences affect reproductive success."
+      },
+      {
+        "word": "environment",
+        "definition": "The surrounding conditions in which an organism or system exists."
+      }
+    ],
+    "usageNote": "In biology, evolutionary adaptation and an individual’s short-term acclimatization are different concepts.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/adaptation#English"
+    }
+  },
+  {
+    "id": "science-empirical",
+    "collectionId": "science",
+    "word": "Empirical",
+    "partOfSpeech": "adjective",
+    "ipa": "/ɪmˈpɪr.ɪ.kəl/",
+    "shortDefinition": "Based on observation, measurement, or experience rather than theory alone.",
+    "fullDefinition": "Empirical information is obtained through observation or experience, including systematic measurements and experiments. Empirical evidence informs the evaluation of a claim, but its quality and interpretation still require scrutiny.",
+    "simpleExplanation": "It comes from observing or measuring what happens in the real world.",
+    "synonyms": [
+      {
+        "word": "observational",
+        "definition": "Based on observing events or conditions."
+      },
+      {
+        "word": "experimental",
+        "definition": "Related to controlled testing; experiments are one way to obtain empirical evidence."
+      }
+    ],
+    "examples": [
+      "The proposal needs stronger empirical evidence.",
+      "The study compares a theoretical prediction with empirical observations."
+    ],
+    "relatedWords": [
+      {
+        "word": "measurement",
+        "definition": "The process of determining an amount or characteristic using a defined method."
+      },
+      {
+        "word": "theoretical",
+        "definition": "Concerned with ideas and explanations, rather than direct observation alone."
+      }
+    ],
+    "usageNote": "Empirical does not mean infallible. Methods, sampling, and uncertainty still matter.",
+    "difficulty": "C1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/empirical#English"
+    }
+  },
+  {
+    "id": "psychology-cognition",
+    "collectionId": "psychology",
+    "word": "Cognition",
+    "partOfSpeech": "noun",
+    "ipa": "/kɒɡˈnɪʃ.ən/",
+    "shortDefinition": "Mental processes involved in knowing, learning, and understanding.",
+    "fullDefinition": "Cognition refers to mental activities such as attention, memory, reasoning, language, and problem-solving. The term describes a range of information-processing functions rather than one single ability.",
+    "simpleExplanation": "It is how the mind takes in information, makes sense of it, and uses it.",
+    "synonyms": [
+      {
+        "word": "thinking",
+        "definition": "Mental activity involving ideas or reasoning; commonly used more narrowly than cognition."
+      },
+      {
+        "word": "mental processing",
+        "definition": "Activities through which information is perceived, organized, or used."
+      }
+    ],
+    "examples": [
+      "The research examines the relationship between sleep and cognition.",
+      "Memory is one aspect of cognition."
+    ],
+    "relatedWords": [
+      {
+        "word": "attention",
+        "definition": "The selection and focus of mental resources."
+      },
+      {
+        "word": "memory",
+        "definition": "Processes involved in retaining and retrieving information."
+      }
+    ],
+    "usageNote": "Cognition covers more than conscious reasoning; it also includes processes such as perception and memory.",
+    "difficulty": "C1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/cognition#English"
+    }
+  },
+  {
+    "id": "psychology-empathy",
+    "collectionId": "psychology",
+    "word": "Empathy",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈem.pə.θi/",
+    "shortDefinition": "The ability to understand or share another person’s feelings or perspective.",
+    "fullDefinition": "Empathy involves understanding another person’s experience and may include sharing aspects of their emotional state. It can support considerate interaction without requiring agreement with the person’s views or actions.",
+    "simpleExplanation": "You try to understand what another person is experiencing and how it feels to them.",
+    "synonyms": [
+      {
+        "word": "understanding",
+        "definition": "Awareness of another person’s situation or feelings; a broader term."
+      },
+      {
+        "word": "sympathy",
+        "definition": "Concern for another person’s difficulty, without necessarily sharing or understanding their experience in the same way."
+      }
+    ],
+    "examples": [
+      "Listening carefully can help you respond with empathy.",
+      "The novel encourages empathy for people with different experiences."
+    ],
+    "relatedWords": [
+      {
+        "word": "compassion",
+        "definition": "Concern for suffering that may include a wish to help."
+      },
+      {
+        "word": "perspective-taking",
+        "definition": "Trying to understand a situation from another person’s point of view."
+      }
+    ],
+    "usageNote": "Empathy does not require approving of someone’s behavior or assuming you know exactly how they feel.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/empathy#English"
+    }
+  },
+  {
+    "id": "psychology-perception",
+    "collectionId": "psychology",
+    "word": "Perception",
+    "partOfSpeech": "noun",
+    "ipa": "/pəˈsep.ʃən/",
+    "shortDefinition": "The process of interpreting sensory information, or a way of understanding something.",
+    "fullDefinition": "Perception involves organizing and interpreting information received through the senses. In everyday language, a perception can also be a belief or impression about a person, situation, or idea.",
+    "simpleExplanation": "It is how you make sense of what you notice, and sometimes the impression you form.",
+    "synonyms": [
+      {
+        "word": "interpretation",
+        "definition": "The meaning someone gives to information or an experience."
+      },
+      {
+        "word": "impression",
+        "definition": "An idea or feeling formed about something, often without detailed analysis."
+      }
+    ],
+    "examples": [
+      "Lighting can influence our perception of color.",
+      "The survey measured public perceptions of the new policy."
+    ],
+    "relatedWords": [
+      {
+        "word": "sensation",
+        "definition": "The detection or experience of sensory stimulation."
+      },
+      {
+        "word": "bias",
+        "definition": "A systematic tendency that can influence judgment or interpretation."
+      }
+    ],
+    "usageNote": "Perception and reality are not always identical; an impression may need to be checked against evidence.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/perception#English"
+    }
+  },
+  {
+    "id": "psychology-motivation",
+    "collectionId": "psychology",
+    "word": "Motivation",
+    "partOfSpeech": "noun",
+    "ipa": "/ˌməʊ.tɪˈveɪ.ʃən/",
+    "shortDefinition": "The processes or reasons that encourage and direct action.",
+    "fullDefinition": "Motivation refers to factors that initiate, guide, and sustain behavior. It may involve personal interest, goals, needs, rewards, or social influences, and it can change over time and across situations.",
+    "simpleExplanation": "It is what helps you start doing something and gives you a reason to continue.",
+    "synonyms": [
+      {
+        "word": "incentive",
+        "definition": "Something that encourages a particular action, such as a reward."
+      },
+      {
+        "word": "drive",
+        "definition": "A strong internal push toward a goal or activity."
+      }
+    ],
+    "examples": [
+      "Curiosity was her main motivation for studying the topic.",
+      "Small, achievable goals can support motivation."
+    ],
+    "relatedWords": [
+      {
+        "word": "intrinsic",
+        "definition": "Arising from an activity’s own interest or satisfaction."
+      },
+      {
+        "word": "goal",
+        "definition": "A result or state that someone is trying to achieve."
+      }
+    ],
+    "usageNote": "Motivation is not a fixed personality trait, and low motivation has many possible explanations.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/motivation#English"
+    }
+  },
+  {
+    "id": "psychology-habit",
+    "collectionId": "psychology",
+    "word": "Habit",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈhæb.ɪt/",
+    "shortDefinition": "A learned behavior repeated regularly, often with little conscious thought.",
+    "fullDefinition": "A habit is a pattern of behavior that becomes familiar through repetition and may be triggered by a recurring context or cue. Habits can be helpful, neutral, or unhelpful depending on their effects.",
+    "simpleExplanation": "It is something you do so often that you may start doing it almost automatically.",
+    "synonyms": [
+      {
+        "word": "routine",
+        "definition": "A regular sequence of activities, which may still require deliberate attention."
+      },
+      {
+        "word": "practice",
+        "definition": "An activity performed regularly; it may be intentional rather than automatic."
+      }
+    ],
+    "examples": [
+      "Reading one word with breakfast became a habit.",
+      "She noticed a habit of checking her phone during short breaks."
+    ],
+    "relatedWords": [
+      {
+        "word": "cue",
+        "definition": "A signal or context that can prompt a response."
+      },
+      {
+        "word": "repetition",
+        "definition": "The act of doing or encountering something again."
+      }
+    ],
+    "usageNote": "There is no single fixed number of days in which everyone forms a habit.",
+    "difficulty": "B1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/habit#English"
+    }
+  },
+  {
+    "id": "psychology-introspection",
+    "collectionId": "psychology",
+    "word": "Introspection",
+    "partOfSpeech": "noun",
+    "ipa": "/ˌɪn.trəˈspek.ʃən/",
+    "shortDefinition": "The examination of your own thoughts, feelings, and mental experiences.",
+    "fullDefinition": "Introspection is attention directed toward one’s own internal experiences, including thoughts and feelings. It can contribute to self-understanding, although people do not have perfect access to every cause of their behavior.",
+    "simpleExplanation": "You pause to look inward and consider what you are thinking or feeling.",
+    "synonyms": [
+      {
+        "word": "self-reflection",
+        "definition": "Deliberate thought about one’s experiences, actions, or values."
+      },
+      {
+        "word": "self-examination",
+        "definition": "Careful consideration of one’s own attitudes, motives, or conduct."
+      }
+    ],
+    "examples": [
+      "Writing a journal gave her time for introspection.",
+      "The question invited a moment of quiet introspection."
+    ],
+    "relatedWords": [
+      {
+        "word": "self-awareness",
+        "definition": "Awareness of aspects of one’s own experience or behavior."
+      },
+      {
+        "word": "reflection",
+        "definition": "Careful thought about an experience or idea."
+      }
+    ],
+    "usageNote": "Introspection can be useful without being a complete or perfectly reliable explanation of behavior.",
+    "difficulty": "C1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/introspection#English"
+    }
+  },
+  {
+    "id": "culture-heritage",
+    "collectionId": "culture",
+    "word": "Heritage",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈher.ɪ.tɪdʒ/",
+    "shortDefinition": "Traditions, places, objects, or practices passed down from earlier generations.",
+    "fullDefinition": "Heritage includes cultural or natural features valued as an inheritance from the past. Cultural heritage can be tangible, such as buildings and objects, or intangible, such as language, music, and practices.",
+    "simpleExplanation": "It is what earlier generations pass on and what people choose to value and preserve.",
+    "synonyms": [
+      {
+        "word": "inheritance",
+        "definition": "Something received from those who came before; often refers to property."
+      },
+      {
+        "word": "tradition",
+        "definition": "An established practice or belief passed between generations, forming one part of heritage."
+      }
+    ],
+    "examples": [
+      "The museum celebrates the region’s cultural heritage.",
+      "Local communities play an important role in preserving living heritage."
+    ],
+    "relatedWords": [
+      {
+        "word": "preservation",
+        "definition": "Protecting something from loss, damage, or unwanted change."
+      },
+      {
+        "word": "identity",
+        "definition": "The characteristics through which a person or group understands or expresses who they are."
+      }
+    ],
+    "usageNote": "Heritage can include living practices, not only old buildings or objects.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/heritage#English"
+    }
+  },
+  {
+    "id": "culture-composition",
+    "collectionId": "culture",
+    "word": "Composition",
+    "partOfSpeech": "noun",
+    "ipa": "/ˌkɒm.pəˈzɪʃ.ən/",
+    "shortDefinition": "The arrangement of elements in a work, or a piece of music or writing.",
+    "fullDefinition": "In the arts, composition describes how parts are organized into a whole, such as shapes in a painting or sounds in music. The word can also refer to the act of creating a work or the finished work itself.",
+    "simpleExplanation": "It is how the different parts of an artwork are put together.",
+    "synonyms": [
+      {
+        "word": "arrangement",
+        "definition": "The way elements are positioned or organized."
+      },
+      {
+        "word": "structure",
+        "definition": "The relationships between the parts of a whole."
+      }
+    ],
+    "examples": [
+      "The painting’s composition directs attention toward the open window.",
+      "The ensemble performed a new composition for strings."
+    ],
+    "relatedWords": [
+      {
+        "word": "contrast",
+        "definition": "A noticeable difference between elements, such as light and dark."
+      },
+      {
+        "word": "rhythm",
+        "definition": "A pattern of timing, movement, or repetition."
+      }
+    ],
+    "usageNote": "In another context, composition can mean what a substance or group is made of.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/composition#English"
+    }
+  },
+  {
+    "id": "culture-narrative",
+    "collectionId": "culture",
+    "word": "Narrative",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈnær.ə.tɪv/",
+    "shortDefinition": "An account that connects events into a story.",
+    "fullDefinition": "A narrative is a spoken, written, or otherwise represented account of events. It includes choices about sequence, viewpoint, and emphasis, shaping how the events are understood rather than simply listing them.",
+    "simpleExplanation": "It is a story and the way that story is told.",
+    "synonyms": [
+      {
+        "word": "story",
+        "definition": "An account of events, real or imagined; a more everyday term."
+      },
+      {
+        "word": "account",
+        "definition": "A description or report of events, which may be less deliberately structured as a story."
+      }
+    ],
+    "examples": [
+      "The novel moves between two different narratives.",
+      "The exhibition challenges a familiar narrative about the city’s history."
+    ],
+    "relatedWords": [
+      {
+        "word": "viewpoint",
+        "definition": "The position from which a story or situation is presented."
+      },
+      {
+        "word": "chronology",
+        "definition": "The order of events in time."
+      }
+    ],
+    "usageNote": "A narrative can describe real events or fiction. The word alone does not tell you whether it is accurate.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/narrative#English"
+    }
+  },
+  {
+    "id": "culture-aesthetic",
+    "collectionId": "culture",
+    "word": "Aesthetic",
+    "partOfSpeech": "adjective",
+    "ipa": "/esˈθet.ɪk/",
+    "shortDefinition": "Related to beauty, artistic qualities, or the experience of appearance.",
+    "fullDefinition": "Aesthetic concerns the qualities through which something is perceived or appreciated as art or as an experience of appearance. It can describe visual choices, artistic judgment, or principles of beauty.",
+    "simpleExplanation": "It is about how something looks or feels as an artistic experience.",
+    "synonyms": [
+      {
+        "word": "artistic",
+        "definition": "Related to art or creative expression; broader than appearance alone."
+      },
+      {
+        "word": "visual",
+        "definition": "Related to sight; not all aesthetic experience is exclusively visual."
+      }
+    ],
+    "examples": [
+      "The architect balanced practical needs with aesthetic considerations.",
+      "The collection has a clear and consistent aesthetic character."
+    ],
+    "relatedWords": [
+      {
+        "word": "aesthetics",
+        "definition": "The study or principles of beauty, art, and appreciation."
+      },
+      {
+        "word": "style",
+        "definition": "A recognizable manner of expression or presentation."
+      }
+    ],
+    "usageNote": "As a noun, an aesthetic can mean a particular style or set of artistic principles.",
+    "difficulty": "C1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/aesthetic#English"
+    }
+  },
+  {
+    "id": "culture-interpretation",
+    "collectionId": "culture",
+    "word": "Interpretation",
+    "partOfSpeech": "noun",
+    "ipa": "/ɪnˌtɜː.prɪˈteɪ.ʃən/",
+    "shortDefinition": "An explanation of meaning, or a particular way of presenting a creative work.",
+    "fullDefinition": "An interpretation is the meaning someone gives to a text, image, event, or other material. In performance, it can also describe an artist’s distinctive rendering of a musical or dramatic work.",
+    "simpleExplanation": "It is how someone understands a work, or how they choose to bring it to life.",
+    "synonyms": [
+      {
+        "word": "reading",
+        "definition": "A particular understanding of a text, event, or situation."
+      },
+      {
+        "word": "explanation",
+        "definition": "An account intended to make something understandable."
+      }
+    ],
+    "examples": [
+      "The poem allows more than one interpretation.",
+      "Her interpretation of the final movement was unusually restrained."
+    ],
+    "relatedWords": [
+      {
+        "word": "context",
+        "definition": "Surrounding information that helps explain meaning."
+      },
+      {
+        "word": "performance",
+        "definition": "The presentation of a work through acting, music, or another art."
+      }
+    ],
+    "usageNote": "An interpretation should be supported by relevant details. Multiple interpretations need not be equally well supported.",
+    "difficulty": "B2",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/interpretation#English"
+    }
+  },
+  {
+    "id": "culture-craftsmanship",
+    "collectionId": "culture",
+    "word": "Craftsmanship",
+    "partOfSpeech": "noun",
+    "ipa": "/ˈkrɑːfts.mən.ʃɪp/",
+    "shortDefinition": "The skill and care shown in making something well.",
+    "fullDefinition": "Craftsmanship is the quality of skilled work demonstrated in the making of an object or creative product. It emphasizes care, technical ability, and attention to how materials and details are handled.",
+    "simpleExplanation": "It is the care and ability you can notice in something that has been made well.",
+    "synonyms": [
+      {
+        "word": "workmanship",
+        "definition": "The quality of the work involved in making or repairing something."
+      },
+      {
+        "word": "skill",
+        "definition": "The ability to do something well; a wider term than skilled making."
+      }
+    ],
+    "examples": [
+      "The cabinet is admired for its careful craftsmanship.",
+      "The film combines inventive storytelling with meticulous craftsmanship."
+    ],
+    "relatedWords": [
+      {
+        "word": "artisan",
+        "definition": "A person who practices a skilled craft."
+      },
+      {
+        "word": "technique",
+        "definition": "A method or practical skill used to achieve a result."
+      }
+    ],
+    "usageNote": "Craftsmanship refers to quality of making, not automatically to age, price, or whether an object was made entirely by hand.",
+    "difficulty": "C1",
+    "source": {
+      "label": "Wiktionary · further reading",
+      "url": "https://en.wiktionary.org/wiki/craftsmanship#English"
+    }
   }
 ]

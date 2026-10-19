@@ -1,6 +1,6 @@
 """LEXI: run locally with `python app.py`, or use `gunicorn app:app`."""
 
-from datetime import datetime
+from datetime import datetime, timezone as utc_timezone
 import os
 from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -9,6 +9,7 @@ from flask import Flask, jsonify, render_template, request, send_from_directory
 
 from lexi.catalog import load_catalog
 from lexi.selection import EPOCH, select_word
+from lexi.schedule import daily_schedule
 
 ROOT = Path(__file__).resolve().parent
 
@@ -51,10 +52,16 @@ def create_app(test_config=None):
         selected = request.args.get("collections")
         selected_ids = selected.split(",") if selected is not None else [item["id"] for item in data["collections"]]
         try:
-            word = select_word(data["collections"], data["words"], selected_ids, data["today"])
+            schedule = daily_schedule(
+                datetime.now(utc_timezone.utc), request.args.get("timezone", data["timezone"]),
+                request.args.get("update_time", "00:00"),
+            )
+            word = select_word(data["collections"], data["words"], selected_ids, schedule["date"])
+        except ZoneInfoNotFoundError:
+            return jsonify(error="Choose a valid IANA timezone, such as Europe/London."), 400
         except ValueError as error:
             return jsonify(error=str(error)), 400
-        response = jsonify(word=word, date=data["today"], timezone=data["timezone"])
+        response = jsonify(word=word, **schedule)
         response.headers["Cache-Control"] = "no-store"
         return response
 

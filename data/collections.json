@@ -1,8 +1,56 @@
 [
-  {"id": "law", "name": "Law & Legal English", "description": "The language of rights, reason, and the rules that shape our world.", "icon": "scales"},
-  {"id": "travel", "name": "Transport & Travel", "description": "For unfamiliar places, new routes, and a world worth exploring.", "icon": "compass"},
-  {"id": "technology", "name": "Technology", "description": "Understand the ideas and systems moving the future forward.", "icon": "chip"},
-  {"id": "business", "name": "Business", "description": "Make room for bigger ideas, better conversations, and new possibilities.", "icon": "chart"},
-  {"id": "lifestyle", "name": "Lifestyle", "description": "A little more meaning in the things you do every day.", "icon": "sun"}
+  {
+    "id": "law",
+    "name": "Law & Legal English",
+    "description": "The language of rights, reason, and the rules that shape our world.",
+    "icon": "scales"
+  },
+  {
+    "id": "travel",
+    "name": "Transport & Travel",
+    "description": "For unfamiliar places, new routes, and a world worth exploring.",
+    "icon": "compass"
+  },
+  {
+    "id": "technology",
+    "name": "Technology",
+    "description": "Understand the ideas and systems moving the future forward.",
+    "icon": "chip"
+  },
+  {
+    "id": "business",
+    "name": "Business",
+    "description": "Make room for bigger ideas, better conversations, and new possibilities.",
+    "icon": "chart"
+  },
+  {
+    "id": "lifestyle",
+    "name": "Lifestyle",
+    "description": "A little more meaning in the things you do every day.",
+    "icon": "sun"
+  },
+  {
+    "id": "ielts",
+    "name": "For IELTS",
+    "description": "Academic vocabulary for clearer arguments, stronger reading, and thoughtful answers.",
+    "icon": "book"
+  },
+  {
+    "id": "science",
+    "name": "Science & Nature",
+    "description": "Explore living systems, scientific thinking, and the planet we share.",
+    "icon": "science"
+  },
+  {
+    "id": "psychology",
+    "name": "Psychology",
+    "description": "Words for the way we think, feel, connect, and understand ourselves.",
+    "icon": "mind"
+  },
+  {
+    "id": "culture",
+    "name": "Arts & Culture",
+    "description": "Discover the language of stories, creative expression, and shared heritage.",
+    "icon": "palette"
+  }
 ]
-
