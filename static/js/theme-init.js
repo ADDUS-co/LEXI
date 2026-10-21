@@ -1,7 +1,7 @@
 // Apply the saved appearance before the first paint. No network or secrets.
 try {
   const owner=Number(localStorage.getItem('lexi:active-account'));
-  const key=Number.isInteger(owner)&&owner>0?`lexi:account:${owner}:v1`:'lexi:v1';
+  const key=Number.isInteger(owner)&&owner>0?`lexi:account:${owner}:v2`:'lexi:v1';
   const saved = JSON.parse(localStorage.getItem(key) || '{}');
   if (['noir', 'studio', 'experimental'].includes(saved.theme)) {
     document.documentElement.dataset.theme = saved.theme;

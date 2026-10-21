@@ -1,6 +1,7 @@
-import {readStore,readGuestStore,replaceStore,switchStore,storageKey,normalizeStore} from './storage.js';
+import {readStore,replaceStore,switchStore,storageKey,normalizeStore} from './storage.js';
 
 const MARKER='lexi:active-account';
+const PROGRESS_VERSION=2;
 const equal=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const historyKey=item=>`${item.id}|${item.date}`;
 
@@ -22,23 +23,13 @@ export function mergeChanges(base,local,remote) {
   return normalizeStore(result);
 }
 
-function importGuestInto(account,guest) {
-  return normalizeStore({...account,
-    saved:[...new Set([...account.saved,...guest.saved])],
-    hiddenWords:[...new Set([...account.hiddenWords,...guest.hiddenWords])],
-    history:[...new Map([...account.history,...guest.history].map(item=>[historyKey(item),item])).values()],
-    interests:account.interests.length?account.interests:guest.interests,
-    onboarded:account.onboarded||guest.onboarded,
-  });
-}
-
 export function createAccountService() {
   let user=null, csrf='', base=normalizeStore({}), revision=0, status='guest';
-  let owner=null, dirty=false, muted=false, timer, inFlight=null, ready=false;
+  let owner=null, identity='', dirty=false, muted=false, timer, inFlight=null, ready=false, authGeneration=0;
   const emit=()=>window.dispatchEvent(new CustomEvent('lexi:accountchange',{detail:{user,status}}));
-  const metaKey=id=>`lexi:sync:${id}`;
+  const metaKey=id=>`lexi:sync:${id}:v2`;
   function readMeta(id) { try{return JSON.parse(localStorage.getItem(metaKey(id))||'null');}catch{return null;} }
-  function saveMeta() { if(owner)try{localStorage.setItem(metaKey(owner),JSON.stringify({base,revision,dirty}));}catch{} }
+  function saveMeta() { if(owner)try{localStorage.setItem(metaKey(owner),JSON.stringify({base,revision,dirty,identity,progressVersion:PROGRESS_VERSION}));}catch{} }
   function marker(id) { try{if(id)localStorage.setItem(MARKER,String(id));else localStorage.removeItem(MARKER);}catch{} }
   function cachedOwner() { try{const id=Number(localStorage.getItem(MARKER));return Number.isInteger(id)&&id>0?id:null;}catch{return null;} }
   function cache(state) { muted=true;replaceStore(state,{notify:false});muted=false; }
@@ -71,42 +62,45 @@ export function createAccountService() {
     clearTimeout(timer);
     if(inFlight)return inFlight;
     if(!user||!dirty||!navigator.onLine)return false;
+    const syncOwner=owner;
     inFlight=(async()=>{
       for(let attempt=0;attempt<4&&dirty&&user;attempt++) {
         const id=user.id, snapshot=readStore();
         try {
-          const result=await request('/state',{method:'PUT',owned:true,ownerId:id,headers:{'Content-Type':'application/json'},body:JSON.stringify({state:snapshot,revision})});
+          const result=await request('/state',{method:'PUT',owned:true,ownerId:id,headers:{'Content-Type':'application/json'},body:JSON.stringify({state:snapshot,revision,progressVersion:PROGRESS_VERSION})});
           if(user?.id!==id||owner!==id)return false;
           base=result.state;revision=result.revision;
           dirty=!equal(readStore(),snapshot);saveMeta();status=dirty?'syncing':'synced';emit();
         } catch(error) {
+          if(user?.id!==id||owner!==id)return false;
           if(error.status===409&&error.data.code==='conflict') {
             const latest=normalizeStore(error.data.state);
             const merged=mergeChanges(base,readStore(),latest);
             base=latest;revision=error.data.revision;cache(merged);dirty=true;saveMeta();
             window.dispatchEvent(new Event('lexi:accountstate'));continue;
           }
-          status=error.status===401||error.data?.code==='account_changed'?'expired':'offline';
+          status=error.status===401||['account_changed','progress_reset'].includes(error.data?.code)?'expired':'offline';
           saveMeta();emit();throw error;
         }
       }
       return !dirty;
-    })().finally(()=>{inFlight=null;});
+    })().finally(()=>{inFlight=null;if(owner!==syncOwner&&dirty&&user)scheduleSync();});
     return inFlight;
   }
 
-  async function activate(data,{importLocal=false,initialTheme}={}) {
+  async function activate(data,{fresh=false,initialTheme}={}) {
+    if(data.user&&data.progressVersion!==PROGRESS_VERSION)throw new Error('Reload LEXI after the account update.');
     user=data.user;csrf=data.csrfToken||csrf;
     if(!user) {
-      owner=null;dirty=false;status='guest';switchStore();marker(null);ready=true;emit();
+      owner=null;identity='';dirty=false;status='guest';switchStore();marker(null);ready=true;emit();
       window.dispatchEvent(new Event('lexi:accountstate'));return;
     }
-    owner=user.id;switchStore(owner);
+    clearTimeout(timer);
+    owner=user.id;identity=`${user.id}:${user.createdAt}:${user.username}`;switchStore(owner);
     const local=readStore(), meta=readMeta(owner), remote=normalizeStore(data.state);
     revision=data.revision;
     let merged=remote;
-    if(meta?.dirty)merged=mergeChanges(meta.base,local,remote);
-    if(importLocal) merged=data.state?importGuestInto(merged,readGuestStore()):readGuestStore();
+    if(!fresh&&meta?.dirty&&meta.identity===identity&&meta.progressVersion===PROGRESS_VERSION&&Number.isInteger(meta.revision)&&meta.revision<=revision&&(data.state||meta.revision===revision))merged=mergeChanges(meta.base,local,remote);
     if(!data.state&&['noir','studio','experimental'].includes(initialTheme))merged={...merged,theme:initialTheme};
     base=remote;cache(merged);dirty=!equal(merged,remote);marker(owner);saveMeta();
     status=dirty?'syncing':'synced';ready=true;emit();window.dispatchEvent(new Event('lexi:accountstate'));
@@ -114,17 +108,19 @@ export function createAccountService() {
   }
 
   async function initialize() {
-    try { await activate(await request('/session')); }
+    const generation=++authGeneration;
+    try { const data=await request('/session');if(generation!==authGeneration)return;await activate(data); }
     catch(error) {
+      if(generation!==authGeneration)return;
       if(!ready) {
         owner=cachedOwner();switchStore(owner);
-        if(owner) {const meta=readMeta(owner);base=normalizeStore(meta?.base);revision=meta?.revision||0;dirty=meta?.dirty||false;}
+        if(owner) {const meta=readMeta(owner);if(meta?.progressVersion===PROGRESS_VERSION&&typeof meta.identity==='string'){identity=meta.identity;base=normalizeStore(meta.base);revision=meta.revision||0;dirty=meta.dirty||false;}else{owner=null;identity='';switchStore();marker(null);}}
       }
       status=owner?'offline':'unavailable';ready=true;emit();
     }
   }
 
-  window.addEventListener('lexi:storechange',()=>{if(ready)scheduleSync();});
+  window.addEventListener('lexi:storechange',event=>{if(ready&&event.detail?.key===storageKey())scheduleSync();});
   window.addEventListener('online',()=>initialize());
   window.addEventListener('storage',event=>{
     if(event.key===MARKER)initialize();
@@ -140,25 +136,37 @@ export function createAccountService() {
     get user(){return user;},get status(){return status;},get owner(){return owner;},
     get ready(){return ready;},
     get hasAccess(){return (!!user&&status!=='expired')||(!user&&!!owner&&status==='offline');},
-    async register(fields,importLocal,initialTheme) {
+    async register(fields,initialTheme) {
+      const generation=++authGeneration;
       await request('/session');
       const data=await request('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(fields)});
-      await activate(data,{importLocal,initialTheme});return user;
+      if(generation!==authGeneration)return;
+      await activate(data,{fresh:true,initialTheme});return user;
     },
     async login(fields) {
+      const generation=++authGeneration;
       await request('/session');
-      await activate(await request('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(fields)}));return user;
+      const data=await request('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(fields)});
+      if(generation!==authGeneration)return;
+      await activate(data);return user;
     },
     async logout() {
+      ++authGeneration;
       const complete=await flush();
       if(dirty&&!complete)throw new Error('Reconnect and sync your changes before signing out.');
       await activate(await request('/logout',{method:'POST',owned:true}));
     },
     async uploadPhoto(file) {
+      const id=user?.id;
       const form=new FormData();form.append('photo',file);
-      const data=await request('/avatar',{method:'PUT',body:form,owned:true});user=data.user;emit();return user;
+      const data=await request('/avatar',{method:'PUT',body:form,owned:true,ownerId:id});
+      if(user?.id!==id||owner!==id)throw new Error('The signed-in account changed. Refresh and try again.');
+      user=data.user;emit();return user;
     },
-    async removePhoto(){const data=await request('/avatar',{method:'DELETE',owned:true});user=data.user;emit();return user;},
-    async importGuest(){if(!user)return;cache(importGuestInto(readStore(),readGuestStore()));dirty=true;saveMeta();window.dispatchEvent(new Event('lexi:accountstate'));await flush();},
+    async removePhoto(){
+      const id=user?.id,data=await request('/avatar',{method:'DELETE',owned:true,ownerId:id});
+      if(user?.id!==id||owner!==id)throw new Error('The signed-in account changed. Refresh and try again.');
+      user=data.user;emit();return user;
+    },
   };
 }

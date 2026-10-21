@@ -13,7 +13,7 @@ from sqlalchemy import delete, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from .database import RateBucket, User, get_db
+from .database import PROGRESS_VERSION, RateBucket, User, get_db
 from .catalog import load_catalog
 from .schedule import validate_time
 from datetime import date
@@ -62,7 +62,8 @@ def user_json(user):
 
 def account_payload(user):
     return {'user': user_json(user) if user else None, 'csrfToken': csrf_token(),
-            'state': user.preferences if user else None, 'revision': user.revision if user else 0}
+            'state': user.preferences if user else None, 'revision': user.revision if user else 0,
+            'progressVersion': PROGRESS_VERSION}
 
 
 def establish_session(user):
@@ -304,6 +305,9 @@ def save_state():
     data = request.get_json(silent=True)
     if not isinstance(data, dict) or type(data.get('revision')) is not int or data['revision'] < 0:
         return jsonify(error='Send a valid revision and learning state.'), 400
+    if type(data.get('progressVersion')) is not int or data['progressVersion'] != PROGRESS_VERSION:
+        return jsonify(error='Your learning profile has been reset. Reload LEXI before continuing.',
+                       code='progress_reset', progressVersion=PROGRESS_VERSION), 409
     try:
         state = clean_preferences(data.get('state'))
     except (ValueError, TypeError) as error:

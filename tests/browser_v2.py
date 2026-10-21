@@ -31,7 +31,7 @@ def check(value,label):
 
 
 def state(page):
-    return page.evaluate("JSON.parse(localStorage.getItem('lexi:account:'+localStorage.getItem('lexi:active-account')+':v1'))")
+    return page.evaluate("JSON.parse(localStorage.getItem('lexi:account:'+localStorage.getItem('lexi:active-account')+':v2'))")
 
 
 def go(page,route):

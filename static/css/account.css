@@ -21,8 +21,6 @@
 .account-password-row>.icon-button{position:absolute;right:3px;top:2px;color:var(--accent-text)}
 .account-password-row>.icon-button>.icon{width:18px;height:18px}
 .account-field-help{font-size:10px;color:var(--muted-readable);line-height:1.7;margin-top:8px}
-#account-auth-form>.account-import-option{display:flex;gap:10px;align-items:flex-start;margin-top:22px;line-height:1.7;font-size:11px;color:var(--muted-readable)}
-.account-import-option>input{accent-color:var(--accent);margin-top:3px;min-width:16px;min-height:16px}
 .account-error{color:var(--danger);font-size:12px;line-height:1.8;margin-top:16px;min-height:0;overflow-wrap:anywhere}
 .account-error:empty{margin:0}
 .account-submit{width:100%;margin-top:22px}

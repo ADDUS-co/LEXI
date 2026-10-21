@@ -77,7 +77,6 @@ html:not([data-access=granted]) body{background:var(--entry-bg);color:var(--entr
 .entry-card .account-submit{font-size:12px;margin-top:20px}
 .entry-card .button-primary{box-shadow:none}
 .entry-card .account-error{font-size:11px}
-.entry-card .account-import-option{font-size:10px!important;margin-top:16px!important}
 .entry-session-status{font-size:11px;line-height:1.7;color:var(--entry-muted);margin-top:12px}
 .entry-session-status:empty{display:none}
 .entry-footer{font-size:8px;letter-spacing:.12em;color:var(--entry-muted)}

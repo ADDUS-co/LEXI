@@ -5,10 +5,11 @@ import tempfile
 import unittest
 
 from PIL import Image
+from sqlalchemy import delete
 from werkzeug.security import check_password_hash
 
 from app import create_app
-from lexi.database import User, get_db
+from lexi.database import DataMigration, ISOLATION_MIGRATION, PROGRESS_VERSION, User, get_db
 
 
 class AccountTests(unittest.TestCase):
@@ -39,7 +40,7 @@ class AccountTests(unittest.TestCase):
 
     def save(self, account, state=None, revision=0, client=None):
         return (client or self.client).put('/api/account/state', json={
-            'state': state if state is not None else self.state(), 'revision': revision,
+            'state': state if state is not None else self.state(), 'revision': revision, 'progressVersion': PROGRESS_VERSION,
         }, headers=self.headers(account))
 
     def photo(self, account, content, filename='photo.png', client=None):
@@ -144,6 +145,66 @@ class AccountTests(unittest.TestCase):
         self.assertEqual(conflict.json['state']['theme'], 'studio')
         self.assertEqual(self.save(data, self.state(theme='noir'), revision=1).status_code, 200)
         self.assertEqual(self.client.get('/api/account/session').json['state']['theme'], 'noir')
+
+    def test_old_clients_cannot_restore_progress_after_the_reset(self):
+        account = self.register()
+        for old_version in (None, 1, True):
+            response = self.client.put('/api/account/state', json={
+                'state': self.state(), 'revision': 0, 'progressVersion': old_version,
+            }, headers=self.headers(account))
+            self.assertEqual(response.status_code, 409)
+            self.assertEqual(response.json['code'], 'progress_reset')
+        self.assertIsNone(self.client.get('/api/account/session').json['state'])
+        self.assertEqual(self.save(account).status_code, 200)
+
+    def test_reset_runs_once_for_all_accounts_then_preserves_new_progress(self):
+        with tempfile.TemporaryDirectory() as directory:
+            config = {'TESTING': True, 'DATABASE_URL': f'sqlite:///{Path(directory) / "migration.sqlite3"}'}
+            original = create_app(config)
+            ada_client, bob_client = original.test_client(), original.test_client()
+            ada = self.register(ada_client)
+            bob = self.register(bob_client, 'Bob_lexi', 'bob@example.com')
+            word = ada_client.get('/api/catalog').json['words'][0]['id']
+            for client, account in ((ada_client, ada), (bob_client, bob)):
+                self.assertEqual(self.save(account, self.state(saved=[word], hiddenWords=[word],
+                    history=[{'id': word, 'date': '2026-10-21'}]), client=client).status_code, 200)
+            self.assertEqual(self.photo(ada, self.image(), client=ada_client).status_code, 200)
+            cookies = [client.get_cookie('lexi_session').value for client in (ada_client, bob_client)]
+            with original.app_context():
+                row = get_db().get(User, ada['user']['id'])
+                old_hash, old_photo = row.password_hash, row.avatar
+                # Simulate a database from the release before the one-time reset.
+                get_db().execute(delete(DataMigration).where(DataMigration.key == ISOLATION_MIGRATION))
+                get_db().commit()
+            original.extensions['account_engine'].dispose()
+
+            upgraded = create_app(config)
+            clients = [upgraded.test_client(), upgraded.test_client()]
+            for client, cookie in zip(clients, cookies):
+                client.set_cookie('lexi_session', cookie)
+                session = client.get('/api/account/session').json
+                self.assertIsNone(session['state'])
+                self.assertEqual(session['revision'], 2)
+                self.assertEqual(session['progressVersion'], PROGRESS_VERSION)
+            with upgraded.app_context():
+                row = get_db().get(User, ada['user']['id'])
+                self.assertEqual(row.password_hash, old_hash)
+                self.assertEqual(row.avatar, old_photo)
+                self.assertEqual(row.username, ada['user']['username'])
+            clean = clients[0].get('/api/account/session').json
+            response = self.save(clean, self.state(interests=['culture'], saved=[], hiddenWords=[],
+                history=[{'id': word, 'date': '2026-10-22'}]), revision=clean['revision'], client=clients[0])
+            self.assertEqual(response.status_code, 200)
+            expected = response.json['state']
+            upgraded.extensions['account_engine'].dispose()
+
+            restarted = create_app(config)
+            client = restarted.test_client()
+            client.set_cookie('lexi_session', cookies[0])
+            self.assertEqual(client.get('/api/account/session').json['state'], expected)
+            client.set_cookie('lexi_session', cookies[1])
+            self.assertIsNone(client.get('/api/account/session').json['state'])
+            restarted.extensions['account_engine'].dispose()
 
     def test_states_and_photos_belong_to_current_account(self):
         ada = self.register()

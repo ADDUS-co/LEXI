@@ -6,7 +6,7 @@ import tempfile
 import time
 
 from flask import g
-from sqlalchemy import Integer, String, Text, LargeBinary, JSON, create_engine, event
+from sqlalchemy import Integer, String, Text, LargeBinary, JSON, create_engine, event, select, update
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -34,6 +34,16 @@ class RateBucket(Base):
     key: Mapped[str] = mapped_column(String(100), primary_key=True)
     count: Mapped[int] = mapped_column(Integer, default=1)
     expires_at: Mapped[int] = mapped_column(Integer, index=True)
+
+
+PROGRESS_VERSION = 2
+ISOLATION_MIGRATION = 'account-progress-isolation-v2'
+
+
+class DataMigration(Base):
+    __tablename__ = 'data_migrations'
+    key: Mapped[str] = mapped_column(String(80), primary_key=True)
+    applied_at: Mapped[int] = mapped_column(Integer)
 
 
 def local_secret(instance):
@@ -82,6 +92,11 @@ def init_database(app):
         else:
             connection.exec_driver_sql('SELECT pg_advisory_xact_lock(20261021)')
         Base.metadata.create_all(connection)
+        if connection.scalar(select(DataMigration.key).where(DataMigration.key == ISOLATION_MIGRATION)) is None:
+            # Requested one-time clean start for all existing learning profiles.
+            # Credentials and photos stay intact. The marker makes restarts safe.
+            connection.execute(update(User).values(preferences=None, revision=User.revision + 1))
+            connection.execute(DataMigration.__table__.insert().values(key=ISOLATION_MIGRATION, applied_at=int(time.time())))
         connection.commit()
     app.extensions['account_engine'] = engine
     app.extensions['account_sessions'] = sessionmaker(engine, expire_on_commit=False)

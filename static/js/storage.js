@@ -1,4 +1,4 @@
-// Guests and each account have separate caches. Passwords and session tokens never go here.
+// Each account has its own clean cache. The old guest key is never imported.
 const GUEST_KEY = 'lexi:v1';
 let activeKey = GUEST_KEY;
 const memories = new Map();
@@ -36,11 +36,10 @@ function readKey(key) {
 }
 
 export function readStore() { return readKey(activeKey); }
-export function readGuestStore() { return readKey(GUEST_KEY); }
 export function storageKey() { return activeKey; }
 
 export function switchStore(userId=null) {
-  activeKey=Number.isInteger(userId)&&userId>0?`lexi:account:${userId}:v1`:GUEST_KEY;
+  activeKey=Number.isInteger(userId)&&userId>0?`lexi:account:${userId}:v2`:GUEST_KEY;
   return readStore();
 }
 

@@ -33,7 +33,7 @@ class BrowserAccount:
         state = {'version': 2, 'theme': 'noir', 'interests': [], 'saved': [], 'history': [],
                  'hiddenWords': [], 'updateTime': '08:00', 'onboarded': False,
                  'reduceMotion': False, **(state or {})}
-        response = self.api.put('/api/account/state', data={'state': state, 'revision': session['revision']}, headers={
+        response = self.api.put('/api/account/state', data={'state': state, 'revision': session['revision'], 'progressVersion': session['progressVersion']}, headers={
             'X-CSRF-Token': session['csrfToken'], 'X-Account-Id': str(session['user']['id']),
         })
         assert response.status == 200, response.json()

@@ -33,7 +33,7 @@ def check(condition, label):
 
 
 def state(page):
-    return page.evaluate("JSON.parse(localStorage.getItem('lexi:account:'+localStorage.getItem('lexi:active-account')+':v1'))")
+    return page.evaluate("JSON.parse(localStorage.getItem('lexi:account:'+localStorage.getItem('lexi:active-account')+':v2'))")
 
 
 def go(page, route):
@@ -128,7 +128,7 @@ def run():
         check(page.locator(".word-card").count() == 2, "Search and clear operate on real encountered words")
         future_word = next(word for word in catalog["words"] if word["id"] not in {initial_id, new_word["id"]})
         page.evaluate("async id => { const s=await import('/static/js/storage.js');s.updateStore({history:[...s.readStore().history,{id,date:'2999-01-01'}]}); }", future_word["id"])
-        page.wait_for_function("()=>!JSON.parse(localStorage.getItem('lexi:sync:'+localStorage.getItem('lexi:active-account'))).dirty")
+        page.wait_for_function("()=>!JSON.parse(localStorage.getItem('lexi:sync:'+localStorage.getItem('lexi:active-account')+':v2')).dirty")
         page.reload(wait_until="networkidle")
         check(page.locator(".word-card").count() == 2, "Future-dated entries are excluded from History")
 
@@ -240,7 +240,7 @@ def run():
         page.goto(BASE,wait_until="networkidle")
         page.evaluate("navigator.serviceWorker.ready")
         page.wait_for_function("()=>navigator.serviceWorker.controller !== null")
-        page.wait_for_function("async()=>Boolean(await (await caches.open('lexi-shell-v6')).match('/api/catalog'))")
+        page.wait_for_function("async()=>Boolean(await (await caches.open('lexi-shell-v7')).match('/api/catalog'))")
         before = page.locator("#daily-word").inner_text()
         context.set_offline(True)
         page.reload(wait_until="networkidle")

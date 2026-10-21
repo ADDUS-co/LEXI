@@ -1,6 +1,6 @@
 """Real browser account, photo and multi-device sync checks.
 
-Use a separate disposable DATABASE_URL on the server. Creates two synthetic users.
+Use a separate disposable DATABASE_URL on the server. Creates three synthetic users.
 Install Playwright separately; start LEXI and run python tests/browser_accounts.py.
 """
 from io import BytesIO
@@ -28,13 +28,13 @@ def check(value, label):
 
 
 def state(page):
-    return page.evaluate("JSON.parse(localStorage.getItem('lexi:account:'+localStorage.getItem('lexi:active-account')+':v1'))")
+    return page.evaluate("JSON.parse(localStorage.getItem('lexi:account:'+localStorage.getItem('lexi:active-account')+':v2'))")
 
 
 def synced(page):
     page.wait_for_function("""() => {
       const owner=localStorage.getItem('lexi:active-account');
-      const meta=JSON.parse(localStorage.getItem('lexi:sync:'+owner)||'null');
+      const meta=JSON.parse(localStorage.getItem('lexi:sync:'+owner+':v2')||'null');
       return meta && !meta.dirty;
     }""")
 
@@ -45,10 +45,8 @@ def go(page, route):
 
 
 def sign_in(page, identifier, password='Synthetic-pass-42'):
-    if page.locator('#auth-screen').is_visible():
-        page.locator('[data-account-action="login-tab"]').click()
-    else:
-        page.locator('#account-button').click()
+    expect(page.locator('#auth-screen')).to_be_visible()
+    page.locator('[data-account-action="login-tab"]').click()
     page.locator('input[name="identifier"]').fill(identifier)
     page.locator('input[name="password"]').fill(password)
     page.locator('#account-auth-form button[type="submit"]').click()
@@ -59,8 +57,8 @@ def sign_in(page, identifier, password='Synthetic-pass-42'):
 
 def run():
     words = json.loads((Path(__file__).resolve().parents[1] / 'data/words.json').read_text())
-    word_id = next(word['id'] for word in words if word['collectionId'] == 'ielts')
-    legacy = {'version': 2, 'interests': ['ielts'], 'saved': [word_id], 'hiddenWords': [word_id],
+    word_id = next(word['id'] for word in words if word['collectionId'] == 'law')
+    legacy = {'version': 2, 'interests': ['law'], 'saved': [word_id], 'hiddenWords': [word_id],
               'history': [{'id': word_id, 'date': '2026-10-21'}], 'theme': 'studio',
               'updateTime': '09:15', 'onboarded': True, 'reduceMotion': False}
     stamp = str(time.time_ns())[-12:]
@@ -74,7 +72,17 @@ def run():
         page = first.new_page()
         errors = []
         page.on('pageerror', lambda error: errors.append(str(error)))
-        page.add_init_script("if(!localStorage.getItem('lexi:v1'))localStorage.setItem('lexi:v1'," + json.dumps(json.dumps(legacy)) + ");")
+        page.add_init_script("""(() => {
+          if(localStorage.getItem('lexi:isolation-fixture'))return;
+          const legacy=""" + json.dumps(legacy) + """;
+          localStorage.setItem('lexi:v1',JSON.stringify(legacy));
+          for(let id=1;id<=8;id++) {
+            for(const version of ['v1','v2']) localStorage.setItem('lexi:account:'+id+':'+version,JSON.stringify(legacy));
+            localStorage.setItem('lexi:sync:'+id,JSON.stringify({base:{},dirty:true,revision:0}));
+            localStorage.setItem('lexi:sync:'+id+':v2',JSON.stringify({base:{},dirty:true,revision:0,identity:'previous-test-account',progressVersion:2}));
+          }
+          localStorage.setItem('lexi:isolation-fixture','1');
+        })();""")
         requests=[]
         page.on('request', lambda request: requests.append(request.url))
         page.goto(BASE + '/#settings', wait_until='networkidle')
@@ -146,18 +154,30 @@ def run():
         check(not any('/api/catalog' in url for url in cache_urls), 'Offline shell installs without fetching the protected catalog')
         for field, value in {'username': username, 'email': email, 'password': 'Synthetic-pass-42'}.items():
             page.locator(f'input[name="{field}"]').fill(value)
-        check(page.locator('input[name="importLocal"]').is_checked(), 'Registration offers to transfer guest progress')
+        check(page.locator('input[name="importLocal"]').count()==0,'Registration never offers to import old browser history')
         page.locator('[data-account-action="password"]').click()
         expect(page.locator('input[name="password"]')).to_have_attribute('type', 'text')
         page.locator('#account-auth-form button[type="submit"]').click()
-        expect(page.locator('#auth-screen')).not_to_be_visible()
+        expect(page.locator('#onboarding-dialog')).to_be_visible()
+        check(state(page)['history']==[] and state(page)['saved']==[] and state(page)['hiddenWords']==[], 'A new account ignores old guest history and dirty caches from previous accounts')
+        check(state(page)['interests']==[] and not state(page)['onboarded'], 'A new account must choose its own interests')
+        check(state(page)['updateTime']=='08:00', 'A new account starts with a fresh daily schedule')
+        page.locator('input[name="onboarding"][value="ielts"]').check()
+        page.locator('#onboarding-update-time').fill('09:15')
+        page.evaluate("location.hash='home'")
+        page.locator('#begin-button').click()
+        expect(page.locator('#daily-word')).to_be_visible()
+        word_id=state(page)['history'][0]['id']
+        page.locator('[data-action="save"]').first.click()
+        page.locator('#daily-word').dblclick()
+        expect(page.locator('#recall-form')).to_be_visible()
         page.locator('#account-button').click()
         expect(page.locator('[data-profile-owner]')).to_be_visible()
         catalog=first.request.get(BASE+'/api/catalog').json()
         synced(page)
-        check(state(page)['saved'] == [word_id], 'Registration imports saved guest words')
-        check(state(page)['theme'] == 'studio' and state(page)['updateTime'] == '09:15', 'Registration imports appearance and daily time')
-        check(word_id in state(page)['hiddenWords'], 'Registration imports hidden card state')
+        check(state(page)['saved']==[word_id] and state(page)['hiddenWords']==[word_id], 'Only this account’s own saved word and memory card are stored')
+        check(state(page)['theme']=='studio' and state(page)['updateTime']=='09:15', 'This account saves its own appearance and schedule')
+        check(page.locator('[data-account-action="import"]').count()==0,'The profile has no action that copies another browser profile')
         account_id = page.locator('[data-profile-owner]').get_attribute('data-profile-owner')
         check(page.evaluate("!Object.entries(localStorage).some(([k,v])=>v.includes('Synthetic-pass-42')||v.includes('csrfToken'))"), 'Passwords and CSRF tokens never enter localStorage')
 
@@ -201,7 +221,7 @@ def run():
         second.set_offline(True)
         page.evaluate("async id=>{const s=await import('/static/js/storage.js');s.updateStore({saved:[],reduceMotion:true});}", word_id)
         mobile.evaluate("async id=>{const s=await import('/static/js/storage.js');s.updateStore({saved:[...s.readStore().saved,id],updateTime:'10:30'});}", next_id)
-        check(page.evaluate("JSON.parse(localStorage.getItem('lexi:sync:'+localStorage.getItem('lexi:active-account'))).dirty"), 'Offline changes remain queued in persistent account storage')
+        check(page.evaluate("JSON.parse(localStorage.getItem('lexi:sync:'+localStorage.getItem('lexi:active-account')+':v2')).dirty"), 'Offline changes remain queued in persistent account storage')
         first.set_offline(False)
         synced(page)
         second.set_offline(False)
@@ -242,7 +262,7 @@ def run():
         page.locator('[data-account-action="logout"]').click()
         expect(page.locator('#account-dialog')).not_to_be_visible()
         check(page.evaluate("localStorage.getItem('lexi:active-account')===null"), 'Signing out removes access and returns to the entry screen')
-        check(page.evaluate("JSON.parse(localStorage.getItem('lexi:v1')).saved") == [word_id], 'Guest progress stays separate from account edits')
+        check(page.evaluate("JSON.parse(localStorage.getItem('lexi:v1'))")==legacy,'Legacy browser data stays separate and is never copied into accounts')
 
         expect(page.locator('#auth-screen')).to_be_visible()
         check(first.request.get(BASE+'/api/catalog').status==401,'Signing out locks the catalog on the server again')
@@ -270,12 +290,86 @@ def run():
         page.locator('[data-account-action="register-tab"]').click()
         for field, value in {'username': 'Other_' + stamp, 'email': 'other_' + stamp + '@example.com', 'password': 'Synthetic-pass-42'}.items():
             page.locator(f'input[name="{field}"]').fill(value)
-        page.locator('input[name="importLocal"]').uncheck()
         page.locator('[data-entry-theme-choice="experimental"]').click()
         page.locator('#account-auth-form button[type="submit"]').click()
         expect(page.locator('#onboarding-dialog')).to_be_visible()
         check(state(page)['saved'] == [] and state(page)['hiddenWords'] == [], 'Another account starts without the previous account or guest words')
         check(state(page)['theme']=='experimental' and page.locator('html').get_attribute('data-theme')=='experimental','The selected entry theme carries into a newly registered account')
+
+        page.locator('input[name="onboarding"][value="culture"]').check()
+        page.locator('#onboarding-update-time').fill('10:05')
+        page.locator('#begin-button').click()
+        expect(page.locator('#daily-word')).to_be_visible()
+        b_word=state(page)['history'][0]['id']
+        page.locator('[data-action="save"]').first.click()
+        synced(page)
+        page.locator('#account-button').click()
+        page.locator('[data-account-action="logout"]').click()
+        sign_in(page,username)
+        check(state(page)['saved']==[next_id] and state(page)['interests']==['ielts'] and state(page)['updateTime']=='11:45','Returning to the first account restores its own words, interests and schedule')
+        page.locator('[data-account-action="close"]').first.click()
+
+        # A second tab can change the shared cookie while the first has a pending
+        # response. A late conflict belonging to A must never merge into B.
+        pending=[]
+        page.route('**/api/account/state',lambda route:pending.append(route) if not pending else route.continue_())
+        with page.expect_request(BASE+'/api/account/state'):
+            page.evaluate("async()=>{const s=await import('/static/js/storage.js');s.updateStore({reduceMotion:!s.readStore().reduceMotion});}")
+        a_state=state(page)
+        tab=first.new_page()
+        tab.on('pageerror',lambda error:errors.append(str(error)))
+        tab.goto(BASE,wait_until='networkidle')
+        synced(tab)
+        tab.locator('#account-button').click()
+        tab.locator('[data-account-action="logout"]').click()
+        sign_in(tab,'Other_'+stamp)
+        page.wait_for_function("name=>document.querySelector('#account-button').textContent.includes(name)",arg='Other_'+stamp)
+        page.evaluate("""()=>{
+          window.accountSnapshots=[];
+          window.addEventListener('lexi:accountstate',()=>{
+            const id=localStorage.getItem('lexi:active-account');
+            window.accountSnapshots.push(JSON.parse(localStorage.getItem('lexi:account:'+id+':v2')));
+          });
+        }""")
+        pending[0].fulfill(status=409,json={'error':'Newer changes are available.','code':'conflict','state':a_state,'revision':99})
+        page.wait_for_timeout(500)
+        check(state(page)['saved']==[b_word] and state(page)['interests']==['culture'] and state(page)['updateTime']=='10:05','A delayed response from the first account cannot contaminate the second account')
+        check(all(snapshot['saved']==[b_word] and snapshot['interests']==['culture'] for snapshot in page.evaluate('window.accountSnapshots')),'No intermediate render exposes another account’s progress during a late response')
+        page.unroute('**/api/account/state')
+        tab.close()
+        page.locator('#account-button').click()
+        page.locator('[data-account-action="logout"]').click()
+        sign_in(page,username)
+        check(state(page)['saved']==[next_id] and all(item['id']!=b_word for item in state(page)['history']),'The first account keeps its own history after the second account signs out')
+        page.locator('[data-account-action="logout"]').click()
+        sign_in(page,'Other_'+stamp)
+        check(state(page)['saved']==[b_word] and state(page)['interests']==['culture'] and all(item['id']==b_word for item in state(page)['history']),'Repeated sign-in restores only the second account’s own history and choices')
+
+        # A fresh Noir account has not uploaded any preferences yet. Its first
+        # offline onboarding must still sync when the server state is null.
+        third=browser.new_context(service_workers='block')
+        fresh=third.new_page()
+        fresh.on('pageerror',lambda error:errors.append(str(error)))
+        fresh.goto(BASE,wait_until='networkidle')
+        fresh.locator('[data-entry-theme-choice="noir"]').click()
+        for field,value in {'username':'Offline_'+stamp,'email':'offline_'+stamp+'@example.com','password':'Synthetic-pass-42'}.items():
+            fresh.locator(f'input[name="{field}"]').fill(value)
+        fresh.locator('#account-auth-form button[type="submit"]').click()
+        expect(fresh.locator('#onboarding-dialog')).to_be_visible()
+        check(third.request.get(BASE+'/api/account/session').json()['state'] is None,'A brand-new account has no inherited learning data on the server')
+        third.set_offline(True)
+        fresh.locator('input[name="onboarding"][value="science"]').check()
+        fresh.locator('#begin-button').click()
+        fresh.locator('[data-action="save"]').first.click()
+        offline_saved=state(fresh)['saved']
+        third.set_offline(False)
+        synced(fresh)
+        check(state(fresh)['saved']==offline_saved and state(fresh)['interests']==['science'],'First offline choices sync without being replaced by the empty server profile')
+        fresh.locator('#account-button').click()
+        fresh.locator('[data-account-action="logout"]').click()
+        sign_in(fresh,'Offline_'+stamp)
+        check(state(fresh)['saved']==offline_saved and state(fresh)['interests']==['science'],'First offline progress is preserved after signing out and back in')
+        third.close()
         check(not errors, 'Account flows produce no uncaught JavaScript errors')
         first.close()
         second.close()
