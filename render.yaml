@@ -1,3 +1,9 @@
+databases:
+  - name: lexi-db
+    plan: free
+    databaseName: lexi
+    user: lexi
+
 services:
   - type: web
     name: lexi
@@ -11,3 +17,13 @@ services:
         value: 3.12.14
       - key: LEXI_TIMEZONE
         value: Asia/Bishkek
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lexi-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: LEXI_COOKIE_SECURE
+        value: "1"
+      - key: LEXI_TRUST_PROXY
+        value: "1"

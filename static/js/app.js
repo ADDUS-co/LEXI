@@ -1,8 +1,10 @@
 import {selectWord} from './selection.js';
-import {readStore, updateStore, resetStore, storageAvailable} from './storage.js';
+import {readStore, updateStore, resetStore, storageAvailable, storageKey} from './storage.js';
 import {icon} from './icons.js';
 import {dailySchedule, deviceTimezone, validUpdateTime} from './schedule.js';
 import {answerMatches, withoutAnswer} from './recall.js';
+import {createAccountService} from './account-service.js';
+import {installAccountUI} from './account-ui.js';
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const main = $('#main-content');
@@ -32,6 +34,8 @@ let flipping = false;
 let lastTouch;
 let ignoreDoubleClickUntil = 0;
 let revealPressAt = 0;
+const account = createAccountService();
+installAccountUI(account,{toast,openOnboarding:()=>{if(catalog&&initialized)showOnboarding();}});
 
 function isHidden(word) { return preferences.hiddenWords.includes(word.id); }
 function motionReduced() { return preferences.reduceMotion || matchMedia('(prefers-reduced-motion: reduce)').matches; }
@@ -200,7 +204,7 @@ function collectionCard(collection, index, selected, context) {
 
 function renderCollections() {
   collectionDraft = new Set(preferences.interests);
-  return `<section class="interior-page page-width"><div class="section-label"><span class="eyebrow">YOUR COLLECTIONS</span><span class="micro">FOLLOW YOUR CURIOSITY</span></div><div class="page-heading"><h1 tabindex="-1">A world of words.<br><span class="accent">Built around you.</span></h1><p>Choose the things that move you.<br>We’ll find the words to match.</p></div><div class="collections-grid">${catalog.collections.map((collection, index) => collectionCard(collection, index, collectionDraft.has(collection.id), 'interests')).join('')}</div><div class="collection-actions"><p id="selection-summary" aria-live="polite">${collectionDraft.size} ${collectionDraft.size === 1 ? 'collection' : 'collections'} selected. A new perspective, every day.</p><button class="button button-primary" data-action="apply-collections" ${collectionDraft.size ? '' : 'disabled'}>Update my daily word ${icon('arrow')}</button></div><p class="privacy-note">Select at least one collection. Your interests stay in this browser. Changing them recalculates today’s word.</p></section>`;
+  return `<section class="interior-page page-width"><div class="section-label"><span class="eyebrow">YOUR COLLECTIONS</span><span class="micro">FOLLOW YOUR CURIOSITY</span></div><div class="page-heading"><h1 tabindex="-1">A world of words.<br><span class="accent">Built around you.</span></h1><p>Choose the things that move you.<br>We’ll find the words to match.</p></div><div class="collections-grid">${catalog.collections.map((collection, index) => collectionCard(collection, index, collectionDraft.has(collection.id), 'interests')).join('')}</div><div class="collection-actions"><p id="selection-summary" aria-live="polite">${collectionDraft.size} ${collectionDraft.size === 1 ? 'collection' : 'collections'} selected. A new perspective, every day.</p><button class="button button-primary" data-action="apply-collections" ${collectionDraft.size ? '' : 'disabled'}>Update my daily word ${icon('arrow')}</button></div><p class="privacy-note">Select at least one collection. ${account.owner ? 'Your interests are linked to your account.' : 'Your interests stay in this browser.'} Changing them recalculates today’s word.</p></section>`;
 }
 
 function listRecords(page, query = '') {
@@ -228,11 +232,11 @@ function listRecords(page, query = '') {
 function renderList(page) {
   const saved = page === 'saved';
   const count = saved ? preferences.saved.length : new Set(preferences.history.filter(item => item.date <= today).map(item => item.id)).size;
-  return `<section class="interior-page page-width"><div class="section-label"><span class="eyebrow">${saved ? 'YOUR PERSONAL WORDSHELF' : 'YOUR VOCABULARY JOURNEY'}</span><span class="micro">${String(count).padStart(2, '0')} ${count === 1 ? 'WORD' : 'WORDS'} ${saved ? 'SAVED' : 'ENCOUNTERED'}</span></div><div class="page-heading"><h1 tabindex="-1">${saved ? 'Some words<br><span class="accent">are worth keeping.</span>' : 'A little wiser.<br><span class="accent">One day at a time.</span>'}</h1><p>${saved ? 'Your favorites, all in one place.<br>Come back whenever you need them.' : 'Every word you’ve actually explored.<br>A small record of a growing world.'}</p></div><label class="search-field">${icon('search')}<span class="sr-only">Search ${page} words</span><input type="search" id="word-search" placeholder="Search your ${page === 'saved' ? 'saved words' : 'history'}…" autocomplete="off"></label><div id="word-list" class="word-list">${listRecords(page)}</div><p class="privacy-note">Your words are stored in this browser. They don’t sync between devices.</p></section>`;
+  return `<section class="interior-page page-width"><div class="section-label"><span class="eyebrow">${saved ? 'YOUR PERSONAL WORDSHELF' : 'YOUR VOCABULARY JOURNEY'}</span><span class="micro">${String(count).padStart(2, '0')} ${count === 1 ? 'WORD' : 'WORDS'} ${saved ? 'SAVED' : 'ENCOUNTERED'}</span></div><div class="page-heading"><h1 tabindex="-1">${saved ? 'Some words<br><span class="accent">are worth keeping.</span>' : 'A little wiser.<br><span class="accent">One day at a time.</span>'}</h1><p>${saved ? 'Your favorites, all in one place.<br>Come back whenever you need them.' : 'Every word you’ve actually explored.<br>A small record of a growing world.'}</p></div><label class="search-field">${icon('search')}<span class="sr-only">Search ${page} words</span><input type="search" id="word-search" placeholder="Search your ${page === 'saved' ? 'saved words' : 'history'}…" autocomplete="off"></label><div id="word-list" class="word-list">${listRecords(page)}</div><p class="privacy-note">${account.owner ? 'Your words sync with your account and are cached on this device.' : 'Your words stay in this browser. Sign in to sync them across devices.'}</p></section>`;
 }
 
 function renderSettings() {
-  return `<section class="interior-page settings-page page-width"><div class="section-label"><span class="eyebrow">MAKE YOURSELF AT HOME</span><span class="micro">SETTINGS</span></div><div class="page-heading"><h1 tabindex="-1">Your world.<br><span class="accent">Your atmosphere.</span></h1><p>A few thoughtful details.<br>Just the way you like them.</p></div><section class="settings-section"><div class="settings-section-heading"><h2>Choose your atmosphere</h2><p>Same word. A different point of view.</p></div><div class="theme-grid">${[['noir', '01', 'Noir', 'Quiet confidence. After dark.'], ['studio', '02', 'Studio', 'Warm light. A clear mind.'], ['experimental', '03', 'Experimental', 'A little outside the ordinary.']].map(([id, number, name, description]) => `<button class="theme-card" data-theme-choice="${id}" aria-pressed="${preferences.theme === id}"><span class="theme-preview theme-preview-${id}"><span class="micro">LEXI / ${number}</span><span class="theme-preview-word">Aa<span>.</span></span><span class="theme-preview-line"></span></span><span class="theme-name">${name}<span class="theme-check">${icon('check')}</span></span><span class="theme-description">${description}</span></button>`).join('')}</div></section><section class="settings-section"><div class="settings-row"><div><h2>A gentler pace</h2><p>Reduce animations and decorative movement.<br>Your device’s reduced-motion setting is always respected.</p></div><label class="switch"><input id="motion-toggle" type="checkbox" role="switch" ${preferences.reduceMotion ? 'checked' : ''}><span class="switch-track"></span><span class="sr-only">Reduce motion</span></label></div><div class="settings-row"><div><h2>Follow your interests</h2><p>${preferences.interests.length} collections shape your daily discoveries.</p></div><a class="text-link" href="#collections">Edit collections ${icon('arrowUp')}</a></div><div class="settings-row"><div><h2>Make it a memory</h2><p>Double-tap a word to turn it over. Bring it back with the correct spelling, or another double-tap.<br>Your card position is saved in this browser.</p></div><a class="text-link" href="#home">Practice your word ${icon('flip')}</a></div></section>${rhythmSection()}<section class="settings-section"><div class="settings-row"><div><h2>A little closer, every day</h2><p>Install LEXI from your browser menu: “Add to Home Screen” or “Install app”.<br>After your first online visit, cached words are available offline.</p></div><button id="install-button" class="button button-outline" data-action="install" ${installPrompt ? '' : 'hidden'}>Install LEXI ${icon('download')}</button></div></section><section class="settings-section local-data-section"><div><span class="micro">YOUR BROWSER, YOUR DATA</span><h2>Small rituals. Local memories.</h2><p>Interests, saved words, and history stay on this device. Export a personal backup before clearing browser data.</p></div><div class="data-actions"><button class="button button-outline" data-action="export">Export my data ${icon('download')}</button><button class="text-link danger-link" data-action="reset">Reset local data ${icon('trash')}</button></div></section></section>`;
+  return `<section class="interior-page settings-page page-width"><div class="section-label"><span class="eyebrow">MAKE YOURSELF AT HOME</span><span class="micro">SETTINGS</span></div><div class="page-heading"><h1 tabindex="-1">Your world.<br><span class="accent">Your atmosphere.</span></h1><p>A few thoughtful details.<br>Just the way you like them.</p></div><section class="settings-section"><div class="settings-section-heading"><h2>Choose your atmosphere</h2><p>Same word. A different point of view.</p></div><div class="theme-grid">${[['noir', '01', 'Noir', 'Quiet confidence. After dark.'], ['studio', '02', 'Studio', 'Warm light. A clear mind.'], ['experimental', '03', 'Experimental', 'A little outside the ordinary.']].map(([id, number, name, description]) => `<button class="theme-card" data-theme-choice="${id}" aria-pressed="${preferences.theme === id}"><span class="theme-preview theme-preview-${id}"><span class="micro">LEXI / ${number}</span><span class="theme-preview-word">Aa<span>.</span></span><span class="theme-preview-line"></span></span><span class="theme-name">${name}<span class="theme-check">${icon('check')}</span></span><span class="theme-description">${description}</span></button>`).join('')}</div></section><section class="settings-section"><div class="settings-row"><div><h2>A gentler pace</h2><p>Reduce animations and decorative movement.<br>Your device’s reduced-motion setting is always respected.</p></div><label class="switch"><input id="motion-toggle" type="checkbox" role="switch" ${preferences.reduceMotion ? 'checked' : ''}><span class="switch-track"></span><span class="sr-only">Reduce motion</span></label></div><div class="settings-row"><div><h2>Follow your interests</h2><p>${preferences.interests.length} collections shape your daily discoveries.</p></div><a class="text-link" href="#collections">Edit collections ${icon('arrowUp')}</a></div><div class="settings-row"><div><h2>Make it a memory</h2><p>Double-tap a word to turn it over. Bring it back with the correct spelling, or another double-tap.<br>${account.owner ? 'Your card position syncs with your account.' : 'Your card position is saved in this browser.'}</p></div><a class="text-link" href="#home">Practice your word ${icon('flip')}</a></div></section>${rhythmSection()}<section class="settings-section"><div class="settings-row"><div><h2>A little closer, every day</h2><p>Install LEXI from your browser menu: “Add to Home Screen” or “Install app”.<br>After your first online visit, cached words are available offline.</p></div><button id="install-button" class="button button-outline" data-action="install" ${installPrompt ? '' : 'hidden'}>Install LEXI ${icon('download')}</button></div></section><section class="settings-section local-data-section"><div><span class="micro">YOUR WORDS, YOUR PROGRESS</span><h2>Small rituals. ${account.owner ? 'Lasting memories.' : 'Local memories.'}</h2><p>${account.owner ? 'Your learning data is linked to your account. Export a personal backup whenever you like.' : 'Interests, saved words, and history stay on this device. Sign in to sync, or export a personal backup.'}</p></div><div class="data-actions"><button class="button button-outline" data-action="export">Export my data ${icon('download')}</button><button class="text-link danger-link" data-action="reset">${account.owner ? 'Reset learning data' : 'Reset local data'} ${icon('trash')}</button></div></section></section>`;
 }
 
 function renderFooter() {
@@ -301,6 +305,7 @@ function observeReveals() {
 }
 
 function showOnboarding() {
+  if ($('#account-dialog').open) return;
   $('#onboarding-schedule').innerHTML = scheduleFields('onboarding');
   $('#onboarding-collections').innerHTML = catalog.collections.map((collection, index) => collectionCard(collection, index, preferences.interests.includes(collection.id), 'onboarding')).join('');
   $('#begin-button').disabled = !preferences.interests.length;
@@ -420,7 +425,7 @@ document.addEventListener('click', async event => {
       break;
     case 'clear-search': $('#word-search').value = ''; $('#word-list').innerHTML = listRecords(readRoute().page); $('#word-search').focus(); break;
     case 'reset':
-      openDetail('A fresh start?', `<p>This clears your interests, saved words, history, and appearance settings in this browser. You can export your data first in Settings.</p><p class="dialog-note">This action cannot be undone in the app.</p><div class="dialog-actions"><button class="button button-outline" data-action="close-dialog">Keep my data</button><button class="button button-primary" data-action="confirm-reset">Reset this browser ${icon('arrow')}</button></div>`);
+      openDetail('A fresh start?', `<p>${account.owner ? 'This resets your learning data in this account across devices after syncing. Your profile and photo are kept.' : 'This clears your interests, saved words, history, and appearance settings in this browser.'} You can export your data first in Settings.</p><p class="dialog-note">This action cannot be undone in the app.</p><div class="dialog-actions"><button class="button button-outline" data-action="close-dialog">Keep my data</button><button class="button button-primary" data-action="confirm-reset">${account.owner ? 'Reset learning data' : 'Reset this browser'} ${icon('arrow')}</button></div>`);
       break;
     case 'confirm-reset':
       preferences = resetStore();
@@ -546,7 +551,7 @@ window.addEventListener('hashchange', () => {
 });
 window.addEventListener('resize', fitWord);
 window.addEventListener('storage', event => {
-  if (event.key !== 'lexi:v1' && event.key !== null) return;
+  if (event.key !== storageKey() && event.key !== null) return;
   preferences = readStore();
   if (!catalog) return;
   sanitizePreferences();
@@ -555,6 +560,14 @@ window.addEventListener('storage', event => {
   renderApp({scroll: false});
   if (!preferences.onboarded) showOnboarding();
   else if (onboarding.open) onboarding.close();
+});
+
+window.addEventListener('lexi:accountstate',()=>{
+  if(!catalog||!initialized)return;
+  preferences=readStore();
+  sanitizePreferences();applyAppearance();calculateDaily();renderApp({scroll:false});
+  if(!preferences.onboarded)showOnboarding();
+  else if(onboarding.open)onboarding.close();
 });
 
 function updateNetwork() {
@@ -600,6 +613,8 @@ async function initialize() {
     if (!response.ok) throw new Error(data.error || 'The vocabulary could not be loaded.');
     if (!Array.isArray(data.words) || !data.words.length || !data.collections?.length) throw new Error('The vocabulary database is empty.');
     catalog = data;
+    await account.initialize();
+    preferences = readStore();
     sanitizePreferences();
     applyAppearance();
     calculateDaily();

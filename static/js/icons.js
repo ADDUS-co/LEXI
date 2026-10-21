@@ -1,4 +1,8 @@
 const paths = {
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',
+  camera: '<path d="M3 7h4l2-3h6l2 3h4v14H3z"/><circle cx="12" cy="13" r="4"/>',
+  eye: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>',
+  logout: '<path d="M10 4H4v16h6m-1-8h12m-4-4 4 4-4 4"/>',
   asterisk: '<path d="M12 2v20M2 12h20M5 5l14 14M5 19 19 5"/>',
   flip: '<path d="M4 10a8 8 0 0 1 14-5l2 2M20 2v5h-5M20 14A8 8 0 0 1 6 19l-2-2M4 22v-5h5"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/>',

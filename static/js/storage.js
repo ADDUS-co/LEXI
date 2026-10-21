@@ -1,50 +1,60 @@
-const KEY = 'lexi:v1';
-const defaults = () => ({version: 2, theme: 'noir', interests: [], saved: [], history: [], hiddenWords: [], updateTime: '08:00', onboarded: false, reduceMotion: false});
-let memory = defaults();
+// Guests and each account have separate caches. Passwords and session tokens never go here.
+const GUEST_KEY = 'lexi:v1';
+let activeKey = GUEST_KEY;
+const memories = new Map();
 export let storageAvailable = true;
+const defaults = () => ({version:2, theme:'noir', interests:[], saved:[], history:[], hiddenWords:[], updateTime:'08:00', onboarded:false, reduceMotion:false});
 
 function validDate(value) {
-  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
+  return typeof value==='string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
     && !Number.isNaN(Date.parse(`${value}T00:00:00Z`));
 }
 
-export function readStore() {
-  if (!storageAvailable) return structuredClone(memory);
-  try {
-    let raw;
-    try { raw = JSON.parse(localStorage.getItem(KEY) || '{}'); }
-    catch (error) {
-      if (error instanceof SyntaxError) return memory = defaults();
-      throw error;
-    }
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return memory = defaults();
-    memory = {
-      ...defaults(),
-      theme: ['noir', 'studio', 'experimental'].includes(raw.theme) ? raw.theme : 'noir',
-      interests: Array.isArray(raw.interests) ? [...new Set(raw.interests.filter(x => typeof x === 'string'))] : [],
-      saved: Array.isArray(raw.saved) ? [...new Set(raw.saved.filter(x => typeof x === 'string'))] : [],
-      history: Array.isArray(raw.history) ? raw.history.filter(x => x && typeof x.id === 'string' && validDate(x.date)) : [],
-      onboarded: raw.onboarded === true,
-      reduceMotion: raw.reduceMotion === true,
-      updateTime: typeof raw.updateTime === 'string' && /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(raw.updateTime)
-        ? raw.updateTime : raw.onboarded === true ? '00:00' : '08:00',
-      hiddenWords: Array.isArray(raw.hiddenWords) ? [...new Set(raw.hiddenWords.filter(x => typeof x === 'string'))] : [],
-    };
-  } catch { storageAvailable = false; }
-  return structuredClone(memory);
+export function normalizeStore(raw) {
+  if (!raw || typeof raw!=='object' || Array.isArray(raw)) return defaults();
+  const list = key => Array.isArray(raw[key]) ? [...new Set(raw[key].filter(value=>typeof value==='string'))] : [];
+  return {...defaults(),
+    theme:['noir','studio','experimental'].includes(raw.theme)?raw.theme:'noir',
+    interests:list('interests'), saved:list('saved'), hiddenWords:list('hiddenWords'),
+    history:Array.isArray(raw.history)?raw.history.filter(item=>item&&typeof item.id==='string'&&validDate(item.date)):[],
+    onboarded:raw.onboarded===true, reduceMotion:raw.reduceMotion===true,
+    updateTime:typeof raw.updateTime==='string'&&/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(raw.updateTime)?raw.updateTime:raw.onboarded===true?'00:00':'08:00',
+  };
 }
 
-export function updateStore(patch) {
-  memory = {...readStore(), ...patch};
-  try { localStorage.setItem(KEY, JSON.stringify(memory)); }
-  catch { storageAvailable = false; }
-  return structuredClone(memory);
+function readKey(key) {
+  if (storageAvailable) {
+    try {
+      const content=localStorage.getItem(key);
+      let parsed;
+      try { parsed=JSON.parse(content||'{}'); } catch { parsed={}; }
+      memories.set(key,normalizeStore(parsed));
+    } catch { storageAvailable=false; }
+  }
+  if (!memories.has(key)) memories.set(key,defaults());
+  return structuredClone(memories.get(key));
 }
 
-export function resetStore() {
-  memory = defaults();
-  try { localStorage.removeItem(KEY); }
-  catch { storageAvailable = false; }
-  return structuredClone(memory);
+export function readStore() { return readKey(activeKey); }
+export function readGuestStore() { return readKey(GUEST_KEY); }
+export function storageKey() { return activeKey; }
+
+export function switchStore(userId=null) {
+  activeKey=Number.isInteger(userId)&&userId>0?`lexi:account:${userId}:v1`:GUEST_KEY;
+  return readStore();
 }
 
+export function replaceStore(value,{notify=true}={}) {
+  const previous=readStore();
+  const next=normalizeStore(value);
+  memories.set(activeKey,next);
+  try { localStorage.setItem(activeKey,JSON.stringify(next)); }
+  catch { storageAvailable=false; }
+  if (notify&&JSON.stringify(previous)!==JSON.stringify(next)) {
+    window.dispatchEvent(new CustomEvent('lexi:storechange',{detail:{key:activeKey,state:structuredClone(next)}}));
+  }
+  return structuredClone(next);
+}
+
+export function updateStore(patch) { return replaceStore({...readStore(),...patch}); }
+export function resetStore() { return replaceStore(defaults()); }

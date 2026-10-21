@@ -1,15 +1,21 @@
 """LEXI: run locally with `python app.py`, or use `gunicorn app:app`."""
 
-from datetime import datetime, timezone as utc_timezone
+from datetime import datetime, timedelta, timezone as utc_timezone
 import os
 from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from flask import Flask, jsonify, render_template, request, send_from_directory
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+from werkzeug.middleware.proxy_fix import ProxyFix
+from werkzeug.security import generate_password_hash
 
 from lexi.catalog import load_catalog
 from lexi.selection import EPOCH, select_word
 from lexi.schedule import daily_schedule
+from lexi.database import init_database, local_secret
+from lexi.accounts import accounts
 
 ROOT = Path(__file__).resolve().parent
 
@@ -19,6 +25,34 @@ def create_app(test_config=None):
     app.config.update(LEXI_TIMEZONE=os.environ.get("LEXI_TIMEZONE", "Asia/Bishkek"))
     if test_config:
         app.config.update(test_config)
+    instance = Path(app.instance_path)
+    instance.mkdir(parents=True, exist_ok=True)
+    app.config.setdefault('DATABASE_URL', os.environ.get('DATABASE_URL') or (
+        'sqlite:///:memory:' if app.testing else f'sqlite:///{instance / "lexi.sqlite3"}'))
+    app.config['SECRET_KEY'] = app.config.get('SECRET_KEY') or os.environ.get('SECRET_KEY') or (
+        'test-only-key-not-for-deployment-2026' if app.testing else local_secret(instance))
+    app.config.update(
+        MAX_CONTENT_LENGTH=6 * 1024 * 1024,
+        SESSION_COOKIE_NAME='lexi_session', SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE='Lax', SESSION_COOKIE_SECURE=os.environ.get('LEXI_COOKIE_SECURE') == '1',
+        PERMANENT_SESSION_LIFETIME=timedelta(days=7), SESSION_REFRESH_EACH_REQUEST=False,
+    )
+    engine = init_database(app)
+    app.extensions['dummy_password_hash'] = generate_password_hash('dummy-password-not-a-user-account', method='scrypt')
+    app.register_blueprint(accounts)
+    if os.environ.get('LEXI_TRUST_PROXY') == '1':
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
+
+    @app.cli.command('init-db')
+    def init_db_command():
+        """Tables are created safely on startup; this command checks connectivity."""
+        with engine.connect() as connection:
+            connection.execute(text('SELECT 1'))
+        print('Account database is ready.')
+
+    @app.errorhandler(413)
+    def too_large(error):
+        return jsonify(error='That upload is too large. Choose a photo up to 5 MB.'), 413
 
     def catalog_response():
         try:
@@ -68,6 +102,13 @@ def create_app(test_config=None):
     @app.get("/health")
     def health():
         ready = catalog_response() is not None
+        if ready:
+            try:
+                with engine.connect() as connection:
+                    connection.execute(text('SELECT 1'))
+            except SQLAlchemyError:
+                app.logger.error('The account database is unavailable.')
+                ready = False
         return jsonify(status="ok" if ready else "error"), 200 if ready else 503
 
     @app.get("/sw.js")
@@ -86,7 +127,7 @@ def create_app(test_config=None):
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; "
-            "img-src 'self' data:; connect-src 'self'; worker-src 'self'; "
+            "img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; "
             "object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
         )
         return response
