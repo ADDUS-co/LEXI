@@ -33,7 +33,7 @@ Implementations: `lexi/selection.py` and `static/js/selection.js`. Tests compare
 | `GET /api/daily?collections=law,technology&timezone=Europe/London&update_time=08:00` | Word for the specified local schedule, learning date, calendarDate, updateTime, timezone, nextUpdateAt |
 | `GET /health` | HTTP 200 and `{"status":"ok"}` only when data and timezone validate |
 
-Vocabulary endpoints require an authenticated account session; anonymous requests return HTTP 401. The public `/health` also checks database connectivity. See [ACCOUNTS.md](ACCOUNTS.md) for registration and session headers.
+Vocabulary endpoints require an account session or an explicitly started guest session; anonymous requests return HTTP 401. The public `/health` also checks database connectivity. See [ACCOUNTS.md](ACCOUNTS.md) for registration and session headers.
 
 The API defaults to server timezone Asia/Bishkek and 00:00 for compatibility. It cannot read browser preferences: native clients must send timezone and update_time. The web app calculates locally using the same rules.
 
@@ -41,9 +41,9 @@ Empty or unknown selections, invalid update times, and unknown timezone query pa
 
 ## Persistence
 
-`lexi:v1` is legacy browser data and is never imported into an account. Learning now requires registration or sign-in; each account uses `lexi:account:<id>:v2`. Schema version 2 stores version, theme, interests, saved, history, onboarded, reduceMotion, updateTime, and hiddenWords. Legacy onboarded users default to 00:00; new users default to 08:00. The timezone follows the device and is not frozen in storage. Each history item is `{id, date}`, using the real local viewing date rather than the learning date. A word is recorded once per viewing date; revisiting it on another day is another encounter. Onboarding previews do not count. Future-dated entries are excluded from History. References to deleted words are removed when loading the catalog.
+`lexi:v1` is legacy browser data and is never imported into an account. Learning starts with registration, sign-in, or an explicit temporary guest visit; each account uses `lexi:account:<id>:v2`. Schema version 2 stores version, theme, interests, saved, history, onboarded, reduceMotion, updateTime, and hiddenWords. Legacy onboarded users default to 00:00; new users default to 08:00. The timezone follows the device and is not frozen in storage. Each history item is `{id, date}`, using the real local viewing date rather than the learning date. A word is recorded once per viewing date; revisiting it on another day is another encounter. Onboarding previews do not count. Future-dated entries are excluded from History. References to deleted words are removed when loading the catalog.
 
-The account service synchronizes learning state with the database and merges pending offline changes; localStorage is its device cache. If writing fails, the tab uses memory and reports that persistence is unavailable. Export downloads JSON for personal archival; an import UI is not implemented.
+Guest progress exists only in tab memory and is cleared on exit, reload, navigation away or closing the tab. It is never imported into an account. The account service synchronizes learning state with the database and merges pending offline changes; localStorage is its device cache. If writing fails, the tab uses memory and reports that persistence is unavailable. Export downloads JSON for personal archival; an import UI is not implemented.
 
 ## Offline
 

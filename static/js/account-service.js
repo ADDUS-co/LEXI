@@ -1,4 +1,4 @@
-import {readStore,replaceStore,switchStore,storageKey,normalizeStore} from './storage.js';
+import {readStore,replaceStore,switchStore,storageKey,normalizeStore,clearGuestStore} from './storage.js';
 
 const MARKER='lexi:active-account';
 const PROGRESS_VERSION=2;
@@ -24,8 +24,10 @@ export function mergeChanges(base,local,remote) {
 }
 
 export function createAccountService() {
-  let user=null, csrf='', base=normalizeStore({}), revision=0, status='guest';
+  let user=null, guestId=null, pendingGuestExit=null, csrf='', base=normalizeStore({}), revision=0, status='signed-out';
   let owner=null, identity='', dirty=false, muted=false, timer, inFlight=null, ready=false, authGeneration=0;
+  let channel;
+  try {channel=new BroadcastChannel('lexi:session');}catch{}
   const emit=()=>window.dispatchEvent(new CustomEvent('lexi:accountchange',{detail:{user,status}}));
   const metaKey=id=>`lexi:sync:${id}:v2`;
   function readMeta(id) { try{return JSON.parse(localStorage.getItem(metaKey(id))||'null');}catch{return null;} }
@@ -90,12 +92,18 @@ export function createAccountService() {
 
   async function activate(data,{fresh=false,initialTheme}={}) {
     if(data.user&&data.progressVersion!==PROGRESS_VERSION)throw new Error('Reload LEXI after the account update.');
+    clearTimeout(timer);
+    const previousGuest=guestId;
+    guestId=typeof data.guestId==='string'?data.guestId:null;
+    if(!guestId||previousGuest!==guestId)clearGuestStore();
     user=data.user;csrf=data.csrfToken||csrf;
     if(!user) {
-      owner=null;identity='';dirty=false;status='guest';switchStore();marker(null);ready=true;emit();
+      owner=null;identity='';dirty=false;base=normalizeStore({});revision=0;
+      status=guestId?'guest':'signed-out';switchStore();
+      if(guestId&&guestId!==previousGuest&&['noir','studio','experimental'].includes(initialTheme))cache({...readStore(),theme:initialTheme});
+      marker(null);ready=true;emit();
       window.dispatchEvent(new Event('lexi:accountstate'));return;
     }
-    clearTimeout(timer);
     owner=user.id;identity=`${user.id}:${user.createdAt}:${user.username}`;switchStore(owner);
     const local=readStore(), meta=readMeta(owner), remote=normalizeStore(data.state);
     revision=data.revision;
@@ -109,52 +117,89 @@ export function createAccountService() {
 
   async function initialize() {
     const generation=++authGeneration;
-    try { const data=await request('/session');if(generation!==authGeneration)return;await activate(data); }
+    try {
+      let data=await request('/session');
+      if(generation!==authGeneration)return;
+      if(pendingGuestExit&&data.guestId===pendingGuestExit) {
+        data=await request('/logout',{method:'POST',headers:{'X-Guest-Id':pendingGuestExit}});
+        if(generation!==authGeneration)return;
+      }
+      pendingGuestExit=null;await activate(data);
+    }
     catch(error) {
       if(generation!==authGeneration)return;
       if(!ready) {
         owner=cachedOwner();switchStore(owner);
         if(owner) {const meta=readMeta(owner);if(meta?.progressVersion===PROGRESS_VERSION&&typeof meta.identity==='string'){identity=meta.identity;base=normalizeStore(meta.base);revision=meta.revision||0;dirty=meta.dirty||false;}else{owner=null;identity='';switchStore();marker(null);}}
       }
-      status=owner?'offline':'unavailable';ready=true;emit();
+      status=guestId?'guest':owner?'offline':'unavailable';ready=true;emit();
     }
   }
 
   window.addEventListener('lexi:storechange',event=>{if(ready&&event.detail?.key===storageKey())scheduleSync();});
   window.addEventListener('online',()=>initialize());
+  window.addEventListener('pagehide',()=>{
+    if(guestId){++authGeneration;activate({user:null});}
+  });
+  window.addEventListener('pageshow',event=>{if(event.persisted)initialize();});
+  if(channel)channel.onmessage=event=>{
+    if(event.data?.type==='guest-ended'&&guestId===event.data.id) {
+      ++authGeneration;pendingGuestExit=guestId;activate({user:null});
+    } else if(event.data?.type==='session-changed')initialize();
+  };
   window.addEventListener('storage',event=>{
     if(event.key===MARKER)initialize();
     else if(owner&&event.key===storageKey()) {dirty=true;saveMeta();scheduleSync();}
   });
   let lastRefresh=0;
   document.addEventListener('visibilitychange',()=>{
-    if(!document.hidden&&owner&&Date.now()-lastRefresh>10000){lastRefresh=Date.now();initialize();}
+    if(!document.hidden&&(owner||guestId)&&Date.now()-lastRefresh>10000){lastRefresh=Date.now();initialize();}
   });
 
   return {
     initialize,flush,
     get user(){return user;},get status(){return status;},get owner(){return owner;},
+    get isGuest(){return !!guestId;},
+    get scope(){return guestId?`guest:${guestId}`:owner;},
     get ready(){return ready;},
-    get hasAccess(){return (!!user&&status!=='expired')||(!user&&!!owner&&status==='offline');},
+    get hasAccess(){return !!guestId||(!!user&&status!=='expired')||(!user&&!!owner&&status==='offline');},
+    async enterGuest(initialTheme) {
+      const generation=++authGeneration;
+      await request('/session');
+      const data=await request('/guest',{method:'POST'});
+      if(generation!==authGeneration)return;
+      await activate(data,{initialTheme});
+      channel?.postMessage({type:'session-changed'});
+    },
     async register(fields,initialTheme) {
       const generation=++authGeneration;
       await request('/session');
       const data=await request('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(fields)});
       if(generation!==authGeneration)return;
-      await activate(data,{fresh:true,initialTheme});return user;
+      await activate(data,{fresh:true,initialTheme});channel?.postMessage({type:'session-changed'});return user;
     },
     async login(fields) {
       const generation=++authGeneration;
       await request('/session');
       const data=await request('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(fields)});
       if(generation!==authGeneration)return;
-      await activate(data);return user;
+      await activate(data);channel?.postMessage({type:'session-changed'});return user;
     },
     async logout() {
       ++authGeneration;
+      if(guestId) {
+        const id=guestId;
+        pendingGuestExit=id;
+        // Clear immediately, even offline. The cookie contains no learning data.
+        await activate({user:null});
+        channel?.postMessage({type:'guest-ended',id});
+        if(navigator.onLine)await request('/logout',{method:'POST',headers:{'X-Guest-Id':id}},false).then(()=>{if(pendingGuestExit===id)pendingGuestExit=null;}).catch(()=>{});
+        return;
+      }
       const complete=await flush();
       if(dirty&&!complete)throw new Error('Reconnect and sync your changes before signing out.');
       await activate(await request('/logout',{method:'POST',owned:true}));
+      channel?.postMessage({type:'session-changed'});
     },
     async uploadPhoto(file) {
       const id=user?.id;

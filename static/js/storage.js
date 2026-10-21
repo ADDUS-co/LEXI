@@ -1,5 +1,5 @@
-// Each account has its own clean cache. The old guest key is never imported.
-const GUEST_KEY = 'lexi:v1';
+// Account caches persist; guest progress exists only in this tab's memory.
+const GUEST_KEY = 'lexi:guest:memory';
 let activeKey = GUEST_KEY;
 const memories = new Map();
 export let storageAvailable = true;
@@ -23,7 +23,7 @@ export function normalizeStore(raw) {
 }
 
 function readKey(key) {
-  if (storageAvailable) {
+  if (key!==GUEST_KEY && storageAvailable) {
     try {
       const content=localStorage.getItem(key);
       let parsed;
@@ -37,6 +37,7 @@ function readKey(key) {
 
 export function readStore() { return readKey(activeKey); }
 export function storageKey() { return activeKey; }
+export function clearGuestStore() { memories.delete(GUEST_KEY); }
 
 export function switchStore(userId=null) {
   activeKey=Number.isInteger(userId)&&userId>0?`lexi:account:${userId}:v2`:GUEST_KEY;
@@ -47,8 +48,10 @@ export function replaceStore(value,{notify=true}={}) {
   const previous=readStore();
   const next=normalizeStore(value);
   memories.set(activeKey,next);
-  try { localStorage.setItem(activeKey,JSON.stringify(next)); }
-  catch { storageAvailable=false; }
+  if(activeKey!==GUEST_KEY) {
+    try { localStorage.setItem(activeKey,JSON.stringify(next)); }
+    catch { storageAvailable=false; }
+  }
   if (notify&&JSON.stringify(previous)!==JSON.stringify(next)) {
     window.dispatchEvent(new CustomEvent('lexi:storechange',{detail:{key:activeKey,state:structuredClone(next)}}));
   }

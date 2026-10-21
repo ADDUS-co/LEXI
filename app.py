@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from flask import Flask, jsonify, render_template, request, send_from_directory
+from flask import Flask, jsonify, render_template, request, send_from_directory, session
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -44,9 +44,9 @@ def create_app(test_config=None):
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
     @app.before_request
-    def require_learning_account():
-        if request.path in ('/api/catalog', '/api/daily') and current_user() is None:
-            response = jsonify(error='Create an account or sign in to discover your words.', code='auth_required')
+    def require_learning_session():
+        if request.path in ('/api/catalog', '/api/daily') and current_user() is None and not session.get('guest_id'):
+            response = jsonify(error='Sign in, create an account, or continue as a guest to discover your words.', code='auth_required')
             response.status_code = 401
             response.headers['Cache-Control'] = 'no-store, private'
             response.vary.add('Cookie')

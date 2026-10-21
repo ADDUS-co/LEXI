@@ -59,6 +59,7 @@
   <div id="learning-app" hidden inert>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <div id="offline-banner" class="offline-banner" role="status" hidden>You're offline. Your cached words and local collection are still here.</div>
+  <div id="guest-banner" class="guest-banner page-width" hidden><p><strong>Guest visit</strong><span>Progress lasts for this visit only.</span></p><button class="text-link" data-account-action="guest-exit">Exit guest mode <span data-icon="logout"></span></button></div>
   <header class="site-header page-width">
     <a class="brand" href="#home" aria-label="LEXI Home"><span class="brand-symbol" data-icon="asterisk" aria-hidden="true"></span>LEXI<span class="brand-dot">.</span></a>
     <nav class="primary-nav" aria-label="Main navigation">
@@ -86,7 +87,8 @@
       <fieldset class="onboarding-rhythm"><legend>Your daily rhythm</legend><div id="onboarding-schedule"></div><p>Choose when your next word arrives, in your device’s timezone.</p></fieldset>
       <div class="onboarding-prompt"><h2>What interests you?</h2><span>Choose one or more. Follow your curiosity.</span></div>
       <div id="onboarding-collections" class="onboarding-grid"></div>
-      <div class="onboarding-bottom"><p>Your own little world of words.<br>Saved to your account, every day.</p><button id="begin-button" class="button button-primary" disabled>Discover my word <span data-icon="arrow"></span></button></div>
+      <div class="onboarding-bottom"><p id="onboarding-data-note">Your own little world of words.<br>Saved to your account, every day.</p><button id="begin-button" class="button button-primary" disabled>Discover my word <span data-icon="arrow"></span></button></div>
+      <button id="onboarding-guest-exit" class="text-link" data-account-action="guest-exit" hidden>Exit guest mode <span data-icon="logout"></span></button>
     </div>
   </dialog>
   <dialog id="detail-dialog" class="detail-dialog" aria-labelledby="detail-title"></dialog>

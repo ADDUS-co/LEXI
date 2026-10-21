@@ -26,6 +26,16 @@
 .account-submit{width:100%;margin-top:22px}
 .account-privacy,.account-offline{font-size:10px;color:var(--muted-readable);line-height:1.8;margin-top:20px}
 .account-offline{color:var(--danger)}
+.account-guest{border-top:1px solid var(--border);margin-top:22px;padding-top:18px}
+.account-guest>.button{width:100%;min-height:44px;font-size:12px}
+.account-guest>p{font-size:10px;line-height:1.8;color:var(--muted-readable);margin-top:10px}
+.guest-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:12px;border-bottom:1px solid var(--border);color:var(--muted-readable)}
+.guest-banner>p{display:flex;flex-wrap:wrap;column-gap:14px;row-gap:4px;font-size:11px;line-height:1.6}
+.guest-banner strong{font-weight:500;color:var(--accent-text)}
+.guest-banner>.text-link{font-size:11px;min-height:44px;flex-shrink:0}
+.guest-account-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.guest-account-actions>.button{font-size:12px}
+#onboarding-guest-exit{margin-top:18px;font-size:12px;min-height:44px}
 .profile-summary{display:flex;align-items:center;gap:22px;margin-top:30px;margin-bottom:24px}
 .profile-avatar{width:88px;height:88px;flex-shrink:0;border:1px solid var(--border);border-radius:50%;background:var(--panel);display:grid;place-items:center;overflow:hidden}
 .profile-avatar>img{width:100%;height:100%;object-fit:cover}

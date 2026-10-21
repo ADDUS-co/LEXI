@@ -5,7 +5,7 @@ import tempfile
 import unittest
 
 from PIL import Image
-from sqlalchemy import delete
+from sqlalchemy import delete, func, select
 from werkzeug.security import check_password_hash
 
 from app import create_app
@@ -73,7 +73,7 @@ class AccountTests(unittest.TestCase):
             self.assertIn('Cookie', response.headers['Vary'])
 
     def test_csrf_required_even_for_registration_and_login(self):
-        for path in ('register', 'login', 'logout', 'state', 'avatar'):
+        for path in ('register', 'login', 'guest', 'logout', 'state', 'avatar'):
             method = self.client.put if path in ('state', 'avatar') else self.client.post
             self.assertEqual(method('/api/account/' + path, json={}).status_code, 403)
         self.assertEqual(self.client.post('/api/account/login', json={}, headers={
@@ -227,6 +227,54 @@ class AccountTests(unittest.TestCase):
             'X-CSRF-Token': self.csrf,
         }).status_code, 401)
         self.assertEqual(self.client.get('/api/account/avatar').status_code, 401)
+
+    def test_guest_can_learn_without_creating_or_saving_a_profile(self):
+        response = self.client.post('/api/account/guest', headers={'X-CSRF-Token': self.csrf})
+        self.assertEqual(response.status_code, 200)
+        guest = response.json
+        self.assertIsNone(guest['user'])
+        self.assertIsNone(guest['state'])
+        self.assertTrue(guest['guestId'])
+        self.assertNotEqual(guest['csrfToken'], self.csrf)
+        cookie = self.client.get_cookie('lexi_session')
+        self.assertIsNone(cookie.expires)
+        self.assertTrue(cookie.http_only)
+        self.assertEqual(self.client.get('/api/catalog').status_code, 200)
+        self.assertEqual(self.client.get('/api/daily?collections=ielts').status_code, 200)
+        headers = {'X-CSRF-Token': guest['csrfToken']}
+        self.assertEqual(self.client.put('/api/account/state', json={
+            'state': self.state(), 'revision': 0, 'progressVersion': PROGRESS_VERSION,
+        }, headers=headers).status_code, 401)
+        for method in (self.client.get, self.client.put, self.client.delete):
+            self.assertEqual(method('/api/account/avatar', headers=headers).status_code, 401)
+        self.assertIsNone(self.client.get('/api/account/session').json['state'])
+        with self.app.app_context():
+            self.assertEqual(get_db().scalar(select(func.count()).select_from(User)), 0)
+
+    def test_guest_exit_is_owned_and_revokes_learning_access(self):
+        guest = self.client.post('/api/account/guest', headers={'X-CSRF-Token': self.csrf}).json
+        headers = {'X-CSRF-Token': guest['csrfToken'], 'X-Guest-Id': 'stale-guest'}
+        self.assertEqual(self.client.post('/api/account/logout', headers=headers).status_code, 409)
+        self.assertEqual(self.client.get('/api/catalog').status_code, 200)
+        headers['X-Guest-Id'] = guest['guestId']
+        response = self.client.post('/api/account/logout', headers=headers)
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.json['guestId'])
+        self.assertEqual(self.client.get('/api/catalog').status_code, 401)
+        self.assertEqual(self.client.get('/api/daily').status_code, 401)
+
+    def test_guest_to_account_starts_clean_and_stale_guest_cannot_sign_it_out(self):
+        guest = self.client.post('/api/account/guest', headers={'X-CSRF-Token': self.csrf}).json
+        account = self.register()
+        self.assertIsNone(account['guestId'])
+        self.assertIsNone(account['state'])
+        self.assertEqual(self.save(account).status_code, 200)
+        headers = {'X-CSRF-Token': account['csrfToken'], 'X-Guest-Id': guest['guestId']}
+        self.assertEqual(self.client.post('/api/account/logout', headers=headers).status_code, 409)
+        self.assertEqual(self.client.post('/api/account/guest', headers=headers).status_code, 409)
+        session = self.client.get('/api/account/session').json
+        self.assertEqual(session['user']['id'], account['user']['id'])
+        self.assertEqual(session['state']['interests'], ['ielts'])
 
     def test_learning_endpoints_require_registration_or_login(self):
         for endpoint in ('/api/catalog', '/api/daily?collections=ielts'):

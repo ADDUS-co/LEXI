@@ -62,6 +62,7 @@ def user_json(user):
 
 def account_payload(user):
     return {'user': user_json(user) if user else None, 'csrfToken': csrf_token(),
+            'guestId': session.get('guest_id') if not user else None,
             'state': user.preferences if user else None, 'revision': user.revision if user else 0,
             'progressVersion': PROGRESS_VERSION}
 
@@ -182,10 +183,27 @@ def login():
 @accounts.post('/logout')
 @protected
 def logout():
+    if session.get('guest_id') and not current_user():
+        if request.headers.get('X-Guest-Id') != session['guest_id']:
+            return jsonify(error='The guest session changed. Refresh and try again.', code='account_changed'), 409
+        session.clear()
+        return jsonify(account_payload(None))
     error = account_owner_error(current_user())
     if error is not None:
         return error
     session.clear()
+    return jsonify(account_payload(None))
+
+
+@accounts.post('/guest')
+@protected
+def start_guest():
+    if current_user():
+        return jsonify(error='Sign out of your account before starting a guest visit.', code='account_changed'), 409
+    session.clear()
+    session['guest_id'] = secrets.token_urlsafe(24)
+    # This cookie grants vocabulary access only. No guest profile is created.
+    session.permanent = False
     return jsonify(account_payload(None))
 
 
