@@ -28,6 +28,9 @@ let toastTimer;
 let observer;
 let installPrompt;
 let initialized = false;
+let bootstrapped = false;
+let learningLoad = null;
+let learningOwner = null;
 let speaking = false;
 let schedule;
 let flipping = false;
@@ -245,7 +248,7 @@ function renderFooter() {
 }
 
 function renderApp({scroll = true} = {}) {
-  if (!catalog) return;
+  if (!catalog || !account.hasAccess) return;
   const route = readRoute();
   currentWord = null;
   if (route.page === 'home' || route.page === 'word') {
@@ -305,7 +308,7 @@ function observeReveals() {
 }
 
 function showOnboarding() {
-  if ($('#account-dialog').open) return;
+  if (!account.hasAccess || !catalog || $('#account-dialog').open) return;
   $('#onboarding-schedule').innerHTML = scheduleFields('onboarding');
   $('#onboarding-collections').innerHTML = catalog.collections.map((collection, index) => collectionCard(collection, index, preferences.interests.includes(collection.id), 'onboarding')).join('');
   $('#begin-button').disabled = !preferences.interests.length;
@@ -552,6 +555,7 @@ window.addEventListener('hashchange', () => {
 window.addEventListener('resize', fitWord);
 window.addEventListener('storage', event => {
   if (event.key !== storageKey() && event.key !== null) return;
+  if (!account.hasAccess) return;
   preferences = readStore();
   if (!catalog) return;
   sanitizePreferences();
@@ -562,8 +566,16 @@ window.addEventListener('storage', event => {
   else if (onboarding.open) onboarding.close();
 });
 
-window.addEventListener('lexi:accountstate',()=>{
-  if(!catalog||!initialized)return;
+window.addEventListener('lexi:accesschange',()=>{
+  if(account.hasAccess)return;
+  observer?.disconnect();
+  catalog=null;currentWord=null;dailyWord=null;schedule=null;initialized=false;
+  main.replaceChildren();$('#site-footer').replaceChildren();
+});
+
+window.addEventListener('lexi:accountstate',async()=>{
+  if(!bootstrapped||!account.hasAccess)return;
+  if(!catalog){await loadLearning();return;}
   preferences=readStore();
   sanitizePreferences();applyAppearance();calculateDaily();renderApp({scroll:false});
   if(!preferences.onboarded)showOnboarding();
@@ -581,7 +593,7 @@ window.addEventListener('beforeinstallprompt', event => {
 });
 
 function checkDay() {
-  if (!catalog) return;
+  if (!catalog || !account.hasAccess || !schedule) return;
   const latest = dailySchedule(deviceTimezone(catalog.timezone),preferences.updateTime);
   if (latest.date === schedule.date && latest.calendarDate === today && latest.timezone === schedule.timezone) return;
   const previousWord = dailyWord?.id;
@@ -606,14 +618,33 @@ function sanitizePreferences() {
   });
 }
 
-async function initialize() {
+async function loadLearning() {
+  if(!account.hasAccess)return;
+  const owner=account.owner;
+  if(learningLoad) {
+    if(learningOwner===owner)return learningLoad;
+    await learningLoad;
+    return loadLearning();
+  }
+  learningOwner=owner;
+  learningLoad=loadCatalog(owner).finally(()=>{learningLoad=null;learningOwner=null;});
+  return learningLoad;
+}
+
+async function loadCatalog(owner) {
+  main.innerHTML='<div class="loading-state page-width" role="status"><span class="eyebrow">A LITTLE MORE KNOWLEDGE</span><h1>Your words.<br>Your world.</h1><p>Finding your daily word…</p></div>';
   try {
     const response = await fetch('/api/catalog');
+    if(!account.hasAccess||account.owner!==owner)return;
+    if(response.status===401){await account.initialize();return;}
     const data = await response.json();
+    if(!account.hasAccess||account.owner!==owner)return;
     if (!response.ok) throw new Error(data.error || 'The vocabulary could not be loaded.');
     if (!Array.isArray(data.words) || !data.words.length || !data.collections?.length) throw new Error('The vocabulary database is empty.');
     catalog = data;
-    await account.initialize();
+    if('serviceWorker' in navigator&&navigator.onLine) {
+      navigator.serviceWorker.ready.then(registration=>registration.active?.postMessage({type:'LEXI_CACHE_CATALOG'})).catch(()=>{});
+    }
     preferences = readStore();
     sanitizePreferences();
     applyAppearance();
@@ -624,13 +655,18 @@ async function initialize() {
     initialized = true;
     if (!storageAvailable) toast('Browser storage is unavailable. Changes will last for this visit only.');
     updateNetwork();
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(() => { /* Online learning remains available without offline caching. */ });
-    }
   } catch (error) {
+    if(!account.hasAccess||account.owner!==owner)return;
     main.innerHTML = `<section class="interior-page page-width empty-state"><span class="eyebrow">A SMALL PAUSE</span><h1 tabindex="-1">Your words need<br>a moment.</h1><p>${escape(error.message)}</p><p class="muted">If you’re offline, connect once to download the vocabulary. If you maintain this site, check data/words.json and the server log.</p><button class="button button-primary" data-action="retry">Try again ${icon('arrow')}</button></section>`;
     main.setAttribute('aria-busy', 'false');
   }
+}
+
+async function initialize() {
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  await account.initialize();
+  bootstrapped=true;
+  if(account.hasAccess)await loadLearning();
 }
 
 await initialize();

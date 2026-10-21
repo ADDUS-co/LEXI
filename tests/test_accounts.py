@@ -167,6 +167,38 @@ class AccountTests(unittest.TestCase):
         }).status_code, 401)
         self.assertEqual(self.client.get('/api/account/avatar').status_code, 401)
 
+    def test_learning_endpoints_require_registration_or_login(self):
+        for endpoint in ('/api/catalog', '/api/daily?collections=ielts'):
+            response = self.client.get(endpoint)
+            self.assertEqual(response.status_code, 401)
+            self.assertEqual(response.json['code'], 'auth_required')
+            self.assertIn('no-store', response.headers['Cache-Control'])
+        self.assertEqual(self.client.get('/health').status_code, 200)
+        self.register()
+        self.assertEqual(self.client.get('/api/catalog').status_code, 200)
+        self.assertEqual(self.client.get('/api/daily').status_code, 200)
+
+    def test_logout_locks_learning_endpoints_again(self):
+        data = self.register()
+        self.client.post('/api/account/logout', headers=self.headers(data))
+        self.assertEqual(self.client.get('/api/catalog').status_code, 401)
+        self.assertEqual(self.client.get('/api/daily').status_code, 401)
+
+    def test_entry_shell_is_public_but_learning_starts_hidden(self):
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'id="auth-screen"', response.data)
+        self.assertIn(b'id="learning-app" hidden inert', response.data)
+        self.assertIn(b'class="word-plane"', response.data)
+        self.assertNotIn(b'No account. No pressure.', response.data)
+
+    def test_public_offline_shell_installs_before_sign_in(self):
+        with self.client.get('/sw.js') as response:
+            source = response.data.decode()
+            shell = source.split('const SHELL = [', 1)[1].split('];', 1)[0]
+            self.assertNotIn('/api/catalog', shell)
+            self.assertIn('/static/css/entry.css', shell)
+
     def test_server_filters_unknown_words_and_deduplicates(self):
         data = self.register()
         catalog = self.client.get('/api/catalog').json

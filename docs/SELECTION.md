@@ -33,19 +33,21 @@ Implementations: `lexi/selection.py` and `static/js/selection.js`. Tests compare
 | `GET /api/daily?collections=law,technology&timezone=Europe/London&update_time=08:00` | Word for the specified local schedule, learning date, calendarDate, updateTime, timezone, nextUpdateAt |
 | `GET /health` | HTTP 200 and `{"status":"ok"}` only when data and timezone validate |
 
+Vocabulary endpoints require an authenticated account session; anonymous requests return HTTP 401. The public `/health` also checks database connectivity. See [ACCOUNTS.md](ACCOUNTS.md) for registration and session headers.
+
 The API defaults to server timezone Asia/Bishkek and 00:00 for compatibility. It cannot read browser preferences: native clients must send timezone and update_time. The web app calculates locally using the same rules.
 
-Empty or unknown selections, invalid update times, and unknown timezone query parameters return HTTP 400. Invalid JSON, duplicate IDs, empty collections, missing required fields, or an invalid timezone return HTTP 503 with a clear error. Diagnostics remain in the server log. There is no public date-override API and no user-history upload. Data is reread per request.
+Empty or unknown selections, invalid update times, and unknown timezone query parameters return HTTP 400. Invalid JSON, duplicate IDs, empty collections, missing required fields, or an invalid timezone return HTTP 503 with a clear error. Diagnostics remain in the server log. There is no public date-override API; account progress is synchronized through `/api/account/state`. Data is reread per request.
 
 ## Persistence
 
-`lexi:v1` remains the storage key to preserve existing data. Schema version 2 stores version, theme, interests, saved, history, onboarded, reduceMotion, updateTime, and hiddenWords. Legacy onboarded users default to 00:00; new users default to 08:00. The timezone follows the device and is not frozen in storage. Each history item is `{id, date}`, using the real local viewing date rather than the learning date. A word is recorded once per viewing date; revisiting it on another day is another encounter. Onboarding previews do not count. Future-dated entries are excluded from History. References to deleted words are removed when loading the catalog.
+`lexi:v1` preserves old guest data for optional account import. Learning now requires registration or sign-in; each account uses `lexi:account:<id>:v1`. Schema version 2 stores version, theme, interests, saved, history, onboarded, reduceMotion, updateTime, and hiddenWords. Legacy onboarded users default to 00:00; new users default to 08:00. The timezone follows the device and is not frozen in storage. Each history item is `{id, date}`, using the real local viewing date rather than the learning date. A word is recorded once per viewing date; revisiting it on another day is another encounter. Onboarding previews do not count. Future-dated entries are excluded from History. References to deleted words are removed when loading the catalog.
 
-LocalStorage does not sync between devices. If writing fails, the tab uses memory and reports that persistence is unavailable. Export downloads JSON for personal archival; an import UI is not implemented.
+The account service synchronizes learning state with the database and merges pending offline changes; localStorage is its device cache. If writing fails, the tab uses memory and reports that persistence is unavailable. Export downloads JSON for personal archival; an import UI is not implemented.
 
 ## Offline
 
-The Service Worker caches the shell, local fonts, icons, and a valid online catalog after the first visit. Network is preferred, so online changes appear on refresh. Failed HTTP responses are surfaced rather than hidden by stale data. Without a network, the cached catalog supports the same browser-side selection for the current date. Cache cleanup only removes old LEXI caches. Some speech voices may require a network connection.
+The Service Worker caches the shell, local fonts, icons, and a valid online catalog after an authenticated visit. The public shell installs before sign-in; the protected catalog is cached on demand. Signed-out users remain at the entry screen even offline. Network is preferred, so online changes appear on refresh. Failed HTTP responses are surfaced rather than hidden by stale data. Without a network, the cached catalog supports the same browser-side selection for the current date. Cache cleanup only removes old LEXI caches. Some speech voices may require a network connection.
 
 ## Kotlin / Jetpack Glance
 
@@ -54,7 +56,7 @@ The Service Worker caches the shell, local fonts, icons, and a valid online cata
 3. Build the interleaved deck. Use `ChronoUnit.DAYS.between(epoch, day)` and `Math.floorMod`.
 4. Display word, IPA, shortDefinition, and collection with Glance. Tap opens the native detail screen or `/#word/<id>`.
 5. Request updates near the next date boundary using Android's supported scheduler, and refresh on app opening. Android may delay background work; exact-second widget refresh is not promised.
-6. Native preferences do not automatically share browser localStorage. Cross-device accounts and synchronization need a later design.
+6. Native preferences do not automatically share browser localStorage. A native client must implement the existing account session and sync protocol separately.
 
 Validate the web MVP on actual devices before starting the native app. A PWA home-screen icon is not a native widget.
 
@@ -71,4 +73,4 @@ The open page checks every 30 seconds and on visibility restoration. A closed br
 
 The back offers a definition with exact occurrences of the answer removed. It omits IPA, pronunciation, share, examples, full explanations, and source links. Titles and normal Saved/History labels also mask a hidden answer. A full answer matches case-insensitively after Unicode NFKC normalization, trimming, and whitespace normalization; partial or incorrect text does not reveal it. A second double-tap is the alternative. Keyboard users can activate Press twice to reveal twice within 1.8 seconds.
 
-After a reveal the word stays visible until hidden again. State is per word, so returning to an older card preserves its side. Deleted IDs are removed on catalog load. This is an optional recall aid, not access control: the public catalog still contains all vocabulary.
+After a reveal the word stays visible until hidden again. State is per word, so returning to an older card preserves its side. Deleted IDs are removed on catalog load. This is an optional recall aid, not access control: the authenticated catalog still contains all vocabulary.

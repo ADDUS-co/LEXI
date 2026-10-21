@@ -10,7 +10,6 @@ from pathlib import Path
 import re
 import shutil
 import time
-from urllib.request import urlopen
 
 from PIL import Image
 from playwright.sync_api import sync_playwright, expect
@@ -46,16 +45,24 @@ def go(page, route):
 
 
 def sign_in(page, identifier, password='Synthetic-pass-42'):
-    page.locator('[data-account-action="open"]').last.click()
+    if page.locator('#auth-screen').is_visible():
+        page.locator('[data-account-action="login-tab"]').click()
+    else:
+        page.locator('#account-button').click()
     page.locator('input[name="identifier"]').fill(identifier)
     page.locator('input[name="password"]').fill(password)
     page.locator('#account-auth-form button[type="submit"]').click()
+    expect(page.locator('#auth-screen')).not_to_be_visible()
+    page.locator('#account-button').click()
     expect(page.locator('[data-profile-owner]')).to_be_visible()
 
 
 def run():
-    with urlopen(BASE + '/api/catalog') as response:
-        catalog = json.load(response)
+    words = json.loads((Path(__file__).resolve().parents[1] / 'data/words.json').read_text())
+    word_id = next(word['id'] for word in words if word['collectionId'] == 'ielts')
+    legacy = {'version': 2, 'interests': ['ielts'], 'saved': [word_id], 'hiddenWords': [word_id],
+              'history': [{'id': word_id, 'date': '2026-10-21'}], 'theme': 'studio',
+              'updateTime': '09:15', 'onboarded': True, 'reduceMotion': False}
     stamp = str(time.time_ns())[-12:]
     username = 'Test_' + stamp
     email = username.lower() + '@example.com'
@@ -67,25 +74,55 @@ def run():
         page = first.new_page()
         errors = []
         page.on('pageerror', lambda error: errors.append(str(error)))
-        page.goto(BASE, wait_until='networkidle')
-        page.locator('input[name="onboarding"][value="ielts"]').check()
-        page.locator('#onboarding-update-time').fill('09:15')
-        page.locator('#begin-button').click()
-        page.locator('[data-action="save"]').first.click()
-        word_id = page.evaluate("JSON.parse(localStorage.getItem('lexi:v1')).saved[0]")
-        page.locator('#daily-word').dblclick()
-        expect(page.locator('#recall-form')).to_be_visible()
-        go(page, 'settings')
-        page.locator('[data-theme-choice="studio"]').click()
-        page.locator('#account-button').click()
-        page.locator('[data-account-action="register-tab"]').click()
+        page.add_init_script("if(!localStorage.getItem('lexi:v1'))localStorage.setItem('lexi:v1'," + json.dumps(json.dumps(legacy)) + ");")
+        requests=[]
+        page.on('request', lambda request: requests.append(request.url))
+        page.goto(BASE + '/#settings', wait_until='networkidle')
+        expect(page.locator('input[name="username"]')).to_be_visible()
+        check(not page.locator('#learning-app').is_visible() and page.locator('#learning-app').get_attribute('inert') is not None, 'First visit shows registration and keeps learning hidden and inert')
+        check(not any('/api/catalog' in url or '/api/daily' in url for url in requests), 'No vocabulary is requested before signing in')
+        for endpoint in ('/api/catalog', '/api/daily'):
+            check(first.request.get(BASE+endpoint).status == 401, f'Anonymous requests are blocked by the server: {endpoint}')
+        page.keyboard.press('Escape')
+        page.evaluate("location.hash='word/" + word_id + "'")
+        check(page.locator('#auth-screen').is_visible() and not page.locator('#learning-app').is_visible(), 'Escape and word deep links cannot dismiss registration')
+        page.evaluate("location.hash='settings'")
+        a=page.locator('.word-track>span').first.bounding_box()
+        page.wait_for_timeout(700)
+        b=page.locator('.word-track>span').first.bounding_box()
+        from math import atan2, degrees
+        angle=degrees(atan2(b['y']-a['y'],b['x']-a['x']))
+        check(b['y']>a['y'] and abs(angle-60)<1, 'Background words actually drift downward at 60 degrees')
+        check(float(page.locator('.word-stream').first.evaluate('e=>getComputedStyle(e).opacity'))<=0.12, 'Background words stay subtle')
+        page.locator('#entry-motion-toggle').click()
+        before=page.locator('.word-track').first.evaluate('e=>getComputedStyle(e).transform')
+        page.wait_for_timeout(300)
+        check(before==page.locator('.word-track').first.evaluate('e=>getComputedStyle(e).transform'), 'Background animation can be paused')
+        page.locator('#entry-motion-toggle').click()
+        page.emulate_media(reduced_motion='reduce')
+        check(page.locator('.word-track').first.evaluate('e=>getComputedStyle(e).animationName')=='none', 'Reduced-motion devices receive a static background')
+        page.emulate_media(reduced_motion='no-preference')
+        for width in (320,390,768,1440):
+            page.set_viewport_size({'width':width,'height':1000})
+            check(page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'Registration has no horizontal overflow at {width}px')
+        page.screenshot(path=str(OUTPUT/'entry-registration-desktop.png'),full_page=True)
+        page.set_viewport_size({'width':390,'height':844})
+        page.screenshot(path=str(OUTPUT/'entry-registration-mobile.png'),full_page=True)
+        page.set_viewport_size({'width':1440,'height':1000})
+        page.evaluate('navigator.serviceWorker.ready')
+        page.wait_for_function('navigator.serviceWorker.controller!==null')
+        cache_urls=page.evaluate("async()=>{const out=[];for(const key of await caches.keys())for(const r of await(await caches.open(key)).keys())out.push(r.url);return out;}")
+        check(not any('/api/catalog' in url for url in cache_urls), 'Offline shell installs without fetching the protected catalog')
         for field, value in {'username': username, 'email': email, 'password': 'Synthetic-pass-42'}.items():
             page.locator(f'input[name="{field}"]').fill(value)
         check(page.locator('input[name="importLocal"]').is_checked(), 'Registration offers to transfer guest progress')
         page.locator('[data-account-action="password"]').click()
         expect(page.locator('input[name="password"]')).to_have_attribute('type', 'text')
         page.locator('#account-auth-form button[type="submit"]').click()
+        expect(page.locator('#auth-screen')).not_to_be_visible()
+        page.locator('#account-button').click()
         expect(page.locator('[data-profile-owner]')).to_be_visible()
+        catalog=first.request.get(BASE+'/api/catalog').json()
         synced(page)
         check(state(page)['saved'] == [word_id], 'Registration imports saved guest words')
         check(state(page)['theme'] == 'studio' and state(page)['updateTime'] == '09:15', 'Registration imports appearance and daily time')
@@ -145,12 +182,13 @@ def run():
         # An expired cookie must have a way back into the account, keeping pending edits.
         first.clear_cookies()
         page.evaluate("async()=>{const s=await import('/static/js/storage.js');s.updateStore({updateTime:'11:45'});}")
-        page.locator('#account-button').click()
-        expect(page.locator('[data-account-action="reauth"]')).to_be_visible()
-        page.locator('[data-account-action="reauth"]').click()
+        expect(page.locator('#auth-screen')).to_be_visible()
+        expect(page.locator('#entry-session-status')).to_contain_text('session ended')
         page.locator('input[name="identifier"]').fill(username)
         page.locator('input[name="password"]').fill('Synthetic-pass-42')
         page.locator('#account-auth-form button[type="submit"]').click()
+        expect(page.locator('#auth-screen')).not_to_be_visible()
+        page.locator('#account-button').click()
         expect(page.locator('[data-profile-owner]')).to_be_visible()
         synced(page)
         check(state(page)['updateTime'] == '11:45', 'Expired sessions can sign in again without losing pending changes')
@@ -172,10 +210,19 @@ def run():
         check(True, 'Removing a photo updates the account header')
         page.locator('[data-account-action="logout"]').click()
         expect(page.locator('#account-dialog')).not_to_be_visible()
-        check(page.evaluate("localStorage.getItem('lexi:active-account')===null"), 'Signing out returns to guest mode')
+        check(page.evaluate("localStorage.getItem('lexi:active-account')===null"), 'Signing out removes access and returns to the entry screen')
         check(page.evaluate("JSON.parse(localStorage.getItem('lexi:v1')).saved") == [word_id], 'Guest progress stays separate from account edits')
 
-        page.locator('#account-button').click()
+        expect(page.locator('#auth-screen')).to_be_visible()
+        check(first.request.get(BASE+'/api/catalog').status==401,'Signing out locks the catalog on the server again')
+        page.reload(wait_until='networkidle')
+        expect(page.locator('#auth-screen')).to_be_visible()
+        first.set_offline(True)
+        page.reload(wait_until='networkidle')
+        check(page.locator('#auth-screen').is_visible() and page.locator('#account-auth-form button[type=submit]').is_disabled(),'A signed-out offline reload stays locked')
+        first.set_offline(False)
+        page.reload(wait_until='networkidle')
+        page.locator('[data-account-action="login-tab"]').click()
         page.locator('input[name="identifier"]').fill(username)
         page.locator('input[name="password"]').fill('wrong-password')
         page.locator('#account-auth-form button[type="submit"]').click()
@@ -183,10 +230,12 @@ def run():
         check(page.locator('#account-auth-form button[type="submit"]').is_enabled(), 'Incorrect login shows feedback and leaves the form usable')
         page.locator('input[name="password"]').fill('Synthetic-pass-42')
         page.locator('#account-auth-form button[type="submit"]').click()
+        expect(page.locator('#auth-screen')).not_to_be_visible()
+        page.locator('#account-button').click()
         expect(page.locator('[data-profile-owner]')).to_be_visible()
         check(state(page)['saved'] == [next_id], 'Signing in again by username restores the synchronized account')
         page.locator('[data-account-action="logout"]').click()
-        page.locator('#account-button').click()
+        expect(page.locator('#auth-screen')).to_be_visible()
         page.locator('[data-account-action="register-tab"]').click()
         for field, value in {'username': 'Other_' + stamp, 'email': 'other_' + stamp + '@example.com', 'password': 'Synthetic-pass-42'}.items():
             page.locator(f'input[name="{field}"]').fill(value)

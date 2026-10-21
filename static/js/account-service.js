@@ -137,6 +137,8 @@ export function createAccountService() {
   return {
     initialize,flush,
     get user(){return user;},get status(){return status;},get owner(){return owner;},
+    get ready(){return ready;},
+    get hasAccess(){return (!!user&&status!=='expired')||(!user&&!!owner&&status==='offline');},
     async register(fields,importLocal) {
       await request('/session');
       const data=await request('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(fields)});

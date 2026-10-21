@@ -1,12 +1,12 @@
 // Bump this version after changing the app shell or vocabulary schema.
-const CACHE = 'lexi-shell-v3';
+const CACHE = 'lexi-shell-v4';
 const SHELL = [
-  '/', '/manifest.webmanifest', '/static/css/style.css', '/static/css/experience.css', '/static/css/account.css', '/static/js/app.js',
+  '/', '/manifest.webmanifest', '/static/css/style.css', '/static/css/experience.css', '/static/css/account.css', '/static/css/entry.css', '/static/js/app.js',
   '/static/js/theme-init.js', '/static/js/selection.js', '/static/js/storage.js',
   '/static/js/icons.js', '/static/js/schedule.js', '/static/js/recall.js', '/static/fonts/Syne.ttf', '/static/fonts/DMSans.ttf',
   '/static/js/account-service.js', '/static/js/account-ui.js',
   '/static/assets/orbit.svg', '/static/icons/icon.svg', '/static/icons/icon-192.png',
-  '/static/icons/icon-512.png', '/api/catalog',
+  '/static/icons/icon-512.png',
 ];
 
 self.addEventListener('install', event => {
@@ -14,6 +14,14 @@ self.addEventListener('install', event => {
 });
 self.addEventListener('activate', event => {
   event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('lexi-') && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim()));
+});
+self.addEventListener('message', event => {
+  if(event.data?.type !== 'LEXI_CACHE_CATALOG') return;
+  // The first authenticated page can load before this worker takes control.
+  // Fetch with the real session; never pre-cache a protected endpoint at install.
+  event.waitUntil(fetch('/api/catalog', {credentials:'same-origin', cache:'no-store'}).then(async response => {
+    if(response.ok)await(await caches.open(CACHE)).put('/api/catalog',response);
+  }).catch(()=>{}));
 });
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);

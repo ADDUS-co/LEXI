@@ -9,7 +9,7 @@ from pathlib import Path
 import shutil
 import sys
 import tempfile
-from urllib.request import urlopen
+from auth_support import BrowserAccount
 
 from playwright.sync_api import sync_playwright, expect
 
@@ -31,7 +31,7 @@ def check(value,label):
 
 
 def state(page):
-    return page.evaluate("JSON.parse(localStorage.getItem('lexi:v1'))")
+    return page.evaluate("JSON.parse(localStorage.getItem('lexi:account:'+localStorage.getItem('lexi:active-account')+':v1'))")
 
 
 def go(page,route):
@@ -45,8 +45,9 @@ def no_overflow(page,label):
 
 
 def run():
-    with urlopen(BASE+'/api/catalog') as response: catalog=json.load(response)
     with sync_playwright() as p:
+        fixture=BrowserAccount(p,BASE)
+        catalog=fixture.catalog
         executable=os.environ.get('CHROMIUM_PATH') or shutil.which('chromium') or shutil.which('google-chrome')
         profile=tempfile.mkdtemp(prefix='lexi-recall-profile-')
         def open_profile():
@@ -54,6 +55,7 @@ def run():
             page=context.pages[0]
             return context,page
         context,page=open_profile()
+        fixture.authenticate(context)
         errors=[]
         page.on('pageerror',lambda error:errors.append(str(error)))
         page.clock.install(time=datetime.fromisoformat('2026-10-19T11:59:00+00:00'))
@@ -80,7 +82,7 @@ def run():
         expect(page.locator('#recall-form')).to_be_visible()
         page.wait_for_timeout(400)
         check(after['id'] in state(page)['hiddenWords'],'Double-click flips the word and immediately persists its hidden state')
-        check(after['word'].casefold() not in page.locator('main').inner_text().casefold(),'The back face contains no visible answer or word examples')
+        check(after['word'].casefold() not in page.locator('#main-content').inner_text().casefold(),'The back face contains no visible answer or word examples')
         check(after['word'].casefold() not in page.title().casefold(),'Browser title does not expose the hidden word')
         check(page.locator('.ipa,[data-action="pronounce"],[data-action="share"],#beyond-word').count()==0,'Pronunciation, IPA, share, and expanded answer are absent while hidden')
 
@@ -202,7 +204,7 @@ def run():
         browser=p.chromium.launch(executable_path=executable,args=['--no-sandbox'])
         context=browser.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,timezone_id='Asia/Tokyo',service_workers='block',reduced_motion='reduce')
         page=context.new_page()
-        page.add_init_script("localStorage.setItem('lexi:v1',JSON.stringify({onboarded:true,interests:['ielts'],updateTime:'08:00',theme:'studio'}))")
+        fixture.authenticate(context,{'onboarded':True,'interests':['ielts'],'theme':'studio'})
         page.goto(BASE,wait_until='networkidle')
         word=page.locator('#daily-word').inner_text()
         box=page.locator('#daily-word').bounding_box()
@@ -223,6 +225,7 @@ def run():
 
         # Fresh onboarding remains usable with nine categories and time controls.
         context=browser.new_context(viewport={'width':320,'height':740},service_workers='block',reduced_motion='reduce')
+        fixture.authenticate(context)
         page=context.new_page()
         page.goto(BASE,wait_until='networkidle')
         expect(page.locator('#onboarding-dialog')).to_be_visible()
@@ -233,6 +236,7 @@ def run():
         check(True,'A new category and schedule can be selected in mobile onboarding')
         context.close()
         browser.close()
+        fixture.dispose()
     (OUTPUT/'v2-results.json').write_text(json.dumps({'passed':len(checks),'checks':checks},indent=2),encoding='utf-8')
     print(f'\n{len(checks)} V2 browser checks passed.',flush=True)
 

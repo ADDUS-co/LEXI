@@ -4,6 +4,7 @@ import unittest
 
 from app import create_app
 from lexi.schedule import daily_schedule, rollover_at, validate_time
+from auth_support import signed_in_client
 
 
 class ScheduleTests(unittest.TestCase):
@@ -44,7 +45,7 @@ class ScheduleTests(unittest.TestCase):
             daily_schedule(datetime(2026,1,1),'UTC','08:00')
 
     def test_api_accepts_device_timezone_and_time(self):
-        client = create_app({'TESTING':True}).test_client()
+        client = signed_in_client(create_app({'TESTING':True}))
         result = client.get('/api/daily?collections=ielts,science&timezone=Europe/London&update_time=09:15')
         self.assertEqual(result.status_code,200)
         data = result.get_json()
@@ -54,7 +55,7 @@ class ScheduleTests(unittest.TestCase):
         self.assertIn('nextUpdateAt',data)
 
     def test_api_rejects_invalid_timezone_or_time(self):
-        client = create_app({'TESTING':True}).test_client()
+        client = signed_in_client(create_app({'TESTING':True}))
         for query in ('timezone=Not/A_Zone','update_time=24:00','update_time=8:00','timezone='):
             with self.subTest(query=query):
                 self.assertEqual(client.get('/api/daily?'+query).status_code,400)

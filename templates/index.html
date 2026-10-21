@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="noir">
+<html lang="en" data-theme="noir" data-access="pending">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -15,9 +15,43 @@
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="stylesheet" href="/static/css/experience.css">
   <link rel="stylesheet" href="/static/css/account.css">
+  <link rel="stylesheet" href="/static/css/entry.css">
   <script type="module" src="/static/js/app.js"></script>
 </head>
 <body>
+  <main id="auth-screen" class="auth-screen" aria-labelledby="entry-title">
+    <a class="skip-link" href="#auth-entry">Skip to registration</a>
+    <div class="auth-drift" aria-hidden="true">
+      <div class="word-plane">
+        {% for words in [
+          'curiosity · wonder · possibility · discover · becoming · clarity ·',
+          'a little more · perspective · everyday · imagine · serendipity ·',
+          'explore · thoughtful · knowledge · connection · a new chapter ·',
+          'belong · language · grow · quietly · tomorrow · something new ·',
+          'perspective · curiosity · a world of words · discover · wonder ·',
+          'becoming · possibility · little by little · imagine · clarity ·',
+          'explore · everyday · connection · knowledge · serendipity ·'
+        ] %}
+        <div class="word-stream"><div class="word-track"><span>{{ words }} {{ words }}</span><span>{{ words }} {{ words }}</span></div></div>
+        {% endfor %}
+      </div>
+    </div>
+    <header class="entry-header">
+      <span class="brand entry-brand"><span class="brand-symbol" data-icon="asterisk" aria-hidden="true"></span>LEXI<span class="brand-dot">.</span></span>
+      <span class="entry-header-note">A SMALL RITUAL. A GROWING WORLD.</span>
+    </header>
+    <div class="entry-layout">
+      <section class="entry-intro">
+        <span class="eyebrow">ONE DAY. ONE WORD.</span>
+        <h1 id="entry-title">A little more<br><em>knowledge.</em></h1>
+        <p>Words that match your world.<br>A quiet moment to make them yours.</p>
+        <div class="entry-note"><span class="entry-note-line" aria-hidden="true"></span><span>Your words. Your progress.<br>One place to come back to.</span></div>
+      </section>
+      <section id="auth-entry" class="entry-card" aria-labelledby="account-title" tabindex="-1"><p class="entry-loading" role="status">Getting your next chapter ready…</p></section>
+    </div>
+    <footer class="entry-footer"><span>A LITTLE MORE KNOWLEDGE, EVERY DAY.</span><button id="entry-motion-toggle" type="button" aria-pressed="false">Pause background <span aria-hidden="true">Ⅱ</span></button></footer>
+  </main>
+  <div id="learning-app" hidden inert>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <div id="offline-banner" class="offline-banner" role="status" hidden>You're offline. Your cached words and local collection are still here.</div>
   <header class="site-header page-width">
@@ -38,21 +72,21 @@
     <div class="loading-state page-width" role="status"><span class="eyebrow">A LITTLE MORE KNOWLEDGE</span><h1>A new perspective<br>is on its way<span class="accent">.</span></h1><p>Finding your daily word…</p></div>
   </main>
   <footer id="site-footer" class="site-footer"></footer>
+  </div>
   <dialog id="onboarding-dialog" class="onboarding-dialog" aria-labelledby="onboarding-title">
     <div class="onboarding-content">
       <div class="onboarding-heading"><span class="eyebrow">YOUR NEXT CHAPTER STARTS HERE</span><span class="onboarding-mark" data-icon="asterisk" aria-hidden="true"></span></div>
       <h1 id="onboarding-title">Welcome to LEXI<span class="accent">.</span></h1>
       <p class="onboarding-subtitle">Words that match your world.</p>
-      <div class="onboarding-account"><span>Take your words with you.</span><button class="text-link" data-account-action="open-register">Create account</button><button class="text-link" data-account-action="open">Sign in</button></div>
       <fieldset class="onboarding-rhythm"><legend>Your daily rhythm</legend><div id="onboarding-schedule"></div><p>Choose when your next word arrives, in your device’s timezone.</p></fieldset>
       <div class="onboarding-prompt"><h2>What interests you?</h2><span>Choose one or more. Follow your curiosity.</span></div>
       <div id="onboarding-collections" class="onboarding-grid"></div>
-      <div class="onboarding-bottom"><p>No account. No pressure.<br>Just one good word, every day.</p><button id="begin-button" class="button button-primary" disabled>Discover my word <span data-icon="arrow"></span></button></div>
+      <div class="onboarding-bottom"><p>Your own little world of words.<br>Saved to your account, every day.</p><button id="begin-button" class="button button-primary" disabled>Discover my word <span data-icon="arrow"></span></button></div>
     </div>
   </dialog>
   <dialog id="detail-dialog" class="detail-dialog" aria-labelledby="detail-title"></dialog>
   <dialog id="account-dialog" class="account-dialog" aria-labelledby="account-title"></dialog>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
-  <noscript><div class="noscript-message">LEXI needs JavaScript for daily selection and browser-local preferences. Please enable JavaScript and reload.</div></noscript>
+  <noscript><div class="noscript-message">Enable JavaScript to create an account or sign in to LEXI.</div></noscript>
 </body>
 </html>

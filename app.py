@@ -15,7 +15,7 @@ from lexi.catalog import load_catalog
 from lexi.selection import EPOCH, select_word
 from lexi.schedule import daily_schedule
 from lexi.database import init_database, local_secret
-from lexi.accounts import accounts
+from lexi.accounts import accounts, current_user
 
 ROOT = Path(__file__).resolve().parent
 
@@ -42,6 +42,15 @@ def create_app(test_config=None):
     app.register_blueprint(accounts)
     if os.environ.get('LEXI_TRUST_PROXY') == '1':
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
+
+    @app.before_request
+    def require_learning_account():
+        if request.path in ('/api/catalog', '/api/daily') and current_user() is None:
+            response = jsonify(error='Create an account or sign in to discover your words.', code='auth_required')
+            response.status_code = 401
+            response.headers['Cache-Control'] = 'no-store, private'
+            response.vary.add('Cookie')
+            return response
 
     @app.cli.command('init-db')
     def init_db_command():
@@ -75,7 +84,8 @@ def create_app(test_config=None):
         if data is None:
             return jsonify(error="The vocabulary could not be loaded. Check the JSON data and timezone configuration."), 503
         response = jsonify(data)
-        response.headers["Cache-Control"] = "no-cache"
+        response.headers["Cache-Control"] = "no-cache, private"
+        response.vary.add('Cookie')
         return response
 
     @app.get("/api/daily")
@@ -97,6 +107,7 @@ def create_app(test_config=None):
             return jsonify(error=str(error)), 400
         response = jsonify(word=word, **schedule)
         response.headers["Cache-Control"] = "no-store"
+        response.vary.add('Cookie')
         return response
 
     @app.get("/health")

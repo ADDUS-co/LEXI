@@ -10,7 +10,8 @@ import os
 from pathlib import Path
 import shutil
 import sys
-from urllib.request import urlopen
+import time
+from auth_support import BrowserAccount
 
 from playwright.sync_api import sync_playwright, expect
 
@@ -32,7 +33,7 @@ def check(condition, label):
 
 
 def state(page):
-    return page.evaluate("JSON.parse(localStorage.getItem('lexi:v1'))")
+    return page.evaluate("JSON.parse(localStorage.getItem('lexi:account:'+localStorage.getItem('lexi:active-account')+':v1'))")
 
 
 def go(page, route):
@@ -47,12 +48,13 @@ def no_overflow(page, label):
 
 
 def run():
-    with urlopen(BASE + "/api/catalog") as response:
-        catalog = json.load(response)
     with sync_playwright() as p:
+        fixture=BrowserAccount(p,BASE)
+        catalog=fixture.catalog
         executable = os.environ.get("CHROMIUM_PATH") or shutil.which("chromium") or shutil.which("google-chrome")
         browser = p.chromium.launch(executable_path=executable, args=["--no-sandbox", "--disable-dev-shm-usage"])
         context = browser.new_context(viewport={"width": 1440, "height": 1000}, service_workers="block", timezone_id="Asia/Bishkek", permissions=["clipboard-read", "clipboard-write"])
+        fixture.authenticate(context)
         page = context.new_page()
         errors = []
         page.on("pageerror", lambda error: errors.append(str(error)))
@@ -125,7 +127,8 @@ def run():
         page.locator('[data-action="clear-search"]').click()
         check(page.locator(".word-card").count() == 2, "Search and clear operate on real encountered words")
         future_word = next(word for word in catalog["words"] if word["id"] not in {initial_id, new_word["id"]})
-        page.evaluate("id => { const s=JSON.parse(localStorage.getItem('lexi:v1')); s.history.push({id,date:'2999-01-01'}); localStorage.setItem('lexi:v1',JSON.stringify(s)); }", future_word["id"])
+        page.evaluate("async id => { const s=await import('/static/js/storage.js');s.updateStore({history:[...s.readStore().history,{id,date:'2999-01-01'}]}); }", future_word["id"])
+        page.wait_for_function("()=>!JSON.parse(localStorage.getItem('lexi:sync:'+localStorage.getItem('lexi:active-account'))).dirty")
         page.reload(wait_until="networkidle")
         check(page.locator(".word-card").count() == 2, "Future-dated entries are excluded from History")
 
@@ -182,10 +185,11 @@ def run():
 
         # Bad backend data: error is visible; retry really fetches again.
         context = browser.new_context(service_workers="block")
+        fixture.authenticate(context)
         page = context.new_page()
         page.route("**/api/catalog", lambda route: route.fulfill(status=503, json={"error":"The vocabulary could not be loaded. Check the JSON data."}))
         page.goto(BASE)
-        expect(page.locator("main")).to_contain_text("Check the JSON data")
+        expect(page.locator("#main-content")).to_contain_text("Check the JSON data")
         page.unroute("**/api/catalog")
         page.locator('[data-action="retry"]').click()
         expect(page.locator("#onboarding-dialog")).to_be_visible()
@@ -194,13 +198,14 @@ def run():
 
         # Very long words and absent optional fields remain readable.
         context = browser.new_context(viewport={"width":320,"height":740},service_workers="block",reduced_motion="reduce")
+        fixture.authenticate(context)
         page = context.new_page()
         modified = json.loads(json.dumps(catalog))
         word = modified["words"][0]
         word["word"] = "Pneumonoultramicroscopicsilicovolcanoconiosis"
         for field in ("synonyms","relatedWords","source","usageNote","difficulty"):
             word.pop(field,None)
-        page.add_init_script("localStorage.setItem('lexi:v1',JSON.stringify({onboarded:true,interests:['law']}))")
+        fixture.authenticate(context,{'onboarded':True,'interests':['law']})
         page.route("**/api/catalog",lambda route:route.fulfill(json=modified))
         page.goto(BASE + "/#word/" + word["id"],wait_until="networkidle")
         expect(page.locator("#daily-word")).to_contain_text(word["word"])
@@ -210,6 +215,7 @@ def run():
 
         # A quota failure must preserve preferences in memory in the current tab.
         context = browser.new_context(service_workers="block")
+        fixture.authenticate(context)
         page = context.new_page()
         page.add_init_script("Storage.prototype.setItem=function(){throw new DOMException('Storage is full','QuotaExceededError')}")
         page.goto(BASE,wait_until="networkidle")
@@ -224,12 +230,17 @@ def run():
 
         # Actual Service Worker and cached API, not a mock offline screen.
         context = browser.new_context(viewport={"width":390,"height":844})
+        def delayed_worker(route):
+            time.sleep(1)  # Exercise a catalog arriving before first worker activation.
+            route.continue_()
+        context.route("**/sw.js",delayed_worker)
+        fixture.authenticate(context)
         page = context.new_page()
-        page.add_init_script("if(!localStorage.getItem('lexi:v1'))localStorage.setItem('lexi:v1',JSON.stringify({onboarded:true,interests:['technology']}))")
+        fixture.authenticate(context,{'onboarded':True,'interests':['technology']})
         page.goto(BASE,wait_until="networkidle")
         page.evaluate("navigator.serviceWorker.ready")
-        page.wait_for_function("navigator.serviceWorker.controller !== null")
-        page.wait_for_function("async()=>Boolean(await (await caches.open('lexi-shell-v3')).match('/api/catalog'))")
+        page.wait_for_function("()=>navigator.serviceWorker.controller !== null")
+        page.wait_for_function("async()=>Boolean(await (await caches.open('lexi-shell-v4')).match('/api/catalog'))")
         before = page.locator("#daily-word").inner_text()
         context.set_offline(True)
         page.reload(wait_until="networkidle")
@@ -240,6 +251,7 @@ def run():
         check(True,"Service Worker reloads vocabulary and preserves Saved fully offline")
         context.close()
         browser.close()
+        fixture.dispose()
     (OUTPUT / "browser-results.json").write_text(json.dumps({"passed":len(checks),"checks":checks},indent=2),encoding="utf-8")
     print(f"\n{len(checks)} browser checks passed.",flush=True)
 

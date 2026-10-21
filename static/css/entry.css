@@ -1,0 +1,71 @@
+/* The entry has its own quiet palette, independent of the learning theme. */
+[hidden]{display:none!important}
+html:not([data-access=granted]) body{background:#eeeee8;color:#30372f}
+.auth-screen{
+  --text:#30372f;--muted-readable:#646d61;--accent:#52614b;--accent-text:#46533f;
+  --button-text:#fffef7;--surface:#f5f6ef;--border:#cbd0c3;--danger:#923d36;
+  --radius:5px;color-scheme:light;color:var(--text);position:relative;isolation:isolate;
+  min-height:100vh;min-height:100svh;display:flex;flex-direction:column;
+  padding:32px clamp(24px,5vw,88px) 20px;
+}
+.auth-drift{position:fixed;inset:0;overflow:hidden;z-index:-2;pointer-events:none;background:#eeeee8}
+.auth-drift:after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 52% 48%,#eeeee8b8 0%,#eeeee830 67%,transparent 100%)}
+.word-plane{position:absolute;left:50%;top:50%;width:250vmax;height:250vmax;transform:translate(-50%,-50%) rotate(60deg);display:flex;flex-direction:column;justify-content:center;gap:140px}
+.word-stream{flex-shrink:0;opacity:.095;color:#52614b;font-family:Syne,Arial,sans-serif;font-size:24px;letter-spacing:.035em;line-height:1.5}
+.word-track{display:flex;width:max-content;animation:entry-words-fall 220s linear infinite;will-change:transform}
+.word-track>span{display:block;flex-shrink:0;padding-right:70px;white-space:nowrap}
+.word-stream:nth-child(2n){font-size:19px;opacity:.075}
+.word-stream:nth-child(2n) .word-track{animation-duration:265s;animation-delay:-100s}
+.word-stream:nth-child(3n) .word-track{animation-duration:245s;animation-delay:-55s}
+.word-stream:nth-child(4n) .word-track{animation-delay:-150s}
+/* Local +X points down and right after the plane's exact 60-degree rotation.
+   Identical track halves make the reset seamless; only transform is animated. */
+@keyframes entry-words-fall{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+.auth-screen.is-paused .word-track{animation-play-state:paused}
+.auth-screen[hidden] .word-track{animation-play-state:paused}
+.entry-header,.entry-footer{display:flex;align-items:center;justify-content:space-between;gap:24px}
+.entry-brand{font-size:28px;gap:10px;color:#30372f}
+.entry-brand .brand-dot{color:#6f7d63}
+.entry-brand .brand-symbol{color:#69785e}
+.entry-header-note{font-size:9px;letter-spacing:.16em;color:#58654f}
+.entry-layout{width:100%;max-width:1100px;margin:auto;display:grid;grid-template-columns:1fr 440px;align-items:center;gap:clamp(48px,8vw,130px);padding:48px 0 54px}
+.entry-intro>.eyebrow{font-size:10px;letter-spacing:.2em;color:#5f6f52}
+.entry-intro>h1{font-family:Syne,Arial,sans-serif;font-weight:500;font-size:clamp(56px,5.8vw,83px);line-height:1.08;letter-spacing:-.065em;margin-top:24px}
+.entry-intro>h1>em{font-family:Georgia,serif;font-weight:400;letter-spacing:-.06em;color:#69785e}
+.entry-intro>p{font-size:15px;color:#646d61;line-height:1.9;margin-top:28px}
+.entry-note{display:flex;align-items:center;gap:16px;font-size:10px;line-height:1.85;color:#58654f;margin-top:52px}
+.entry-note-line{width:32px;height:1px;background:#a9b19e}
+.entry-card{background:#fafaf6f2;border:1px solid #d7dbcf;border-radius:10px;box-shadow:0 18px 70px #3a46330a;padding:34px 34px 28px;min-width:0;backdrop-filter:blur(8px)}
+.entry-card>.eyebrow{font-size:8px;letter-spacing:.15em;color:#657459}
+.entry-card>h2{font-family:Syne,Arial,sans-serif;font-size:34px;line-height:1.2;letter-spacing:-.05em;font-weight:500;margin-top:14px}
+.entry-card>.account-intro{font-family:'DM Sans',Arial,sans-serif;font-size:12px;line-height:1.8;margin-top:10px;color:#646d61}
+.entry-card .account-tabs{margin-top:14px;margin-bottom:20px;gap:24px}
+.entry-card .account-tabs>button{font-size:12px}
+.entry-card #account-auth-form>label{margin-top:15px;font-size:11px}
+.entry-card #account-auth-form input{border-radius:4px}
+.entry-card #account-auth-form>label>input:not([type=checkbox]),.entry-card .account-password-row>input{font-size:14px;min-height:46px}
+.entry-card .account-field-help{font-size:10px;margin-top:6px}
+.entry-card .account-privacy{font-size:10px;margin-top:16px}
+.entry-card .account-submit{font-size:12px;margin-top:20px}
+.entry-card .button-primary{box-shadow:none}
+.entry-card .account-error{font-size:11px}
+.entry-card .account-import-option{font-size:10px!important;margin-top:16px!important}
+.entry-session-status{font-size:11px;line-height:1.7;color:var(--muted-readable);margin-top:12px}
+.entry-session-status:empty{display:none}
+.entry-footer{font-size:8px;letter-spacing:.12em;color:#58654f}
+#entry-motion-toggle{display:inline-flex;align-items:center;gap:12px;min-height:44px;padding:8px 0;font-size:10px;letter-spacing:0;color:#5d6854}
+#entry-motion-toggle:hover{color:#30372f}
+#entry-motion-toggle>span{font-size:14px;min-width:12px}
+.entry-loading{font-size:13px;color:var(--muted-readable)}
+@media(min-width:1600px){.entry-layout{padding-block:70px}.entry-intro>h1{font-size:88px}}
+@media(max-width:1000px){.entry-layout{grid-template-columns:1fr 400px;gap:36px}.entry-intro>h1{font-size:60px}.auth-screen{padding-inline:32px}.entry-card{padding-inline:30px}}
+@media(max-width:760px){
+ .auth-screen{padding:24px 24px 12px}.entry-header-note{font-size:8px;max-width:135px;text-align:right;line-height:1.8}
+ .entry-brand{font-size:26px}.entry-layout{max-width:440px;grid-template-columns:1fr;gap:26px;padding:38px 0 30px;margin-block:0}
+ .entry-intro>h1{font-size:52px;margin-top:12px}.entry-intro>.eyebrow{font-size:8px}.entry-intro>p{font-size:12px;line-height:1.8;margin-top:14px}
+ .entry-note{display:none}.entry-card{padding:28px 28px 24px}.entry-card>h2{font-size:32px}.entry-footer{margin-top:auto;font-size:8px;gap:16px}.word-plane{gap:110px}.word-stream{font-size:22px}.word-stream:nth-child(2n){font-size:18px}
+}
+@media(max-width:370px){.auth-screen{padding-inline:18px}.entry-layout{padding-top:30px;gap:24px}.entry-intro>h1{font-size:45px}.entry-card{padding:26px 22px 24px}.entry-card>h2{font-size:30px}.entry-footer>span{max-width:140px;line-height:1.8}.entry-card .account-tabs{gap:22px}}
+@media(prefers-reduced-motion:reduce){.word-track{animation:none!important;will-change:auto}#entry-motion-toggle{display:none}}
+.reduce-motion .word-track{animation:none!important;will-change:auto}
+.reduce-motion #entry-motion-toggle{display:none}

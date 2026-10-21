@@ -10,6 +10,7 @@ from unittest.mock import patch
 from app import create_app
 from lexi.catalog import load_catalog, validate_catalog
 from lexi.selection import EPOCH, build_deck, select_word
+from auth_support import signed_in_client
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -98,7 +99,7 @@ class SelectionTests(unittest.TestCase):
 class ApiTests(unittest.TestCase):
     def setUp(self):
         self.app = create_app({"TESTING": True})
-        self.client = self.app.test_client()
+        self.client = signed_in_client(self.app)
 
     def test_home_catalog_and_daily_are_functional(self):
         home = self.client.get("/")
