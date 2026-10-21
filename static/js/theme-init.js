@@ -6,6 +6,9 @@ try {
   if (['noir', 'studio', 'experimental'].includes(saved.theme)) {
     document.documentElement.dataset.theme = saved.theme;
   }
+  const entryTheme=localStorage.getItem('lexi:entry-theme');
+  document.documentElement.dataset.entryTheme=['noir','studio','experimental'].includes(entryTheme)?entryTheme:
+    ['noir','studio','experimental'].includes(saved.theme)?saved.theme:'studio';
   if (saved.reduceMotion === true) document.documentElement.classList.add('reduce-motion');
 } catch { /* Storage may be unavailable; Noir remains the default. */ }
 

@@ -93,7 +93,21 @@ def run():
         from math import atan2, degrees
         check(all(end['x']<start['x'] and end['y']>start['y'] and abs(degrees(atan2(end['y']-start['y'],end['x']-start['x']))-120)<1 for start,end in zip(a,b)), 'Every stream flows in parallel from upper right to lower left, 60 degrees below horizontal')
         check(page.locator('.word-batch:first-child').evaluate_all('es=>es.every(e=>{const words=[...e.children].map(w=>w.textContent);return words.length>=12&&new Set(words).size===words.length&&words.every(w=>/^[a-z]+$/.test(w));})'), 'Each complete repeating stream contains varied English words')
-        check(float(page.locator('.word-stream').first.evaluate('e=>getComputedStyle(e).opacity'))<=0.12, 'Background words stay subtle')
+        check(float(page.locator('.word-stream').first.evaluate('e=>getComputedStyle(e).opacity'))>=0.4 and float(page.locator('.word-stream').first.evaluate('e=>parseFloat(getComputedStyle(e).fontSize)'))>=48, 'Background words are large and clearly visible')
+        page.locator('input[name="username"]').fill('Draft_name')
+        colors=[]
+        for theme in ('noir','studio','experimental'):
+            page.locator(f'[data-entry-theme-choice="{theme}"]').click()
+            expect(page.locator('html')).to_have_attribute('data-entry-theme',theme)
+            expect(page.locator(f'[data-entry-theme-choice="{theme}"]')).to_have_attribute('aria-pressed','true')
+            check(page.locator('input[name="username"]').input_value()=='Draft_name',f'{theme}: switching entry themes preserves typed registration fields')
+            colors.append(page.locator('.auth-drift').evaluate('e=>getComputedStyle(e).backgroundColor'))
+            box=page.locator('#auth-entry').bounding_box()
+            check(abs(box['x']+box['width']/2-720)<1 and abs(box['y']+box['height']/2-500)<12,f'{theme}: the registration form is centered horizontally and vertically')
+        check(len(set(colors))==3,'Noir, Studio and Experimental have distinct entry palettes')
+        page.reload(wait_until='networkidle')
+        check(page.locator('html').get_attribute('data-entry-theme')=='experimental','Entry appearance survives a reload')
+        page.locator('[data-entry-theme-choice="studio"]').click()
         page.locator('#entry-motion-toggle').click()
         before=page.locator('.word-track').first.evaluate('e=>getComputedStyle(e).transform')
         page.wait_for_timeout(300)
@@ -105,7 +119,13 @@ def run():
         last=Image.open(BytesIO(page.screenshot(caret='hide'))).convert('RGB')
         page.evaluate("()=>{for(const e of document.querySelectorAll('.word-track')){const a=e.getAnimations()[0];a.currentTime=a.effect.getTiming().delay;}}")
         first_frame=Image.open(BytesIO(page.screenshot(caret='hide'))).convert('RGB')
-        check(max(channel[1] for channel in ImageChops.difference(last,first_frame).getextrema())<=10, 'The last and first loop frames join without a visible jump')
+        difference=ImageChops.difference(last,first_frame)
+        red,green,blue=difference.split()
+        histogram=ImageChops.lighter(ImageChops.lighter(red,green),blue).histogram()
+        pixels=last.width*last.height
+        # Adjacent phases retain fractional-pixel text antialiasing. A shifted
+        # or missing sequence changes many pixels, rather than a few edge pixels.
+        check(sum(level*count for level,count in enumerate(histogram))/pixels<0.1 and sum(histogram[33:])<pixels/10000, 'The last and first loop frames join without a visible jump')
         page.evaluate("()=>{for(const e of document.querySelectorAll('.word-track')){e.getAnimations()[0].currentTime=e._resumeTime;delete e._resumeTime;}}")
         page.locator('#entry-motion-toggle').click()
         page.emulate_media(reduced_motion='reduce')
@@ -114,6 +134,8 @@ def run():
         for width in (320,390,768,1440):
             page.set_viewport_size({'width':width,'height':1000})
             check(page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'Registration has no horizontal overflow at {width}px')
+            box=page.locator('#auth-entry').bounding_box()
+            check(abs(box['x']+box['width']/2-width/2)<1,f'Registration remains horizontally centered at {width}px')
         page.screenshot(path=str(OUTPUT/'entry-registration-desktop.png'),full_page=True)
         page.set_viewport_size({'width':390,'height':844})
         page.screenshot(path=str(OUTPUT/'entry-registration-mobile.png'),full_page=True)
@@ -249,9 +271,11 @@ def run():
         for field, value in {'username': 'Other_' + stamp, 'email': 'other_' + stamp + '@example.com', 'password': 'Synthetic-pass-42'}.items():
             page.locator(f'input[name="{field}"]').fill(value)
         page.locator('input[name="importLocal"]').uncheck()
+        page.locator('[data-entry-theme-choice="experimental"]').click()
         page.locator('#account-auth-form button[type="submit"]').click()
         expect(page.locator('#onboarding-dialog')).to_be_visible()
         check(state(page)['saved'] == [] and state(page)['hiddenWords'] == [], 'Another account starts without the previous account or guest words')
+        check(state(page)['theme']=='experimental' and page.locator('html').get_attribute('data-theme')=='experimental','The selected entry theme carries into a newly registered account')
         check(not errors, 'Account flows produce no uncaught JavaScript errors')
         first.close()
         second.close()

@@ -8,6 +8,15 @@ export function installAccountUI(account,{toast,openOnboarding}) {
   const dialog=$('#account-dialog');
   const entry=$('#auth-entry'), screen=$('#auth-screen'), shell=$('#learning-app');
   let gated=true;
+  let entryTheme=document.documentElement.dataset.entryTheme||'studio';
+  const entryColors={noir:'#101312',studio:'#eeeee8',experimental:'#0a0d23'};
+  function chooseEntryTheme(theme,{persist=true}={}) {
+    if(!Object.hasOwn(entryColors,theme))return;
+    entryTheme=theme;document.documentElement.dataset.entryTheme=theme;
+    screen.querySelectorAll('[data-entry-theme-choice]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.entryThemeChoice===theme)));
+    if(persist)try{localStorage.setItem('lexi:entry-theme',theme);}catch{}
+    if(gated)document.querySelector('meta[name=theme-color]').setAttribute('content',entryColors[theme]);
+  }
   let mode='login', file=null, preview='', headerKey='';
   function clearPhoto(){file=null;if(preview)URL.revokeObjectURL(preview);preview='';}
   const initials=()=>escape(account.user?.username.slice(0,2).toUpperCase()||'LX');
@@ -71,7 +80,7 @@ export function installAccountUI(account,{toast,openOnboarding}) {
       for(const id of ['onboarding-dialog','detail-dialog'])if($('#'+id).open)$('#'+id).close();
       if('speechSynthesis' in window)speechSynthesis.cancel();
       if(!wasGated)auth('login');
-      document.querySelector('meta[name=theme-color]').setAttribute('content','#eeeee8');
+      chooseEntryTheme(entryTheme,{persist:false});
     }
     if(wasGated!==gated)window.dispatchEvent(new Event('lexi:accesschange'));
   }
@@ -84,6 +93,8 @@ export function installAccountUI(account,{toast,openOnboarding}) {
   }
 
   document.addEventListener('click',async event=>{
+    const themeButton=event.target.closest('[data-entry-theme-choice]');
+    if(themeButton){chooseEntryTheme(themeButton.dataset.entryThemeChoice);return;}
     const target=event.target.closest('[data-account-action]');
     if(!target||target.disabled)return;
     const action=target.dataset.accountAction;
@@ -113,7 +124,7 @@ export function installAccountUI(account,{toast,openOnboarding}) {
       const values=new FormData(form), register=mode==='register', fromEntry=entry.contains(form);
       busy(form,true);error('');
       try {
-        if(register)await account.register({username:values.get('username'),email:values.get('email'),password:values.get('password')},values.has('importLocal'));
+        if(register)await account.register({username:values.get('username'),email:values.get('email'),password:values.get('password')},values.has('importLocal'),entryTheme);
         else await account.login({identifier:values.get('identifier'),password:values.get('password')});
         form.reset();
         toast(register?'Welcome to your own little world of words.':'Welcome back. Your words are here.');
@@ -152,5 +163,5 @@ export function installAccountUI(account,{toast,openOnboarding}) {
     button.setAttribute('aria-pressed',String(paused));
     button.innerHTML=paused?'Resume background <span aria-hidden="true">▷</span>':'Pause background <span aria-hidden="true">Ⅱ</span>';
   });
-  auth('register');syncAccess();header();
+  chooseEntryTheme(entryTheme,{persist:false});auth('register');syncAccess();header();
 }

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="noir" data-access="pending">
+<html lang="en" data-theme="noir" data-entry-theme="studio" data-access="pending">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -25,21 +25,13 @@
       <div class="word-plane">
         {% for words in [
           'curiosity wonder horizon discover becoming clarity imagine flourish journey possibility language knowledge insight explore perspective connection',
-          'serendipity belonging thoughtful tomorrow quietly blossom gentle patience sunlight meadow awaken meaningful harmony presence balance purpose',
           'resilience courage kindness wisdom embrace breathe reflect understand create inspire nurture listen observe notice learn remember',
-          'ocean twilight morning breeze mountain valley river forest garden rainfall cloud sunlight feather shoreline island landscape',
           'eloquence nuance articulate expression conversation dialogue fluency rhythm meaning context phrase sentence vocabulary accent voice translation',
-          'aspiration ambition resolve progress growth endeavor intention dedication practice focus effort achieve improve persist advance accomplish',
           'tranquil serene peaceful stillness contentment comfort warmth softness delicate tender graceful luminous radiant mellow subtle effortless',
-          'discovery adventure wander passage voyage destination compass direction pathway bridge crossing arrival departure distance beyond elsewhere',
           'creativity imagination original inventive design sketch outline texture pattern shape color canvas portrait composition artistry inspiration',
-          'gratitude delight joy laughter friendship affection empathy compassion generosity sincerity honesty trust promise hope cherish appreciate',
           'universe galaxy starlight constellation orbit moonlight planet atmosphere gravity infinity cosmic celestial nebula comet eclipse astronomy',
-          'essence awareness mindfulness intuition perception sensitivity attention presence sensation curiosity recognition understanding realization insight reflection clarity',
           'opportunity potential future vision dream aspiration outlook choice freedom open flourish thrive evolve transform renew begin',
-          'melody harmony cadence silence whisper murmur echo resonance music acoustic symphony lyric chorus tempo interval note',
-          'heritage culture tradition memory story narrative chapter poetry literature author reader library manuscript fable legend history',
-          'balance simplicity abundance enough everyday ritual moment breath pause slow steady patient gentle settle return home'
+          'heritage culture tradition memory story narrative chapter poetry literature author reader library manuscript fable legend history'
         ] %}
         <div class="word-stream"><div class="word-track">{% for copy in range(2) %}<div class="word-batch">{% for word in words.split() %}<span>{{ word }}</span>{% endfor %}</div>{% endfor %}</div></div>
         {% endfor %}
@@ -47,7 +39,11 @@
     </div>
     <header class="entry-header">
       <span class="brand entry-brand"><span class="brand-symbol" data-icon="asterisk" aria-hidden="true"></span>LEXI<span class="brand-dot">.</span></span>
-      <span class="entry-header-note">A SMALL RITUAL. A GROWING WORLD.</span>
+      <div class="entry-header-tools"><span class="entry-header-note">CHOOSE YOUR ATMOSPHERE</span><div class="entry-theme-picker" role="group" aria-label="Entry appearance">
+        <button type="button" data-entry-theme-choice="noir" aria-pressed="false"><span class="entry-theme-swatch swatch-noir" aria-hidden="true"></span>Noir</button>
+        <button type="button" data-entry-theme-choice="studio" aria-pressed="true"><span class="entry-theme-swatch swatch-studio" aria-hidden="true"></span>Studio</button>
+        <button type="button" data-entry-theme-choice="experimental" aria-pressed="false"><span class="entry-theme-swatch swatch-experimental" aria-hidden="true"></span>Experimental</button>
+      </div></div>
     </header>
     <div class="entry-layout">
       <section class="entry-intro">

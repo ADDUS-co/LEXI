@@ -240,7 +240,7 @@ def run():
         page.goto(BASE,wait_until="networkidle")
         page.evaluate("navigator.serviceWorker.ready")
         page.wait_for_function("()=>navigator.serviceWorker.controller !== null")
-        page.wait_for_function("async()=>Boolean(await (await caches.open('lexi-shell-v5')).match('/api/catalog'))")
+        page.wait_for_function("async()=>Boolean(await (await caches.open('lexi-shell-v6')).match('/api/catalog'))")
         before = page.locator("#daily-word").inner_text()
         context.set_offline(True)
         page.reload(wait_until="networkidle")

@@ -95,7 +95,7 @@ export function createAccountService() {
     return inFlight;
   }
 
-  async function activate(data,{importLocal=false}={}) {
+  async function activate(data,{importLocal=false,initialTheme}={}) {
     user=data.user;csrf=data.csrfToken||csrf;
     if(!user) {
       owner=null;dirty=false;status='guest';switchStore();marker(null);ready=true;emit();
@@ -107,6 +107,7 @@ export function createAccountService() {
     let merged=remote;
     if(meta?.dirty)merged=mergeChanges(meta.base,local,remote);
     if(importLocal) merged=data.state?importGuestInto(merged,readGuestStore()):readGuestStore();
+    if(!data.state&&['noir','studio','experimental'].includes(initialTheme))merged={...merged,theme:initialTheme};
     base=remote;cache(merged);dirty=!equal(merged,remote);marker(owner);saveMeta();
     status=dirty?'syncing':'synced';ready=true;emit();window.dispatchEvent(new Event('lexi:accountstate'));
     if(dirty)await flush();
@@ -139,10 +140,10 @@ export function createAccountService() {
     get user(){return user;},get status(){return status;},get owner(){return owner;},
     get ready(){return ready;},
     get hasAccess(){return (!!user&&status!=='expired')||(!user&&!!owner&&status==='offline');},
-    async register(fields,importLocal) {
+    async register(fields,importLocal,initialTheme) {
       await request('/session');
       const data=await request('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(fields)});
-      await activate(data,{importLocal});return user;
+      await activate(data,{importLocal,initialTheme});return user;
     },
     async login(fields) {
       await request('/session');
