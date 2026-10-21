@@ -11,7 +11,7 @@ import re
 import shutil
 import time
 
-from PIL import Image
+from PIL import Image, ImageChops
 from playwright.sync_api import sync_playwright, expect
 
 BASE = os.environ.get('LEXI_TEST_URL', 'http://127.0.0.1:5000').rstrip('/')
@@ -87,17 +87,26 @@ def run():
         page.evaluate("location.hash='word/" + word_id + "'")
         check(page.locator('#auth-screen').is_visible() and not page.locator('#learning-app').is_visible(), 'Escape and word deep links cannot dismiss registration')
         page.evaluate("location.hash='settings'")
-        a=page.locator('.word-track>span').first.bounding_box()
+        a=page.locator('.word-track>.word-batch:first-child').evaluate_all('es=>es.map(e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y};})')
         page.wait_for_timeout(700)
-        b=page.locator('.word-track>span').first.bounding_box()
+        b=page.locator('.word-track>.word-batch:first-child').evaluate_all('es=>es.map(e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y};})')
         from math import atan2, degrees
-        angle=degrees(atan2(b['y']-a['y'],b['x']-a['x']))
-        check(b['y']>a['y'] and abs(angle-60)<1, 'Background words actually drift downward at 60 degrees')
+        check(all(end['x']<start['x'] and end['y']>start['y'] and abs(degrees(atan2(end['y']-start['y'],end['x']-start['x']))-120)<1 for start,end in zip(a,b)), 'Every stream flows in parallel from upper right to lower left, 60 degrees below horizontal')
+        check(page.locator('.word-batch:first-child').evaluate_all('es=>es.every(e=>{const words=[...e.children].map(w=>w.textContent);return words.length>=12&&new Set(words).size===words.length&&words.every(w=>/^[a-z]+$/.test(w));})'), 'Each complete repeating stream contains varied English words')
         check(float(page.locator('.word-stream').first.evaluate('e=>getComputedStyle(e).opacity'))<=0.12, 'Background words stay subtle')
         page.locator('#entry-motion-toggle').click()
         before=page.locator('.word-track').first.evaluate('e=>getComputedStyle(e).transform')
         page.wait_for_timeout(300)
         check(before==page.locator('.word-track').first.evaluate('e=>getComputedStyle(e).transform'), 'Background animation can be paused')
+        page.evaluate('''()=>{for(const e of document.querySelectorAll('.word-track')){
+          const a=e.getAnimations()[0];e._resumeTime=a.currentTime;
+          const t=a.effect.getTiming();a.currentTime=t.delay+t.duration-0.5;
+        }}''')
+        last=Image.open(BytesIO(page.screenshot(caret='hide'))).convert('RGB')
+        page.evaluate("()=>{for(const e of document.querySelectorAll('.word-track')){const a=e.getAnimations()[0];a.currentTime=a.effect.getTiming().delay;}}")
+        first_frame=Image.open(BytesIO(page.screenshot(caret='hide'))).convert('RGB')
+        check(max(channel[1] for channel in ImageChops.difference(last,first_frame).getextrema())<=10, 'The last and first loop frames join without a visible jump')
+        page.evaluate("()=>{for(const e of document.querySelectorAll('.word-track')){e.getAnimations()[0].currentTime=e._resumeTime;delete e._resumeTime;}}")
         page.locator('#entry-motion-toggle').click()
         page.emulate_media(reduced_motion='reduce')
         check(page.locator('.word-track').first.evaluate('e=>getComputedStyle(e).animationName')=='none', 'Reduced-motion devices receive a static background')

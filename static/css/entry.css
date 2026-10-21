@@ -10,17 +10,19 @@ html:not([data-access=granted]) body{background:#eeeee8;color:#30372f}
 }
 .auth-drift{position:fixed;inset:0;overflow:hidden;z-index:-2;pointer-events:none;background:#eeeee8}
 .auth-drift:after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 52% 48%,#eeeee8b8 0%,#eeeee830 67%,transparent 100%)}
-.word-plane{position:absolute;left:50%;top:50%;width:250vmax;height:250vmax;transform:translate(-50%,-50%) rotate(60deg);display:flex;flex-direction:column;justify-content:center;gap:140px}
-.word-stream{flex-shrink:0;opacity:.095;color:#52614b;font-family:Syne,Arial,sans-serif;font-size:24px;letter-spacing:.035em;line-height:1.5}
-.word-track{display:flex;width:max-content;animation:entry-words-fall 220s linear infinite;will-change:transform}
-.word-track>span{display:block;flex-shrink:0;padding-right:70px;white-space:nowrap}
+.word-plane{position:absolute;left:50%;top:50%;width:max(2800px,calc(100vw + 100vh));height:calc(100vw + 100vh);transform:translate(-50%,-50%) rotate(-60deg);display:flex;flex-direction:column;justify-content:space-around}
+.word-stream{flex-shrink:0;opacity:.11;color:#52614b;font-family:Syne,Arial,sans-serif;font-size:22px;letter-spacing:.035em;line-height:1.5}
+.word-track{display:flex;width:max-content;animation:entry-words-fall 140s linear infinite;will-change:transform}
+.word-batch{display:flex;align-items:center;justify-content:space-around;gap:48px;width:max(2800px,calc(100vw + 100vh));padding-inline:24px;flex-shrink:0;white-space:nowrap}
+.word-batch>span{flex-shrink:0}
 .word-stream:nth-child(2n){font-size:19px;opacity:.075}
-.word-stream:nth-child(2n) .word-track{animation-duration:265s;animation-delay:-100s}
-.word-stream:nth-child(3n) .word-track{animation-duration:245s;animation-delay:-55s}
-.word-stream:nth-child(4n) .word-track{animation-delay:-150s}
-/* Local +X points down and right after the plane's exact 60-degree rotation.
-   Identical track halves make the reset seamless; only transform is animated. */
-@keyframes entry-words-fall{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+.word-stream:nth-child(2n) .word-track{animation-duration:165s;animation-delay:-72s}
+.word-stream:nth-child(3n) .word-track{animation-duration:155s;animation-delay:-38s}
+.word-stream:nth-child(4n) .word-track{animation-delay:-110s}
+/* Negative local X on the -60-degree plane flows from upper right to lower left.
+   Each full sequence has two identical, equally spaced copies: their join and
+   the animation reset have the same word spacing, so the waterfall never stops. */
+@keyframes entry-words-fall{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .auth-screen.is-paused .word-track{animation-play-state:paused}
 .auth-screen[hidden] .word-track{animation-play-state:paused}
 .entry-header,.entry-footer{display:flex;align-items:center;justify-content:space-between;gap:24px}
@@ -63,7 +65,7 @@ html:not([data-access=granted]) body{background:#eeeee8;color:#30372f}
  .auth-screen{padding:24px 24px 12px}.entry-header-note{font-size:8px;max-width:135px;text-align:right;line-height:1.8}
  .entry-brand{font-size:26px}.entry-layout{max-width:440px;grid-template-columns:1fr;gap:26px;padding:38px 0 30px;margin-block:0}
  .entry-intro>h1{font-size:52px;margin-top:12px}.entry-intro>.eyebrow{font-size:8px}.entry-intro>p{font-size:12px;line-height:1.8;margin-top:14px}
- .entry-note{display:none}.entry-card{padding:28px 28px 24px}.entry-card>h2{font-size:32px}.entry-footer{margin-top:auto;font-size:8px;gap:16px}.word-plane{gap:110px}.word-stream{font-size:22px}.word-stream:nth-child(2n){font-size:18px}
+ .entry-note{display:none}.entry-card{padding:28px 28px 24px}.entry-card>h2{font-size:32px}.entry-footer{margin-top:auto;font-size:8px;gap:16px}.word-stream{font-size:21px}.word-stream:nth-child(2n){font-size:18px}
 }
 @media(max-width:370px){.auth-screen{padding-inline:18px}.entry-layout{padding-top:30px;gap:24px}.entry-intro>h1{font-size:45px}.entry-card{padding:26px 22px 24px}.entry-card>h2{font-size:30px}.entry-footer>span{max-width:140px;line-height:1.8}.entry-card .account-tabs{gap:22px}}
 @media(prefers-reduced-motion:reduce){.word-track{animation:none!important;will-change:auto}#entry-motion-toggle{display:none}}
