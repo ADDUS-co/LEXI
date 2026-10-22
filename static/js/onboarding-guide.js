@@ -27,22 +27,41 @@ export function createOnboardingGuide({dialog,account,getState,saveState}) {
     const bubble=coach.getBoundingClientRect(),bounds=dialog.getBoundingClientRect();
     const target=(step==='time'?$('#onboarding-update-time'):$('.onboarding-prompt')).getBoundingClientRect();
     const narrow=innerWidth<=600;
-    const end=narrow?{x:target.left+target.width/2,y:target.top-12}:
+    let end=narrow?{x:target.left+target.width/2,y:target.top-12}:
       {x:step==='time'?target.left-14:target.right+12,y:target.top+target.height/2};
     const center={x:bubble.left+bubble.width/2,y:bubble.top+bubble.height/2};
     const angle=Math.atan2(end.y-center.y,end.x-center.x),radius=bubble.width/2+8;
-    const start={x:center.x+Math.cos(angle)*radius,y:center.y+Math.sin(angle)*radius};
+    let start={x:center.x+Math.cos(angle)*radius,y:center.y+Math.sin(angle)*radius};
+    let line,lastControl;
+    if(step==='collections') {
+      start={x:center.x+(narrow?20:0),y:bubble.bottom+10};
+      if(narrow) {
+        const gap=end.y-start.y;
+        line=`M ${start.x} ${start.y} C ${start.x+34} ${start.y+gap*.3}, ${start.x+16} ${start.y+gap*.65}, ${start.x-12} ${start.y+gap*.52} C ${start.x-42} ${start.y+gap*.38}, ${start.x-28} ${start.y+gap*.08}, ${start.x-8} ${start.y+gap*.25} C ${start.x+12} ${start.y+gap*.45}, ${end.x-12} ${end.y-16}, ${end.x} ${end.y}`;
+        lastControl={x:end.x-12,y:end.y-16};
+      } else {
+        // The loose loop lives in the empty column below the explanation, beside the cards.
+        const floor=$('.onboarding-bottom').getBoundingClientRect().top-20;
+        const room=Math.min(180,Math.max(0,floor-start.y));
+        const width=Math.min(180,start.x-target.right-12);
+        end={x:target.right+12,y:start.y+room*.66};
+        line=`M ${start.x} ${start.y} C ${start.x+width*.16} ${start.y+room*.32}, ${start.x+width*.1} ${start.y+room*.66}, ${start.x-width*.18} ${start.y+room*.64} C ${start.x-width*.46} ${start.y+room*.62}, ${start.x-width*.4} ${start.y+room*.34}, ${start.x-width*.22} ${start.y+room*.42} C ${start.x+width*.08} ${start.y+room*.56}, ${start.x-width*.04} ${start.y+room*.98}, ${start.x-width*.4} ${start.y+room*.92} C ${start.x-width*.66} ${start.y+room*.88}, ${end.x+28} ${end.y+18}, ${end.x} ${end.y}`;
+        lastControl={x:end.x+28,y:end.y+18};
+      }
+    } else {
+      const bend=Math.max(18,Math.min(80,Math.hypot(end.x-start.x,end.y-start.y)*.55));
+      const c1={x:start.x+Math.cos(angle)*bend,y:start.y+Math.sin(angle)*bend};
+      lastControl=narrow?{x:end.x,y:end.y-bend}:{x:end.x-bend,y:end.y};
+      line=`M ${start.x} ${start.y} C ${c1.x} ${c1.y}, ${lastControl.x} ${lastControl.y}, ${end.x} ${end.y}`;
+    }
     // Keep the decorative line inside the visible dialog; it never takes a click.
-    const outside=end.y<bounds.top+8||end.y>bounds.bottom-8||end.x<bounds.left+8||end.x>bounds.right-8;
+    const floor=$('.onboarding-bottom').getBoundingClientRect().top;
+    const outside=end.y<bounds.top+8||end.y>Math.min(bounds.bottom-8,floor-12)||end.x<bounds.left+8||end.x>bounds.right-8||start.y>floor-32;
     pointer.toggleAttribute('hidden',outside);
     if(outside)return;
     pointer.style.clipPath=`inset(${Math.max(0,bounds.top+1)}px ${Math.max(0,innerWidth-bounds.right+1)}px ${Math.max(0,innerHeight-bounds.bottom+1)}px ${Math.max(0,bounds.left+1)}px)`;
-    const bend=Math.max(18,Math.min(80,Math.hypot(end.x-start.x,end.y-start.y)*.55));
-    const direction=step==='time'?1:-1;
-    const c1={x:start.x+Math.cos(angle)*bend,y:start.y+Math.sin(angle)*bend};
-    const c2=narrow?{x:end.x,y:end.y-bend}:{x:end.x-direction*bend,y:end.y};
-    const heading=Math.atan2(end.y-c2.y,end.x-c2.x),head=9,spread=.6;
-    pointerPath.setAttribute('d',`M ${start.x} ${start.y} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${end.x} ${end.y}`);
+    const heading=Math.atan2(end.y-lastControl.y,end.x-lastControl.x),head=6.5,spread=.55;
+    pointerPath.setAttribute('d',line);
     pointerHead.setAttribute('d',`M ${end.x-head*Math.cos(heading-spread)} ${end.y-head*Math.sin(heading-spread)} L ${end.x} ${end.y} L ${end.x-head*Math.cos(heading+spread)} ${end.y-head*Math.sin(heading+spread)}`);
   }
   function queuePointer(){if(!motion&&!pointerFrame)pointerFrame=requestAnimationFrame(()=>{pointerFrame=0;positionPointer();});}
@@ -58,7 +77,7 @@ export function createOnboardingGuide({dialog,account,getState,saveState}) {
       {transform:`translate(${previous.left-current.left}px,${previous.top-current.top}px)`},
       {transform:'translate(0,0)'},
     ]:[{opacity:0,transform:'translateY(16px) scale(.96)'},{opacity:1,transform:'translateY(0) scale(1)'}],
-    {duration:travelling?1200:800,easing:'cubic-bezier(.42,0,.58,1)'});
+    {duration:travelling?(step==='collections'?950:1200):800,easing:'cubic-bezier(.42,0,.58,1)'});
     motion=animation;motionScrollTo=scrollTo;
     const follow=()=>{
       if(motion!==animation)return;

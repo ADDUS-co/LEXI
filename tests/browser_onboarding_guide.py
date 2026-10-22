@@ -47,12 +47,19 @@ def points_to_active(page):
       const dialog=document.querySelector('#onboarding-dialog'),svg=dialog.querySelector('.guide-pointer');
       if(svg.hasAttribute('hidden')||svg.getBoundingClientRect().width<1||getComputedStyle(svg).pointerEvents!=='none'||svg.getAttribute('aria-hidden')!=='true')return false;
       const path=svg.querySelector('.guide-pointer-line'),end=path.getPointAtLength(path.getTotalLength());
-      const target=dialog.querySelector(dialog.dataset.guideStep==='time'?'#onboarding-update-time':'.onboarding-prompt').getBoundingClientRect();
+      const collections=dialog.dataset.guideStep==='collections';
+      const target=dialog.querySelector(collections?'.onboarding-prompt':'#onboarding-update-time').getBoundingClientRect();
       const box=svg.getBoundingClientRect(),x=end.x+box.left,y=end.y+box.top;
+      const cards=dialog.querySelector('#onboarding-collections').getBoundingClientRect();
       const near=innerWidth<=600?Math.abs(y-target.top+12)<2&&x>=target.left&&x<=target.right:
-        Math.abs(y-(target.top+target.height/2))<2&&Math.abs(x-(dialog.dataset.guideStep==='time'?target.left-14:target.right+12))<2;
+        collections?Math.abs(x-cards.right-12)<2&&y>=cards.top&&y<=cards.bottom:
+          Math.abs(y-(target.top+target.height/2))<2&&Math.abs(x-target.left+14)<2;
+      const circle=dialog.querySelector('#onboarding-coach').getBoundingClientRect(),line=path.getBoundingClientRect();
+      const footer=dialog.querySelector('.onboarding-bottom').getBoundingClientRect();
+      const clear=!collections||(line.top>=circle.bottom+8&&line.bottom<footer.top-12&&
+        (innerWidth<=600?line.bottom<target.top:line.left>=cards.right+8));
       const style=getComputedStyle(path),accent=getComputedStyle(dialog).getPropertyValue('--accent-text').trim();
-      return near&&style.strokeWidth==='2.5px'&&getComputedStyle(svg).color===style.stroke&&!!accent;
+      return near&&clear&&parseFloat(style.strokeWidth)>=1.25&&parseFloat(style.strokeWidth)<=1.8&&getComputedStyle(svg).color===style.stroke&&!!accent;
     }""")
 
 
@@ -117,6 +124,7 @@ def run():
                 early=next(f for f in frames if f['t']>=180)
                 check(early['x']>frames[0]['x'] and early['x']<frames[-1]['x']-200 and all(f['opacity']=='1' for f in frames),'Side-to-side movement accelerates gently and keeps the circle fully visible')
                 check(all(((b['x']-a['x'])**2+(b['y']-a['y'])**2)**.5<=max(8,(b['t']-a['t'])*2.2) for a,b in zip(frames,frames[1:])),'Frame-by-frame circle travel and scrolling have no abrupt position changes')
+                check(next(f['t'] for f in frames if abs(f['x']-frames[-1]['x'])<1 and abs(f['y']-frames[-1]['y'])<1)<1100,'The time-to-collections trip now finishes in about one second')
             else:page.locator('#onboarding-next').click()
             expect(page.locator('#onboarding-dialog')).to_have_attribute('data-guide-step','collections')
             check(page.locator('#onboarding-time').evaluate('e=>e.inert&&getComputedStyle(e).filter.includes("blur")') and not page.locator('#onboarding-topics').evaluate('e=>e.inert'),f'{language}: spotlight moves from time to the collections')
