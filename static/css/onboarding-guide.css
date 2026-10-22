@@ -48,10 +48,13 @@
 .guide-settings-target{z-index:2;background:var(--surface);color:var(--text);border:1px solid var(--text);border-radius:50%;box-shadow:0 0 0 8px color-mix(in srgb,var(--bg) 75%,transparent)}
 .guide-settings-target:hover{transform:none;background:var(--panel)}
 [data-theme=studio] .guide-circle{background:var(--paper)}
-.settings-guide-dialog.is-reading-guide::backdrop{backdrop-filter:blur(10px)}
+.settings-guide-dialog.is-reading-guide::backdrop{background:#07080b4d;backdrop-filter:blur(2.5px);transition:backdrop-filter 900ms cubic-bezier(.42,0,.58,1),background-color 900ms cubic-bezier(.42,0,.58,1)}
 .is-reading-guide .settings-guide-circle{z-index:3;gap:10px;padding:26px}
 .is-reading-guide .guide-settings-arrow{z-index:2;pointer-events:none}
 .is-reading-guide .guide-settings-arrow path{stroke:#eef0ec;opacity:.75;filter:none}
+[data-theme=studio] .is-reading-guide .guide-settings-arrow path{stroke:var(--text)}
+.reduce-motion .settings-guide-dialog.is-reading-guide::backdrop{transition:none}
+@media(prefers-reduced-motion:reduce){.settings-guide-dialog.is-reading-guide::backdrop{transition:none}}
 .guide-content-spotlight{position:fixed;z-index:2;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);box-shadow:0 12px 36px #0002;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
 .guide-content-spotlight>:first-child{margin:0;opacity:1;transform:none;animation:none;transition:none}
 .guide-content-spotlight .synonym{display:inline-flex;align-items:center;gap:12px}
