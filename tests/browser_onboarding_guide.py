@@ -39,6 +39,7 @@ def circle(page,selector):
 
 def settle(page,selector='#onboarding-coach'):
     page.wait_for_function("selector=>[...document.querySelector(selector).getAnimations()].every(a=>a.playState!=='running')",arg=selector)
+    page.wait_for_function("()=>document.querySelector('.guide-pointer').getAnimations({subtree:true}).every(a=>a.playState!=='running')")
     page.evaluate('()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))')
 
 
@@ -51,9 +52,10 @@ def points_to_active(page):
       const target=dialog.querySelector(collections?'.onboarding-prompt':'#onboarding-update-time').getBoundingClientRect();
       const box=svg.getBoundingClientRect(),x=end.x+box.left,y=end.y+box.top;
       const cards=dialog.querySelector('#onboarding-collections').getBoundingClientRect();
-      const near=innerWidth<=600?Math.abs(y-target.top+12)<2&&x>=target.left&&x<=target.right:
+      const frame=dialog.querySelector('#onboarding-time').getBoundingClientRect();
+      const near=innerWidth<=600?Math.abs(y-(collections?target.top:frame.top)+12)<2&&x>=target.left&&x<=target.right:
         collections?Math.abs(x-cards.right-12)<2&&y>=cards.top&&y<=cards.bottom:
-          Math.abs(y-(target.top+target.height/2))<2&&Math.abs(x-target.left+14)<2;
+          Math.abs(y-(target.top+target.height/2))<2&&Math.abs(x-frame.left+10)<2;
       const circle=dialog.querySelector('#onboarding-coach').getBoundingClientRect(),line=path.getBoundingClientRect();
       const footer=dialog.querySelector('.onboarding-bottom').getBoundingClientRect();
       const clear=!collections||(line.top>=circle.bottom+8&&line.bottom<footer.top-12&&
@@ -66,6 +68,21 @@ def points_to_active(page):
 def show_collections(page):
     page.evaluate("()=>document.querySelector(innerWidth<=600?'#onboarding-coach':'#onboarding-topics').scrollIntoView({block:'start',behavior:'instant'})")
     page.evaluate('()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))')
+
+
+def interrupted_trip(page):
+    return page.evaluate("""async()=>{
+      const c=document.querySelector('#onboarding-coach'),d=document.querySelector('#onboarding-dialog');
+      const changes=[];
+      for(const id of ['#onboarding-back','#onboarding-next','#onboarding-back','#onboarding-next']){
+        const before=c.getBoundingClientRect(),modal=d.getBoundingClientRect();
+        document.querySelector(id).click();
+        const after=c.getBoundingClientRect(),m=d.getBoundingClientRect();
+        changes.push({jump:Math.hypot(after.x-before.x,after.y-before.y),size:Math.abs(after.width-before.width),panel:Math.abs(m.top-modal.top)+Math.abs(m.height-modal.height)});
+        await new Promise(resolve=>setTimeout(resolve,90));
+      }
+      return changes;
+    }""")
 
 
 def run():
@@ -116,7 +133,8 @@ def run():
             if language=='ru':
                 frames=page.evaluate("""async()=>{
                   const circle=document.querySelector('#onboarding-coach');
-                  const points=[],start=performance.now(),read=()=>{const b=circle.getBoundingClientRect();points.push({t:performance.now()-start,x:b.x,y:b.y,opacity:getComputedStyle(circle).opacity});};
+                  const line=document.querySelector('.guide-pointer-line'),head=document.querySelector('.guide-pointer-head');
+                  const points=[],start=performance.now(),read=()=>{const b=circle.getBoundingClientRect();points.push({t:performance.now()-start,x:b.x,y:b.y,opacity:getComputedStyle(circle).opacity,draw:parseFloat(getComputedStyle(line).strokeDashoffset),head:parseFloat(getComputedStyle(head).opacity)});};
                   read();document.querySelector('#onboarding-next').click();read();
                   await new Promise(resolve=>{function sample(){read();if(performance.now()-start<1320)requestAnimationFrame(sample);else resolve();}requestAnimationFrame(sample);});return points;
                 }""")
@@ -125,12 +143,14 @@ def run():
                 check(early['x']>frames[0]['x'] and early['x']<frames[-1]['x']-200 and all(f['opacity']=='1' for f in frames),'Side-to-side movement accelerates gently and keeps the circle fully visible')
                 check(all(((b['x']-a['x'])**2+(b['y']-a['y'])**2)**.5<=max(8,(b['t']-a['t'])*3.2) for a,b in zip(frames,frames[1:])),'Frame-by-frame circle travel and scrolling have no abrupt position changes')
                 check(next(f['t'] for f in frames if abs(f['x']-frames[-1]['x'])<1 and abs(f['y']-frames[-1]['y'])<1)<800,'The time-to-collections trip now finishes in under 800 ms')
+                check(any(0<f['draw']<1 for f in frames) and frames[-1]['draw']==0 and frames[-1]['head']==1,'The arrow quickly draws through its loop and finishes with a visible tip')
             else:page.locator('#onboarding-next').click()
             expect(page.locator('#onboarding-dialog')).to_have_attribute('data-guide-step','collections')
             check(page.locator('#onboarding-time').evaluate('e=>e.inert&&getComputedStyle(e).filter.includes("blur")') and not page.locator('#onboarding-topics').evaluate('e=>e.inert'),f'{language}: spotlight moves from time to the collections')
             check(page.locator('#begin-button').is_disabled(),f'{language}: one or more collections are required')
             settle(page)
             check(points_to_active(page),f'{language}: the arrow now points to collections')
+            if language=='en':check(page.locator('.guide-pointer').evaluate('e=>e.getAnimations({subtree:true}).length===0'),'Reduced motion keeps the entire arrow static')
             second=page.locator('#onboarding-coach').bounding_box()
             check(second['y']>=0 and second['y']+second['height']<=1000,f'{language}: the collections explanation is visible before selecting topics')
             if width==1440:check(second['x']>first['x']+200,'The same coach moves from the left to the right of the panel')
@@ -151,9 +171,17 @@ def run():
                 page.emulate_media(reduced_motion='no-preference')
             page.locator('#onboarding-next').click()
             if language=='ru':
-                page.evaluate("""async()=>{document.querySelector('#onboarding-back').click();await new Promise(r=>setTimeout(r,160));document.querySelector('#onboarding-next').click();}""")
+                changes=interrupted_trip(page)
+                check(all(change['jump']<1 and change['size']<1 and change['panel']<1 for change in changes),'Every rapid Back/Next interruption preserves the circle position, size and panel bounds')
                 settle(page)
                 check(points_to_active(page) and state(page)['guideStep']=='collections','Quick direction changes leave one circle and an arrow at the correct collection step')
+                page.set_viewport_size({'width':width,'height':1500});settle(page)
+                changes=interrupted_trip(page);settle(page)
+                check(all(change['jump']<1 and change['size']<1 and change['panel']<1 for change in changes),'A tall desktop window also keeps the circle and panel steady during direction changes')
+                page.set_viewport_size({'width':width,'height':1000});settle(page)
+            elif language=='kk':
+                changes=interrupted_trip(page);settle(page)
+                check(all(change['jump']<1 and change['size']<1 and change['panel']<1 for change in changes),'Rapid direction changes preserve the circle position on a phone')
             for viewport in (320,390,768,1440):
                 page.set_viewport_size({'width':viewport,'height':1000});page.wait_for_timeout(80)
                 show_collections(page)

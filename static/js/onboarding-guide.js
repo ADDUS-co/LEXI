@@ -11,24 +11,41 @@ export function createOnboardingGuide({dialog,account,getState,saveState}) {
   const $=selector=>dialog.querySelector(selector);
   const language=$('#onboarding-language'),content=$('.onboarding-content');
   const time=$('#onboarding-time'),topics=$('#onboarding-topics'),coach=$('#onboarding-coach');
+  const coachSlot=$('#onboarding-coach-slot'),coachStyle=coach.style.cssText;
   const pointer=$('.guide-pointer'),pointerPath=pointer.querySelector('.guide-pointer-line'),pointerHead=pointer.querySelector('.guide-pointer-head');
   const back=$('#onboarding-back'),next=$('#onboarding-next'),begin=$('#begin-button');
   const hint=document.querySelector('#settings-guide-dialog'),hintCircle=hint.querySelector('.guide-circle');
   const media=matchMedia('(prefers-reduced-motion: reduce)');
-  let step=null,scope=null,motion=null,motionFrame=0,motionScrollTo=null,pointerFrame=0,hintScheduled=false,hintTarget=null,placeholder=null,targetStyle='',targetLabel='',hintScope=null,hintGeneration=0;
+  let step=null,scope=null,motion=null,motionFrame=0,motionScrollTo=null,pointerFrame=0,pointerAnimations=[],hintScheduled=false,hintTarget=null,placeholder=null,targetStyle='',targetLabel='',hintScope=null,hintGeneration=0;
   const lang=()=>Object.hasOwn(copy,getState().guideLanguage)?getState().guideLanguage:'en';
   const text=()=>copy[lang()];
   const reduced=()=>media.matches||getState().reduceMotion;
   const selected=()=>[...dialog.querySelectorAll('input[name="onboarding"]:checked')].map(input=>input.value);
   const value=()=>$('#onboarding-update-time')?.value;
-  function stopMotion({finish=false}={}){cancelAnimationFrame(motionFrame);motionFrame=0;motion?.cancel();motion=null;if(finish&&motionScrollTo!==null)dialog.scrollTop=motionScrollTo;motionScrollTo=null;pointer.style.opacity='1';}
+  function stopPointer(){pointerAnimations.forEach(animation=>animation.cancel());pointerAnimations=[];}
+  function stopMotion({finish=false}={}) {
+    cancelAnimationFrame(motionFrame);motionFrame=0;motion?.cancel();motion=null;
+    coach.style.cssText=coachStyle;
+    if(finish&&motionScrollTo!==null)dialog.scrollTop=motionScrollTo;
+    motionScrollTo=null;stopPointer();pointer.style.opacity='1';
+  }
+  function drawPointer() {
+    stopPointer();
+    if(reduced()||pointer.hasAttribute('hidden')||!pointerPath.animate)return;
+    pointerAnimations=[
+      pointerPath.animate([{strokeDashoffset:'1'},{strokeDashoffset:'0'}],{duration:330,easing:'cubic-bezier(.25,.1,.25,1)'}),
+      pointerHead.animate([{opacity:0},{opacity:1}],{duration:90,delay:240,fill:'backwards',easing:'ease-out'}),
+    ];
+    pointerAnimations.forEach(animation=>animation.finished.catch(()=>{}));
+  }
   function positionPointer() {
     if(!dialog.open||coach.hidden||account.isGuest||!['time','collections'].includes(step)){pointer.setAttribute('hidden','');return;}
     const bubble=coach.getBoundingClientRect(),bounds=dialog.getBoundingClientRect();
     const target=(step==='time'?$('#onboarding-update-time'):$('.onboarding-prompt')).getBoundingClientRect();
     const narrow=innerWidth<=600;
-    let end=narrow?{x:target.left+target.width/2,y:target.top-12}:
-      {x:step==='time'?target.left-14:target.right+12,y:target.top+target.height/2};
+    const frame=time.getBoundingClientRect();
+    let end=narrow?{x:target.left+target.width/2,y:(step==='time'?frame.top:target.top)-12}:
+      {x:step==='time'?frame.left-10:target.right+12,y:target.top+target.height/2};
     const center={x:bubble.left+bubble.width/2,y:bubble.top+bubble.height/2};
     const angle=Math.atan2(end.y-center.y,end.x-center.x),radius=bubble.width/2+8;
     let start={x:center.x+Math.cos(angle)*radius,y:center.y+Math.sin(angle)*radius};
@@ -69,29 +86,34 @@ export function createOnboardingGuide({dialog,account,getState,saveState}) {
     stopMotion();
     if(reduced()||!coach.animate){positionPointer();return;}
     // Scroll and travel share one clock, so the panel does not jump underneath the circle.
+    const destination=coachSlot.getBoundingClientRect();
     if(previous?.width)dialog.scrollTop=scrollFrom;
     scrollFrom=dialog.scrollTop;
-    const current=coach.getBoundingClientRect();
     const travelling=!!previous?.width;
+    if(travelling)Object.assign(coach.style,{position:'fixed',left:`${destination.left}px`,top:`${destination.top}px`,width:`${destination.width}px`,height:`${destination.height}px`,transformOrigin:'top left'});
+    // A fixed circle follows one continuous path, independent of sticky layout and scrolling.
     const animation=coach.animate(travelling?[
-      {transform:`translate(${previous.left-current.left}px,${previous.top-current.top}px)`},
-      {transform:'translate(0,0)'},
+      {transform:`translate(${previous.left-destination.left}px,${previous.top-destination.top}px) scale(${previous.width/destination.width},${previous.height/destination.height})`,opacity:previous.opacity},
+      {transform:'translate(0,0) scale(1)',opacity:1},
     ]:[{opacity:0,transform:'translateY(16px) scale(.96)'},{opacity:1,transform:'translateY(0) scale(1)'}],
     {duration:travelling?(step==='collections'?650:1200):800,easing:'cubic-bezier(.42,0,.58,1)'});
     motion=animation;motionScrollTo=scrollTo;
+    let pointerStarted=false;
     const follow=()=>{
       if(motion!==animation)return;
       const progress=animation.effect.getComputedTiming().progress??0;
       if(scrollFrom!==scrollTo)dialog.scrollTop=scrollFrom+(scrollTo-scrollFrom)*progress;
-      // Reveal the new arrow as the circle arrives, rather than drawing across the controls in transit.
-      pointer.style.opacity=String(travelling?Math.max(0,(progress-.94)/.06):progress);
-      positionPointer();motionFrame=requestAnimationFrame(follow);
+      pointer.style.opacity=progress>.94?'1':'0';
+      positionPointer();
+      if(progress>.94&&!pointerStarted){pointerStarted=true;drawPointer();}
+      motionFrame=requestAnimationFrame(follow);
     };
     follow();
     animation.finished.then(()=>{
       if(motion!==animation)return;
       cancelAnimationFrame(motionFrame);motionFrame=0;motion=null;motionScrollTo=null;
-      dialog.scrollTop=scrollTo;pointer.style.opacity='1';positionPointer();
+      dialog.scrollTop=scrollTo;coach.style.cssText=coachStyle;pointer.style.opacity='1';positionPointer();
+      if(!pointerStarted)drawPointer();
     }).catch(()=>{});
   }
   function mute(node,value){node.classList.toggle('guide-muted',value);node.inert=value;if(value)node.setAttribute('aria-hidden','true');else node.removeAttribute('aria-hidden');}
@@ -114,12 +136,12 @@ export function createOnboardingGuide({dialog,account,getState,saveState}) {
   }
   function render(newStep,{animate=true}={}) {
     const changed=step!==newStep||scope!==account.scope;
-    const previous=!coach.hidden&&changed?coach.getBoundingClientRect():null;
+    const previous=!coach.hidden&&changed?Object.assign(coach.getBoundingClientRect(),{opacity:Number(getComputedStyle(coach).opacity)}):null;
     const scrollFrom=dialog.scrollTop;
     if(changed)stopMotion();
     scope=account.scope;step=newStep;dialog.classList.add('is-guided');dialog.dataset.guideStep=step;
     const choosing=step==='language';language.hidden=!choosing;content.hidden=choosing;
-    coach.hidden=choosing;back.hidden=false;next.hidden=step!=='time';begin.hidden=step!=='collections';
+    coachSlot.hidden=choosing;coach.hidden=choosing;back.hidden=false;next.hidden=step!=='time';begin.hidden=step!=='collections';
     $('#onboarding-guest-exit').hidden=true;
     if(choosing){dialog.lang='en';dialog.setAttribute('aria-labelledby','guide-language-title');}
     else {
@@ -145,7 +167,7 @@ export function createOnboardingGuide({dialog,account,getState,saveState}) {
   function useGuest() {
     stopMotion();pointer.setAttribute('hidden','');step=null;scope=account.scope;
     dialog.classList.remove('is-guided');delete dialog.dataset.guideStep;dialog.lang='en';
-    language.hidden=true;content.hidden=false;coach.hidden=true;next.hidden=true;back.hidden=true;begin.hidden=false;
+    language.hidden=true;content.hidden=false;coachSlot.hidden=true;coach.hidden=true;next.hidden=true;back.hidden=true;begin.hidden=false;
     for(const node of [time,topics,$('.guide-chrome')])mute(node,false);
     translate(copy.en);$('#onboarding-title').textContent='Welcome to LEXI.';$('.onboarding-subtitle').textContent='Words that match your world.';
     begin.innerHTML=`Discover my word ${icon('arrow')}`;

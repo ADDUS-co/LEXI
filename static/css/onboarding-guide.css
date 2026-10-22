@@ -10,15 +10,16 @@
 .guide-language-options strong{display:block;font-size:20px;font-weight:500}
 .guide-language-options small{display:block;font-size:11px;color:var(--muted-readable);line-height:1.7;margin-top:5px}
 .guide-language-options .icon{width:19px;height:19px;color:var(--muted-readable)}
-.onboarding-dialog.is-guided{width:min(1120px,calc(100% - 40px));padding:32px;overflow:auto;scroll-behavior:auto}
+.onboarding-dialog.is-guided{width:min(1120px,calc(100% - 40px));padding:32px;overflow:auto;scroll-behavior:auto;overflow-anchor:none}
+.onboarding-dialog.is-guided:not([data-guide-step=language]){height:min(1080px,calc(100dvh - 40px))}
 .onboarding-dialog[data-guide-step=language]{width:min(620px,calc(100% - 32px))}
 .is-guided .guide-chrome{margin-bottom:24px;overflow-wrap:anywhere}
 .is-guided .onboarding-guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:start;gap:32px 40px}
 .is-guided #onboarding-time{grid-column:2/4;grid-row:1;margin:0;background:var(--surface)}
 .is-guided #onboarding-topics{grid-column:1/3;grid-row:2;min-width:0;scroll-margin-top:16px}
 .is-guided .onboarding-prompt{margin-top:0}
-.is-guided #onboarding-coach{grid-column:1;grid-row:1;position:sticky;top:16px;z-index:5}
-.is-guided[data-guide-step=collections] #onboarding-coach{grid-column:3;grid-row:2}
+.is-guided .guide-coach-slot{grid-column:1;grid-row:1;position:sticky;top:16px;z-index:5;width:min(300px,100%);aspect-ratio:1;min-width:0}
+.is-guided[data-guide-step=collections] .guide-coach-slot{grid-column:3;grid-row:2}
 .is-guided .onboarding-bottom{bottom:-32px;z-index:8;padding-bottom:22px;gap:20px}
 .is-guided .onboarding-bottom>p{max-width:360px}
 .guide-muted{filter:blur(5px);opacity:.3;pointer-events:none;user-select:none}
@@ -26,6 +27,7 @@
 .is-guided #onboarding-time:not(.guide-muted){border-color:var(--accent-text);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 8%,transparent)}
 .guide-pointer{position:fixed;inset:0;width:100%;height:100%;z-index:6;pointer-events:none;color:color-mix(in srgb,var(--accent-text) 78%,var(--muted-readable))}
 .guide-pointer path{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.guide-pointer-line{stroke-dasharray:1;stroke-dashoffset:0}
 .guide-circle{width:min(300px,100%);aspect-ratio:1;min-width:0;border:1px solid color-mix(in srgb,var(--text) 32%,var(--bg));border-radius:50%;background:var(--surface);box-shadow:0 16px 50px #0002;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px;gap:11px;color:var(--text);isolation:isolate}
 .guide-number{font-size:9px;letter-spacing:.13em;line-height:1.5;color:var(--muted-readable)}
 .guide-orbit{display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--border);border-radius:50%;color:var(--accent-text)}
@@ -43,11 +45,12 @@
 [data-theme=studio] .guide-circle{background:var(--paper)}
 @media(max-width:800px){
  .onboarding-dialog.is-guided{padding:24px;width:calc(100% - 24px);max-height:calc(100dvh - 24px)}
+ .onboarding-dialog.is-guided:not([data-guide-step=language]){height:calc(100dvh - 24px)}
  .is-guided .onboarding-guide-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
- .is-guided #onboarding-coach{grid-column:1;grid-row:1;position:relative;top:auto;justify-self:center}
+ .is-guided .guide-coach-slot{grid-column:1;grid-row:1;position:relative;top:auto;justify-self:center}
  .is-guided #onboarding-time{grid-column:2;grid-row:1}
  .is-guided #onboarding-topics{grid-column:1/3;grid-row:2}
- .is-guided[data-guide-step=collections] #onboarding-coach{grid-column:2;grid-row:2;position:sticky;top:12px}
+ .is-guided[data-guide-step=collections] .guide-coach-slot{grid-column:2;grid-row:2;position:sticky;top:12px}
  .is-guided[data-guide-step=collections] #onboarding-topics{grid-column:1;grid-row:2}
  .is-guided .onboarding-bottom{bottom:-24px}
  .is-guided .onboarding-rhythm .schedule-fields{gap:16px}
@@ -62,13 +65,13 @@
  .guide-language-options strong{font-size:19px}
  .is-guided .guide-chrome{margin-bottom:18px}
  .is-guided .onboarding-guide-grid{grid-template-columns:minmax(0,1fr);gap:40px}
- .is-guided #onboarding-coach{grid-column:1;grid-row:1;width:min(280px,100%)}
+ .is-guided .guide-coach-slot{grid-column:1;grid-row:1;width:min(280px,100%)}
  .is-guided #onboarding-time{grid-column:1;grid-row:2}
  .is-guided .onboarding-rhythm .schedule-fields{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
  .is-guided .onboarding-rhythm input[type=time]{width:180px;max-width:100%;min-width:0}
  .is-guided #onboarding-topics{grid-column:1;grid-row:3}
  .is-guided[data-guide-step=collections] #onboarding-time{grid-row:1}
- .is-guided[data-guide-step=collections] #onboarding-coach{grid-column:1;grid-row:2;position:relative;top:auto;justify-self:end}
+ .is-guided[data-guide-step=collections] .guide-coach-slot{grid-column:1;grid-row:2;position:relative;top:auto;justify-self:end}
  .is-guided[data-guide-step=collections] #onboarding-topics{grid-column:1;grid-row:3;margin-top:48px}
  .is-guided .onboarding-bottom{bottom:-24px;gap:12px;padding-bottom:18px}
  .guide-step-actions{width:100%;gap:20px}
