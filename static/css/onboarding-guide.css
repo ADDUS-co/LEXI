@@ -38,8 +38,8 @@
 .settings-guide-dialog::backdrop{background:#07080bc4;backdrop-filter:blur(7px)}
 .settings-guide-dialog.is-word-guide::backdrop{backdrop-filter:blur(10px)}
 .is-word-guide .guide-settings-arrow{display:none}
-.guide-word-spotlight{position:fixed;margin:0;pointer-events:none;user-select:none;color:#edffdb;text-shadow:0 0 5px #dcffb8,0 0 20px #a9ff7d9c,0 0 48px #83ff654d;z-index:2}
-[data-theme=experimental] .guide-word-spotlight{color:#f1ffd7;text-shadow:0 0 6px #d4ff39,0 0 22px #d4ff39a6,0 0 54px #a1ff2952}
+.guide-word-spotlight{position:fixed;margin:0;pointer-events:none;user-select:none;color:#f0f2ed;text-shadow:0 0 12px #c8ddbc2e;z-index:2}
+[data-theme=experimental] .guide-word-spotlight{color:#f1f3e9;text-shadow:0 0 12px #d4ff3924}
 .is-word-guide .settings-guide-circle{border-color:color-mix(in srgb,var(--accent-text) 55%,var(--border))}
 .settings-guide-circle{position:fixed;width:min(300px,calc(100vw - 32px));z-index:1;gap:14px;padding:30px}
 .settings-guide-circle .button{font-size:12px;min-height:42px;padding:10px 18px;margin-top:2px}

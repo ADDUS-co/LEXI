@@ -1,5 +1,5 @@
 // Bump this version after changing the app shell or vocabulary schema.
-const CACHE = 'lexi-shell-v19';
+const CACHE = 'lexi-shell-v20';
 const SHELL = [
   '/', '/manifest.webmanifest', '/static/css/style.css', '/static/css/experience.css', '/static/css/account.css', '/static/css/entry.css', '/static/js/app.js',
   '/static/js/theme-init.js', '/static/js/selection.js', '/static/js/storage.js',
