@@ -82,6 +82,7 @@ python tests/browser_accounts.py
 python tests/browser_guest.py
 python tests/browser_auth_tabs.py
 python tests/browser_onboarding_guide.py
+python tests/browser_word_guide.py
 ```
 
 Сайт должен быть запущен в другом терминале. Браузерные проверки создают синтетические аккаунты: используйте отдельную тестовую базу через `DATABASE_URL`, без реальных пользователей. Необязательные настройки: `LEXI_TEST_URL`, `CHROMIUM_PATH`. Скриншоты сохраняются в игнорируемую папку `test-results/`.

@@ -2,9 +2,9 @@ import {icon} from './icons.js';
 import {validUpdateTime} from './schedule.js';
 
 const copy={
-  ru:{title:'Ваш ритм. Ваши интересы.',subtitle:'Два небольших шага, чтобы начать.',timeTitle:'Когда менять слово?',timeBody:'Выберите удобное время, когда слово будет меняться. Мы учитываем часовой пояс вашего устройства.',timeLegend:'Время обновления',timeNote:'Новое слово появится при следующем открытии LEXI после этого времени.',at:'НОВОЕ СЛОВО В',timezone:'ЧАСОВОЙ ПОЯС УСТРОЙСТВА',travel:'Следует за устройством, когда вы путешествуете.',collectionsTitle:'Что вам интересно?',collectionsBody:'Выберите одну или несколько коллекций. Из этих тем LEXI будет подбирать ваше ежедневное слово.',pick:'Можно выбрать несколько тем.',next:'Далее',back:'Назад',note:'Настройки можно будет изменить позже.',selected:n=>`Выбрано коллекций: ${n}.`,settingsTitle:'Всё можно изменить',settingsBody:'Нажмите на шестерёнку, чтобы в любой момент изменить время обновления и выбранные коллекции.',done:'Понятно'},
-  kk:{title:'Өз ырғағыңыз. Өз қызығушылықтарыңыз.',subtitle:'Бастау үшін екі шағын қадам.',timeTitle:'Сөз қашан ауыссын?',timeBody:'Сөз ауысатын ыңғайлы уақытты таңдаңыз. Құрылғыңыздың уақыт белдеуі ескеріледі.',timeLegend:'Жаңару уақыты',timeNote:'Осы уақыттан кейін LEXI-ді келесі рет ашқанда жаңа сөз көрсетіледі.',at:'ЖАҢА СӨЗ УАҚЫТЫ',timezone:'ҚҰРЫЛҒЫНЫҢ УАҚЫТ БЕЛДЕУІ',travel:'Сапар кезінде құрылғыңыздың уақыт белдеуіне бейімделеді.',collectionsTitle:'Сізге не қызық?',collectionsBody:'Бір немесе бірнеше топтаманы таңдаңыз. LEXI күнделікті сөзді осы тақырыптардан ұсынады.',pick:'Бірнеше тақырып таңдауға болады.',next:'Келесі',back:'Артқа',note:'Баптауларды кейін өзгертуге болады.',selected:n=>`Таңдалған топтамалар: ${n}.`,settingsTitle:'Бәрін өзгертуге болады',settingsBody:'Жаңару уақытын және таңдалған топтамаларды кез келген уақытта өзгерту үшін тісті дөңгелек белгісін басыңыз.',done:'Түсінікті'},
-  en:{title:'Your rhythm. Your interests.',subtitle:'Two small steps to make LEXI yours.',timeTitle:'When should your word change?',timeBody:'Choose a convenient time for your word to change. We use your device’s timezone.',timeLegend:'Your daily rhythm',timeNote:'Your next visit after this time applies the new word.',at:'A NEW WORD AT',timezone:'YOUR DEVICE TIMEZONE',travel:'Follows your device when you travel.',collectionsTitle:'What interests you?',collectionsBody:'Choose one or more collections. LEXI will find your daily word in these topics.',pick:'Choose one or more. Follow your curiosity.',next:'Next',back:'Back',note:'You can change these settings later.',selected:n=>`${n} collections selected.`,settingsTitle:'Make changes anytime',settingsBody:'Use the gear button whenever you want to change your daily time or chosen collections.',done:'Got it'},
+  ru:{title:'Ваш ритм. Ваши интересы.',subtitle:'Два небольших шага, чтобы начать.',timeTitle:'Когда менять слово?',timeBody:'Выберите удобное время, когда слово будет меняться. Мы учитываем часовой пояс вашего устройства.',timeLegend:'Время обновления',timeNote:'Новое слово появится при следующем открытии LEXI после этого времени.',at:'НОВОЕ СЛОВО В',timezone:'ЧАСОВОЙ ПОЯС УСТРОЙСТВА',travel:'Следует за устройством, когда вы путешествуете.',collectionsTitle:'Что вам интересно?',collectionsBody:'Выберите одну или несколько коллекций. Из этих тем LEXI будет подбирать ваше ежедневное слово.',pick:'Можно выбрать несколько тем.',next:'Далее',back:'Назад',note:'Настройки можно будет изменить позже.',selected:n=>`Выбрано коллекций: ${n}.`,wordTitle:'Слово дня',wordBody:'Это слово дня. Оно меняется каждый день в выбранное вами время.',settingsTitle:'Всё можно изменить',settingsBody:'Нажмите на шестерёнку, чтобы в любой момент изменить время обновления и выбранные коллекции.',done:'Понятно'},
+  kk:{title:'Өз ырғағыңыз. Өз қызығушылықтарыңыз.',subtitle:'Бастау үшін екі шағын қадам.',timeTitle:'Сөз қашан ауыссын?',timeBody:'Сөз ауысатын ыңғайлы уақытты таңдаңыз. Құрылғыңыздың уақыт белдеуі ескеріледі.',timeLegend:'Жаңару уақыты',timeNote:'Осы уақыттан кейін LEXI-ді келесі рет ашқанда жаңа сөз көрсетіледі.',at:'ЖАҢА СӨЗ УАҚЫТЫ',timezone:'ҚҰРЫЛҒЫНЫҢ УАҚЫТ БЕЛДЕУІ',travel:'Сапар кезінде құрылғыңыздың уақыт белдеуіне бейімделеді.',collectionsTitle:'Сізге не қызық?',collectionsBody:'Бір немесе бірнеше топтаманы таңдаңыз. LEXI күнделікті сөзді осы тақырыптардан ұсынады.',pick:'Бірнеше тақырып таңдауға болады.',next:'Келесі',back:'Артқа',note:'Баптауларды кейін өзгертуге болады.',selected:n=>`Таңдалған топтамалар: ${n}.`,wordTitle:'Күн сөзі',wordBody:'Бұл — күн сөзі. Ол күн сайын сіз таңдаған уақытта жаңарады.',settingsTitle:'Бәрін өзгертуге болады',settingsBody:'Жаңару уақытын және таңдалған топтамаларды кез келген уақытта өзгерту үшін тісті дөңгелек белгісін басыңыз.',done:'Түсінікті'},
+  en:{title:'Your rhythm. Your interests.',subtitle:'Two small steps to make LEXI yours.',timeTitle:'When should your word change?',timeBody:'Choose a convenient time for your word to change. We use your device’s timezone.',timeLegend:'Your daily rhythm',timeNote:'Your next visit after this time applies the new word.',at:'A NEW WORD AT',timezone:'YOUR DEVICE TIMEZONE',travel:'Follows your device when you travel.',collectionsTitle:'What interests you?',collectionsBody:'Choose one or more collections. LEXI will find your daily word in these topics.',pick:'Choose one or more. Follow your curiosity.',next:'Next',back:'Back',note:'You can change these settings later.',selected:n=>`${n} collections selected.`,wordTitle:'Your word of the day',wordBody:'This is your word of the day. It changes every day at your chosen time.',settingsTitle:'Make changes anytime',settingsBody:'Use the gear button whenever you want to change your daily time or chosen collections.',done:'Got it'},
 };
 
 export function createOnboardingGuide({dialog,account,getState,saveState}) {
@@ -16,7 +16,7 @@ export function createOnboardingGuide({dialog,account,getState,saveState}) {
   const back=$('#onboarding-back'),next=$('#onboarding-next'),begin=$('#begin-button');
   const hint=document.querySelector('#settings-guide-dialog'),hintCircle=hint.querySelector('.guide-circle');
   const media=matchMedia('(prefers-reduced-motion: reduce)');
-  let step=null,scope=null,motion=null,motionFrame=0,motionScrollTo=null,pointerFrame=0,pointerAnimations=[],hintScheduled=false,hintTarget=null,placeholder=null,targetStyle='',targetLabel='',hintScope=null,hintGeneration=0;
+  let step=null,scope=null,motion=null,motionFrame=0,motionScrollTo=null,pointerFrame=0,pointerAnimations=[],hintScheduled=false,hintTarget=null,placeholder=null,targetStyle='',targetLabel='',hintScope=null,hintGeneration=0,hintMode=null,hintMoving=false,hintAnimations=[],wordSpotlight=null;
   const lang=()=>Object.hasOwn(copy,getState().guideLanguage)?getState().guideLanguage:'en';
   const text=()=>copy[lang()];
   const reduced=()=>media.matches||getState().reduceMotion;
@@ -194,12 +194,37 @@ export function createOnboardingGuide({dialog,account,getState,saveState}) {
     if(account.isGuest||!dialog.classList.contains('is-guided'))return;
     if(event.target.name==='onboarding'){saveState({interests:selected()});syncControls();}
   });
+  function stopHintAnimations(){hintAnimations.forEach(animation=>animation.cancel());hintAnimations=[];}
   function restoreTarget() {
+    stopHintAnimations();
     if(hintTarget){hintTarget.classList.remove('guide-settings-target');hintTarget.style.cssText=targetStyle;hintTarget.setAttribute('aria-label',targetLabel);if(placeholder?.isConnected)placeholder.replaceWith(hintTarget);else hintTarget.remove();}
-    hintTarget=null;placeholder=null;hintScope=null;
+    wordSpotlight?.remove();wordSpotlight=null;
+    hintTarget=null;placeholder=null;hintScope=null;hintMode=null;hintMoving=false;
+    hint.classList.remove('is-word-guide');delete hint.dataset.guidePhase;
+    hint.querySelector('#guide-settings-done').disabled=false;
+  }
+  function wordSource(){return ['', '#home'].includes(location.hash)?document.querySelector('#main-content #daily-word'):null;}
+  function glyphBounds(source){const range=document.createRange();range.selectNodeContents(source);return range.getBoundingClientRect();}
+  function positionWord(ensureVisible=false) {
+    const source=wordSource();if(!source||!wordSpotlight)return false;
+    const width=hintCircle.getBoundingClientRect().width;
+    let glyph=glyphBounds(source);
+    if(ensureVisible){
+      const top=Math.max(24,Math.min(120,innerHeight-width-glyph.height-64));
+      window.scrollBy({top:glyph.top-top,behavior:'instant'});glyph=glyphBounds(source);
+    }
+    const box=source.getBoundingClientRect(),style=getComputedStyle(source);
+    wordSpotlight.textContent=source.textContent;
+    Object.assign(wordSpotlight.style,{left:`${box.left}px`,top:`${box.top}px`,width:`${box.width}px`,height:`${box.height}px`});
+    for(const property of ['fontFamily','fontSize','fontWeight','fontStyle','letterSpacing','lineHeight','whiteSpace','overflowWrap','wordBreak','paddingBottom'])wordSpotlight.style[property]=style[property];
+    const left=Math.max(16,Math.min(innerWidth-width-16,glyph.left+glyph.width/2-width/2));
+    Object.assign(hintCircle.style,{left:`${left}px`,top:`${glyph.bottom+24}px`});
+    return true;
   }
   function positionHint() {
-    if(!hint.open||!placeholder)return;
+    if(!hint.open)return;
+    if(hintMode==='word'){positionWord();return;}
+    if(!placeholder)return;
     const target=placeholder.getBoundingClientRect();
     Object.assign(hintTarget.style,{position:'fixed',left:`${target.left}px`,top:`${target.top}px`,width:`${target.width}px`,height:`${target.height}px`,minWidth:'0',minHeight:'0'});
     const width=hintCircle.getBoundingClientRect().width;
@@ -209,31 +234,82 @@ export function createOnboardingGuide({dialog,account,getState,saveState}) {
     const endX=target.left+target.width/2,endY=target.bottom+7,startX=left+width/2,startY=top+7;
     hint.querySelector('path').setAttribute('d',`M ${startX} ${startY} Q ${startX} ${(startY+endY)/2} ${endX} ${endY} M ${endX-5} ${endY+8} L ${endX} ${endY} L ${endX+5} ${endY+8}`);
   }
-  function finishHint(openSettings=false) {
-    if(!hint.open)return;
-    const target=hintTarget,owned=hintScope===account.scope&&account.hasAccess;
-    if(owned)saveState({guideStep:'done'});
-    restoreTarget();hint.close();
-    if(owned){if(openSettings)location.hash='settings';else target?.focus({preventScroll:true});}
+  function showWordHint(owner) {
+    if(owner!==account.scope||!account.hasAccess||account.isGuest||getState().guideStep!=='word'||!wordSource())return false;
+    // Settle the underlying entrance/flip before measuring the highlighted word.
+    for(const node of [wordSource(),wordSource().closest('.word-stage'),document.querySelector('#main-content')]){
+      for(const animation of node?.getAnimations()||[])if(animation.playState==='running'&&Number.isFinite(animation.effect.getComputedTiming().endTime))animation.finish();
+    }
+    const t=text();hintScope=owner;hintMode='word';hint.lang=lang();hint.dataset.guidePhase='word';hint.classList.add('is-word-guide');
+    hint.querySelector('.guide-number').textContent='LEXI / WORD OF THE DAY';
+    hint.querySelector('#guide-settings-title').textContent=t.wordTitle;hint.querySelector('#guide-settings-copy').textContent=t.wordBody;
+    hint.querySelector('#guide-settings-done').textContent=t.done;
+    wordSpotlight=document.createElement('h1');wordSpotlight.id='guide-daily-word';wordSpotlight.className='guide-word-spotlight';
+    hint.insertBefore(wordSpotlight,hintCircle);
+    if(!hint.open)hint.showModal();
+    positionWord(true);hint.querySelector('h2').focus({preventScroll:true});
+    if(!reduced()){
+      hintAnimations=[
+        hintCircle.animate([{opacity:0,transform:'translateY(12px) scale(.97)'},{opacity:1,transform:'translateY(0) scale(1)'}],{duration:520,easing:'cubic-bezier(.42,0,.58,1)'}),
+        wordSpotlight.animate([{opacity:0},{opacity:1}],{duration:650,easing:'cubic-bezier(.42,0,.58,1)'}),
+      ];
+      hintAnimations.forEach(animation=>animation.finished.catch(()=>{}));
+    }
+    return true;
+  }
+  async function finishHint(openSettings=false) {
+    if(!hint.open||hintMoving||hintScope!==account.scope||!account.hasAccess)return;
+    const owner=hintScope,generation=hintGeneration,word=hintMode==='word';
+    hintMoving=true;hint.querySelector('#guide-settings-done').disabled=true;
+    saveState({guideStep:word?'done':'word'});
+    const fading=[hintCircle,word?wordSpotlight:hint.querySelector('.guide-settings-arrow')].filter(Boolean).map(node=>({node,opacity:getComputedStyle(node).opacity,transform:getComputedStyle(node).transform}));
+    stopHintAnimations();
+    if(!reduced()){
+      hintAnimations=fading.map(({node,opacity,transform})=>node.animate([{opacity,transform},{opacity:0,transform}],{duration:360,easing:'cubic-bezier(.42,0,.58,1)',fill:'forwards'}));
+      await Promise.all(hintAnimations.map(animation=>animation.finished.catch(()=>{})));
+    }
+    if(generation!==hintGeneration||owner!==account.scope||!account.hasAccess||!hint.open)return;
+    restoreTarget();
+    if(word||openSettings){
+      hint.close();
+      if(openSettings)location.hash='settings';else document.querySelector('#daily-word')?.focus({preventScroll:true});
+      return;
+    }
+    if(!['', '#home'].includes(location.hash))location.hash='home';
+    if(!showWordHint(owner))hint.close();
   }
   function resumeSettingsHint() {
     const state=getState();
-    if(hint.open||hintScheduled||account.isGuest||!account.hasAccess||!state.onboarded||state.guideStep!=='settings'||!state.guideLanguage)return;
+    if(hint.open||hintScheduled||account.isGuest||!account.hasAccess||!state.onboarded||!['settings','word'].includes(state.guideStep)||!state.guideLanguage)return;
+    if(state.guideStep==='word'&&!wordSource())return;
     const owner=account.scope,generation=hintGeneration;hintScheduled=true;
     requestAnimationFrame(()=>{
       if(generation!==hintGeneration)return;
       hintScheduled=false;
-      if(owner!==account.scope||!account.hasAccess||getState().guideStep!=='settings'||dialog.open)return;
+      if(owner!==account.scope||!account.hasAccess||dialog.open)return;
+      if(getState().guideStep==='word'){showWordHint(owner);return;}
+      if(getState().guideStep!=='settings')return;
       hintTarget=document.querySelector('.settings-link');if(!hintTarget)return;
-      const t=text();hint.lang=lang();hintScope=owner;
+      const t=text();hint.lang=lang();hintScope=owner;hintMode='settings';hint.dataset.guidePhase='settings';
       targetStyle=hintTarget.style.cssText;targetLabel=hintTarget.getAttribute('aria-label')||'Settings';
       placeholder=document.createElement('span');placeholder.className='icon-button guide-settings-placeholder';placeholder.setAttribute('aria-hidden','true');
       hintTarget.replaceWith(placeholder);hint.append(hintTarget);hintTarget.classList.add('guide-settings-target');hintTarget.setAttribute('aria-label',t.settingsTitle);
+      hint.querySelector('.guide-number').textContent='LEXI / SETTINGS';
       hint.querySelector('#guide-settings-title').textContent=t.settingsTitle;hint.querySelector('#guide-settings-copy').textContent=t.settingsBody;
-      hint.querySelector('#guide-settings-done').textContent=t.done;
+      hint.querySelector('#guide-settings-done').textContent=t.next;
       hint.showModal();positionHint();hint.querySelector('h2').focus({preventScroll:true});
-      if(!reduced())hintCircle.animate([{opacity:0,transform:'translateY(16px) scale(.96)'},{opacity:1,transform:'translateY(0) scale(1)'}],{duration:800,easing:'cubic-bezier(.42,0,.58,1)'});
+      if(!reduced()){
+        hintAnimations=[hintCircle.animate([{opacity:0,transform:'translateY(16px) scale(.96)'},{opacity:1,transform:'translateY(0) scale(1)'}],{duration:800,easing:'cubic-bezier(.42,0,.58,1)'})];
+        hintAnimations.forEach(animation=>animation.finished.catch(()=>{}));
+      }
     });
+  }
+  function refreshHint() {
+    if(hintMoving)return;
+    if(hint.open&&hintMode==='word'){
+      if(hintScope!==account.scope||getState().guideStep!=='word'||!wordSource()){restoreTarget();hint.close();return;}
+      positionWord(true);
+    } else if(getState().guideStep==='word')resumeSettingsHint();
   }
   hint.addEventListener('click',event=>{if(event.target.closest('#guide-settings-done'))finishHint();else if(event.target.closest('.guide-settings-target')){event.preventDefault();finishHint(true);}});
   hint.addEventListener('cancel',event=>{event.preventDefault();finishHint();});
@@ -246,11 +322,12 @@ export function createOnboardingGuide({dialog,account,getState,saveState}) {
   });
   dialog.addEventListener('scroll',queuePointer,{passive:true});
   dialog.addEventListener('close',()=>{if(!dialog.open){stopMotion();pointer.setAttribute('hidden','');}});
-  window.addEventListener('resize',()=>{stopMotion();queuePointer();positionHint();});
-  media.addEventListener('change',()=>{if(media.matches){stopMotion({finish:true});queuePointer();hintCircle.getAnimations().forEach(animation=>animation.cancel());}});
+  window.addEventListener('resize',()=>{stopMotion();queuePointer();requestAnimationFrame(()=>{if(hintMode==='word')positionWord(true);else positionHint();});});
+  window.addEventListener('scroll',positionHint,{passive:true});
+  media.addEventListener('change',()=>{if(media.matches){stopMotion({finish:true});queuePointer();hintCircle.getAnimations().forEach(animation=>animation.cancel());stopHintAnimations();}});
   return {
     open(){if(account.isGuest){useGuest();return;}const state=getState();render(!state.guideLanguage||state.guideStep==='language'?'language':state.guideStep==='collections'?'collections':'time');},
-    useGuest,resumeSettingsHint,
+    useGuest,resumeSettingsHint,refresh:refreshHint,
     get active(){return !account.isGuest&&dialog.classList.contains('is-guided');},
     canComplete(){return step==='collections'&&validUpdateTime(value())&&selected().length>0;},
     cancel(){++hintGeneration;stopMotion();pointer.setAttribute('hidden','');step=null;scope=null;hintScheduled=false;restoreTarget();if(hint.open)hint.close();},

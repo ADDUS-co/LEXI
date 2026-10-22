@@ -328,7 +328,9 @@ class AccountTests(unittest.TestCase):
                       {'updateTime': '25:00'}, {'theme': 'missing'}, {'interests': 'ielts'},
                       {'onboarded': 1}, {'saved': [1]}, {'history': [None]},
                       {'guideLanguage': 'de'}, {'guideLanguage': ['ru']}, {'guideStep': 'unknown'},
-                      {'guideLanguage': None, 'guideStep': 'time'}):
+                      {'guideLanguage': None, 'guideStep': 'time'},
+                      {'guideLanguage': None, 'guideStep': 'word'},
+                      {'guideLanguage': 'ru', 'guideStep': 'word', 'onboarded': False}):
             self.assertEqual(self.save(data, self.state(**patch)).status_code, 400, patch)
         for revision in (True, -1, '0'):
             self.assertEqual(self.save(data, revision=revision).status_code, 400)
@@ -345,9 +347,13 @@ class AccountTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual((response.json['state']['guideLanguage'], response.json['state']['guideStep']), ('ru', 'time'))
         for revision, language in enumerate(('kk', 'en'), start=2):
-            response = self.save(ada, self.state(guideLanguage=language, guideStep='settings'), revision=revision)
+            response = self.save(ada, self.state(guideLanguage=language, guideStep='word' if language=='en' else 'settings'), revision=revision)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json['state']['guideLanguage'], language)
+        old_client = {key: value for key, value in self.state().items() if key not in ('guideLanguage', 'guideStep')}
+        response = self.save(ada, old_client, revision=4)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual((response.json['state']['guideLanguage'], response.json['state']['guideStep']), ('en', 'word'))
         other = self.app.test_client()
         bob = self.register(other, 'Bob_guide', 'bob-guide@example.com')
         self.assertIsNone(bob['state'])

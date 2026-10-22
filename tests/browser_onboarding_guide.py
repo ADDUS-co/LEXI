@@ -40,6 +40,7 @@ def circle(page,selector):
 def settle(page,selector='#onboarding-coach'):
     page.wait_for_function("selector=>[...document.querySelector(selector).getAnimations()].every(a=>a.playState!=='running')",arg=selector)
     page.wait_for_function("()=>document.querySelector('.guide-pointer').getAnimations({subtree:true}).every(a=>a.playState!=='running')")
+    page.wait_for_function("()=>document.querySelector('#settings-guide-dialog').getAnimations({subtree:true}).every(a=>a.playState!=='running')")
     page.evaluate('()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))')
 
 
@@ -202,12 +203,35 @@ def run():
                 check(circle(page,'.settings-guide-circle') and box['x']>=0 and box['x']+box['width']<=viewport+1 and box['y']+box['height']<=844 and gear['x']>=0,f'{language}: circular hint and gear remain on screen at {viewport}px')
             page.set_viewport_size({'width':width,'height':1000});page.wait_for_timeout(100)
             page.screenshot(path=str(OUTPUT/f'guide-{language}-settings.png'))
-            if language=='en':page.locator('.guide-settings-target').click()
+            if language=='en':
+                page.locator('.guide-settings-target').click()
+                expect(page.locator('#settings-guide-dialog')).not_to_be_visible()
+                check(page.evaluate('location.hash')=='#settings' and state(page)['guideStep']=='word','The real gear opens Settings and keeps the word explanation pending')
+                page.evaluate("location.hash='home'")
             elif language=='kk':page.keyboard.press('Escape')
-            else:page.locator('#guide-settings-done').click()
+            else:
+                page.locator('#guide-settings-done').click();page.wait_for_timeout(90)
+                check(page.locator('.settings-guide-circle').evaluate("e=>parseFloat(getComputedStyle(e).opacity)<1") and page.locator('#settings-guide-dialog').get_attribute('data-guide-phase')=='settings','The settings circle fades before appearing beneath the word')
+            expect(page.locator('#settings-guide-dialog')).to_have_attribute('data-guide-phase','word')
+            settle(page,'.settings-guide-circle')
+            check(state(page)['guideStep']=='word' and page.locator('.site-header .settings-link').count()==1,f'{language}: the word step is saved and the gear returns to its header')
+            check(page.locator('#guide-daily-word').inner_text()==page.locator('#main-content #daily-word').inner_text(),f'{language}: the spotlight contains exactly today’s visible word')
+            check(page.locator('#guide-daily-word').evaluate("e=>getComputedStyle(e).textShadow!=='none'") and page.locator('#settings-guide-dialog').evaluate("e=>getComputedStyle(e,'::backdrop').backdropFilter.includes('blur')"),f'{language}: the word glows while the surrounding page is blurred')
+            check(page.locator('#settings-guide-dialog').get_attribute('lang')==language and page.locator('#guide-settings-copy').inner_text(),f'{language}: the daily-word explanation uses the chosen language')
+            for viewport in (320,390,768,1440):
+                page.set_viewport_size({'width':viewport,'height':844});page.wait_for_timeout(120)
+                fits=page.evaluate("""()=>{const c=document.querySelector('.settings-guide-circle').getBoundingClientRect(),w=document.querySelector('#guide-daily-word').getBoundingClientRect(),r=document.createRange();r.selectNodeContents(document.querySelector('#main-content #daily-word'));return c.top>=r.getBoundingClientRect().bottom+20&&c.bottom<=innerHeight-12&&c.left>=12&&c.right<=innerWidth-12&&w.left>=0&&w.right<=innerWidth+1;}""")
+                check(fits,f'{language}: the circle sits below the word and both fit at {viewport}px')
+            page.set_viewport_size({'width':width,'height':1000});page.wait_for_timeout(150)
+            page.screenshot(path=str(OUTPUT/f'guide-{language}-word.png'))
+            if language=='ru':
+                synced(page);context.set_offline(True);page.reload(wait_until='networkidle')
+                expect(page.locator('#settings-guide-dialog')).to_have_attribute('data-guide-phase','word');settle(page,'.settings-guide-circle')
+                check(state(page)['guideStep']=='word' and len(state(page)['history'])==1,'Offline reload resumes the word explanation without duplicating history')
+                context.set_offline(False);synced(page)
+            page.locator('#guide-settings-done').click()
             expect(page.locator('#settings-guide-dialog')).not_to_be_visible()
-            check(state(page)['guideStep']=='done' and page.locator('.site-header .settings-link').count()==1,f'{language}: acknowledging the hint saves completion and restores the gear')
-            if language=='en':check(page.evaluate('location.hash')=='#settings','The highlighted gear opens the real Settings page')
+            check(state(page)['guideStep']=='done' and page.locator('#guide-daily-word').count()==0 and page.locator('#main-content #daily-word').count()==1,f'{language}: finishing removes the glow layer and keeps the real word intact')
             synced(page);page.reload(wait_until='networkidle')
             check(not page.locator('#onboarding-dialog').is_visible() and not page.locator('#settings-guide-dialog').is_visible(),f'{language}: returning users are not shown the first guide again')
             remote=fixture.api.get('/api/account/session').json()['state']

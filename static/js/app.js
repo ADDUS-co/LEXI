@@ -271,8 +271,8 @@ function renderApp({scroll = true} = {}) {
   main.classList.remove('page-enter');
   requestAnimationFrame(() => main.classList.add('page-enter'));
   observeReveals();
-  requestAnimationFrame(fitWord);
-  document.fonts.ready.then(fitWord);
+  requestAnimationFrame(()=>{fitWord();guide.refresh();});
+  document.fonts.ready.then(()=>{fitWord();guide.refresh();});
   if (scroll) {
     window.scrollTo({top: 0, behavior: 'instant'});
     if (initialized && !onboarding.open) $('h1', main)?.focus({preventScroll: true});

@@ -19,6 +19,9 @@ def finish_onboarding(page):
     if guided:
         expect(page.locator('#settings-guide-dialog')).to_be_visible()
         page.locator('#guide-settings-done').click()
+        expect(page.locator('#settings-guide-dialog')).to_have_attribute('data-guide-phase','word')
+        page.locator('#guide-settings-done').click()
+        expect(page.locator('#settings-guide-dialog')).not_to_be_visible()
 
 
 def signed_in_client(app):
