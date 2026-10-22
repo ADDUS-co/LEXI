@@ -33,8 +33,8 @@ export function createOnboardingGuide({dialog,account,getState,saveState}) {
     stopPointer();
     if(reduced()||pointer.hasAttribute('hidden')||!pointerPath.animate)return;
     pointerAnimations=[
-      pointerPath.animate([{strokeDashoffset:'1'},{strokeDashoffset:'0'}],{duration:330,easing:'cubic-bezier(.25,.1,.25,1)'}),
-      pointerHead.animate([{opacity:0},{opacity:1}],{duration:90,delay:240,fill:'backwards',easing:'ease-out'}),
+      pointerPath.animate([{strokeDashoffset:'1'},{strokeDashoffset:'0'}],{duration:600,easing:'cubic-bezier(.42,0,.58,1)'}),
+      pointerHead.animate([{opacity:0},{opacity:1}],{duration:180,delay:480,fill:'backwards',easing:'cubic-bezier(.42,0,.58,1)'}),
     ];
     pointerAnimations.forEach(animation=>animation.finished.catch(()=>{}));
   }

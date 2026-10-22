@@ -136,14 +136,14 @@ def run():
                   const line=document.querySelector('.guide-pointer-line'),head=document.querySelector('.guide-pointer-head');
                   const points=[],start=performance.now(),read=()=>{const b=circle.getBoundingClientRect();points.push({t:performance.now()-start,x:b.x,y:b.y,opacity:getComputedStyle(circle).opacity,draw:parseFloat(getComputedStyle(line).strokeDashoffset),head:parseFloat(getComputedStyle(head).opacity)});};
                   read();document.querySelector('#onboarding-next').click();read();
-                  await new Promise(resolve=>{function sample(){read();if(performance.now()-start<1320)requestAnimationFrame(sample);else resolve();}requestAnimationFrame(sample);});return points;
+                  await new Promise(resolve=>{function sample(){read();if(performance.now()-start<1600)requestAnimationFrame(sample);else resolve();}requestAnimationFrame(sample);});return points;
                 }""")
                 check(len(frames)>20 and abs(frames[1]['x']-frames[0]['x'])<2 and abs(frames[1]['y']-frames[0]['y'])<2,'The circle starts its trip from its previous position without a jump')
                 early=next(f for f in frames if f['t']>=180)
                 check(early['x']>frames[0]['x'] and early['x']<frames[-1]['x']-200 and all(f['opacity']=='1' for f in frames),'Side-to-side movement accelerates gently and keeps the circle fully visible')
                 check(all(((b['x']-a['x'])**2+(b['y']-a['y'])**2)**.5<=max(8,(b['t']-a['t'])*3.2) for a,b in zip(frames,frames[1:])),'Frame-by-frame circle travel and scrolling have no abrupt position changes')
                 check(next(f['t'] for f in frames if abs(f['x']-frames[-1]['x'])<1 and abs(f['y']-frames[-1]['y'])<1)<800,'The time-to-collections trip now finishes in under 800 ms')
-                check(any(0<f['draw']<1 for f in frames) and frames[-1]['draw']==0 and frames[-1]['head']==1,'The arrow quickly draws through its loop and finishes with a visible tip')
+                check(any(0<f['draw']<1 for f in frames) and frames[-1]['draw']==0 and frames[-1]['head']==1,'The arrow smoothly draws through its loop and finishes with a visible tip')
             else:page.locator('#onboarding-next').click()
             expect(page.locator('#onboarding-dialog')).to_have_attribute('data-guide-step','collections')
             check(page.locator('#onboarding-time').evaluate('e=>e.inert&&getComputedStyle(e).filter.includes("blur")') and not page.locator('#onboarding-topics').evaluate('e=>e.inert'),f'{language}: spotlight moves from time to the collections')
