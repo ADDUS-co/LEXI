@@ -31,6 +31,10 @@ def values(page):
     return page.locator('#account-auth-form').evaluate('(form)=>Object.fromEntries(new FormData(form))')
 
 
+def tab_positions(page):
+    return page.locator('.account-tabs>button').evaluate_all('(buttons)=>buttons.map(button=>button.getBoundingClientRect().y)')
+
+
 def run():
     with sync_playwright() as p:
         browser = p.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH') or shutil.which('chromium'), args=['--no-sandbox', '--disable-dev-shm-usage'])
@@ -45,18 +49,22 @@ def run():
         for name, value in registration.items():
             page.locator(f'input[name="{name}"]').fill(value)
         old_height = page.locator('#auth-entry').evaluate('(e)=>e.getBoundingClientRect().height')
+        old_tabs = tab_positions(page)
         switch(page, 'login')
-        check(page.locator('#auth-entry').evaluate('(e)=>e.getAnimations({subtree:true}).length') >= 3, 'Tab switch animates the form, card height and active underline')
-        check(page.locator('#auth-entry').evaluate("""e=>{
-          const height=e.getAnimations()[0],time=height.currentTime;
-          const frames=height.effect.getKeyframes(),from=parseFloat(frames[0].height),to=parseFloat(frames[1].height);
-          height.currentTime=100;const middle=e.getBoundingClientRect().height;height.currentTime=time;
-          return middle<Math.max(from,to)&&middle>Math.min(from,to);
-        }"""), 'An intermediate frame has a real height between registration and sign-in')
+        check(page.locator('#auth-entry').evaluate('(e)=>e.getAnimations({subtree:true}).length') >= 3, 'Tab switch still animates the form, heading and active underline')
+        check(page.locator('#auth-entry').evaluate("""async(e)=>{
+          const buttons=()=>[...e.querySelectorAll('.account-tabs>button')].map(button=>button.getBoundingClientRect().y);
+          const start=buttons(),height=e.getBoundingClientRect().height;
+          for(let frame=0;frame<24;frame++){
+            await new Promise(requestAnimationFrame);
+            if(buttons().some((y,i)=>Math.abs(y-start[i])>1)||Math.abs(e.getBoundingClientRect().height-height)>1)return false;
+          }
+          return true;
+        }"""), 'Card height and both tab positions stay fixed throughout every animation frame')
         check(values(page) == {'identifier': '', 'password': ''}, 'Sign-in has its own blank fields instead of copying registration credentials')
         expect(page.locator('[data-account-action="login-tab"]')).to_be_focused()
         settled(page)
-        check(page.locator('#auth-entry').evaluate('(e)=>e.getBoundingClientRect().height') < old_height, 'Card smoothly settles to the shorter sign-in form')
+        check(abs(page.locator('#auth-entry').evaluate('(e)=>e.getBoundingClientRect().height')-old_height)<1 and all(abs(y-old)<1 for y,old in zip(tab_positions(page),old_tabs)), 'Sign-in uses the same card height and tab coordinates as registration')
         for name, value in login.items():
             page.locator(f'input[name="{name}"]').fill(value)
         switch(page, 'register')
@@ -66,10 +74,12 @@ def run():
             page.locator(f'[data-entry-theme-choice="{theme}"]').click()
             for width in (320, 390, 768, 1440):
                 page.set_viewport_size({'width': width, 'height': 1000})
+                before_tabs = tab_positions(page)
                 for mode, expected in (('login', login), ('register', registration)):
                     switch(page, mode)
                     check(values(page) == expected, f'{theme} / {width}px / {mode}: independent draft survives switching')
                     settled(page)
+                    check(all(abs(y-old)<1 for y,old in zip(tab_positions(page),before_tabs)), f'{theme} / {width}px / {mode}: both tabs keep their vertical position')
                 check(page.evaluate("document.documentElement.scrollWidth<=innerWidth && (()=>{const a=document.querySelector('.account-tabs>button[aria-pressed=true]').getBoundingClientRect(),i=document.querySelector('.account-tab-indicator').getBoundingClientRect();return Math.abs(a.x-i.x)<1&&Math.abs(a.width-i.width)<1;})()"), f'{theme} / {width}px: no overflow and underline matches the active tab')
         page.evaluate("()=>{for(let i=0;i<9;i++)document.querySelector('[data-account-action=\"'+(i%2?'register':'login')+'-tab\"]').click();}")
         settled(page)
@@ -103,6 +113,13 @@ def run():
             page.locator(f'input[name="{name}"]').fill(value)
         switch(page, 'login');switch(page, 'register');settled(page)
         check(values(page) == registration, 'The guest account dialog supports the same reversible tab switch')
+        for width in (320,390,768,1440):
+            page.set_viewport_size({'width':width,'height':844})
+            before_tabs=tab_positions(page)
+            switch(page,'login');settled(page)
+            login_tabs=tab_positions(page)
+            switch(page,'register');settled(page)
+            check(all(abs(a-b)<1 and abs(a-c)<1 for a,b,c in zip(before_tabs,login_tabs,tab_positions(page))), f'Guest dialog / {width}px: tabs stay at the same height in both modes')
         page.keyboard.press('Escape')
         expect(page.locator('#account-dialog')).not_to_be_visible()
         page.locator('#account-button').click()

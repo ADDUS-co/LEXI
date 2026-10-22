@@ -13,10 +13,13 @@
 .account-tabs>button{position:relative;padding:12px 0;min-height:46px;color:var(--muted-readable);font-size:13px}
 .account-tabs>button[aria-pressed=true]{color:var(--accent-text)}
 .account-tab-indicator{position:absolute;bottom:-1px;height:2px;background:var(--accent);transform-origin:left;pointer-events:none}
-.auth-switching{overflow:hidden}
-#account-auth-form>label{display:block;font-size:12px;margin:17px 0 8px;color:var(--text)}
-#account-auth-form>label>input:not([type=checkbox]),.account-password-row>input{display:block;width:100%;min-height:48px;background:var(--surface);color:var(--text);padding:12px 14px;border:1px solid var(--border);font-size:15px;margin-top:8px}
-#account-auth-form input::placeholder{color:var(--muted-readable);opacity:.85;font-size:13px}
+.auth-copy{display:grid}
+.auth-copy>span{grid-area:1/1}
+.auth-copy-measure{visibility:hidden}
+.account-dialog.auth-card{scrollbar-gutter:stable}
+.account-auth-form>label{display:block;font-size:12px;margin:17px 0 8px;color:var(--text)}
+.account-auth-form>label>input:not([type=checkbox]),.account-password-row>input{display:block;width:100%;min-height:48px;background:var(--surface);color:var(--text);padding:12px 14px;border:1px solid var(--border);font-size:15px;margin-top:8px}
+.account-auth-form input::placeholder{color:var(--muted-readable);opacity:.85;font-size:13px}
 .account-password-row{position:relative}
 .account-password-row>input{padding-right:52px;margin-top:0}
 .account-password-row>.icon-button{position:absolute;right:3px;top:2px;color:var(--accent-text)}

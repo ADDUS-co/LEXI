@@ -34,15 +34,29 @@ export function installAccountUI(account,{toast,openOnboarding}) {
     const indicator=surface.querySelector('.account-tab-indicator');
     if(active&&indicator){indicator.style.left=`${active.offsetLeft}px`;indicator.style.width=`${active.offsetWidth}px`;}
   }
+  function sizeAuthCard(surface) {
+    if(!surface.querySelector('#account-auth-form')||!surface.getBoundingClientRect().width)return;
+    surface.classList.add('auth-card');
+    // Measure the longer form at the actual width, including fonts and wrapping.
+    const measure=surface.cloneNode(true);
+    measure.classList.remove('auth-switching');measure.inert=true;measure.setAttribute('aria-hidden','true');
+    measure.querySelector('#account-auth-form').outerHTML=authForm(true);
+    measure.removeAttribute('id');measure.querySelectorAll('[id]').forEach(node=>node.removeAttribute('id'));
+    Object.assign(measure.style,{position:'fixed',inset:'0 auto auto 0',display:'block',visibility:'hidden',pointerEvents:'none',margin:'0',width:`${surface.getBoundingClientRect().width}px`,height:'auto',minHeight:'0',maxHeight:'none'});
+    surface.after(measure);
+    const height=measure.getBoundingClientRect().height;
+    measure.remove();
+    const maximum=parseFloat(getComputedStyle(surface).maxHeight)||Infinity;
+    surface.style.minHeight=`${Math.min(height,maximum)}px`;
+  }
+  function releaseAuthCard() {dialog.classList.remove('auth-card');dialog.style.minHeight='';}
   function animateAuth(surface,previous,view) {
     if(!previous||reducedMotion.matches||document.documentElement.classList.contains('reduce-motion')||!surface.animate)return;
     const options={duration:340,easing:'cubic-bezier(.22,1,.36,1)'};
     const indicator=surface.querySelector('.account-tab-indicator');
     const nextIndicator=indicator.getBoundingClientRect();
-    const nextHeight=surface.getBoundingClientRect().height;
     surface.classList.add('auth-switching');
     authAnimations=[
-      surface.animate([{height:`${previous.height}px`},{height:`${nextHeight}px`}],options),
       surface.querySelector('#account-auth-form').animate([{opacity:0,transform:`translateX(${view==='register'?18:-18}px)`},{opacity:1,transform:'translateX(0)'}],options),
     ];
     if(previous.indicator&&nextIndicator.width)authAnimations.push(indicator.animate([
@@ -68,16 +82,20 @@ export function installAccountUI(account,{toast,openOnboarding}) {
     button.innerHTML=`<span class="header-avatar">${user?.avatarUrl?`<img src="${escape(user.avatarUrl)}" alt="">`:user?initials():icon('user')}</span><span class="account-label">${user?escape(user.username):account.isGuest?'Guest':'Account'}</span>`;
   }
 
+  function authForm(register) {
+    return `<form id="account-auth-form" class="account-auth-form">${register?`<label>Username<input name="username" autocomplete="username" required minlength="3" maxlength="30" pattern="[A-Za-z0-9_]{3,30}" placeholder="Your login name" aria-describedby="username-help"></label><p id="username-help" class="account-field-help">3–30 letters, numbers, or underscores.</p><label>Email<input name="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com"></label>`:`<label>Email or username<input name="identifier" autocomplete="username" required maxlength="254" placeholder="Your email or login name"></label>`}<label for="account-password">Password</label><div class="account-password-row"><input id="account-password" name="password" type="password" autocomplete="${register?'new-password':'current-password'}" required ${register?'minlength="10"':''} maxlength="128" placeholder="${register?'Create a password':'Your password'}"><button type="button" class="icon-button" data-account-action="password" aria-label="Show password">${icon('eye')}</button></div>${register?`<p class="account-field-help">10–128 characters. Use a password you don’t use elsewhere.</p>`:''}<p id="account-error" class="account-error" role="alert"></p><button type="submit" class="button button-primary account-submit" ${navigator.onLine?'':'disabled'}>${register?'Create my account':'Sign in'} ${icon('arrow')}</button><p class="account-offline" ${navigator.onLine?'hidden':''}>Go online to sign in or create an account.</p><p id="entry-session-status" class="entry-session-status" role="status"></p></form>`;
+  }
+
   function auth(view='login',{animate=false}={}) {
     const surface=account.hasAccess?dialog:entry;
     const form=surface.querySelector('#account-auth-form');
     if(form&&animate&&view===mode)return;
     if(form)drafts[mode]=Object.fromEntries(new FormData(form));
-    const previous=form&&animate?{height:surface.getBoundingClientRect().height,indicator:surface.querySelector('.account-tab-indicator')?.getBoundingClientRect()}:null;
+    const previous=form&&animate?{indicator:surface.querySelector('.account-tab-indicator')?.getBoundingClientRect()}:null;
     const keepFocus=!!document.activeElement?.closest('.account-tabs');
     stopAuthMotion();mode=view;clearPhoto();
     const register=view==='register';
-    surface.innerHTML=`${surface===dialog?`<button class="icon-button dialog-close" data-account-action="close" aria-label="Close account">${icon('close')}</button>`:''}<span class="eyebrow">YOUR PERSONAL CORNER OF LEXI</span><h2 id="account-title">${register?'A new chapter.':'Welcome back.'}</h2><p class="account-intro">${register?'Make your daily ritual yours.':'Your words. Your world. Right where you left them.'}</p><div class="account-tabs" role="group" aria-label="Account action"><button data-account-action="login-tab" aria-pressed="${!register}">Sign in</button><button data-account-action="register-tab" aria-pressed="${register}">Create account</button></div><form id="account-auth-form">${register?`<label>Username<input name="username" autocomplete="username" required minlength="3" maxlength="30" pattern="[A-Za-z0-9_]{3,30}" placeholder="Your login name" aria-describedby="username-help"></label><p id="username-help" class="account-field-help">3–30 letters, numbers, or underscores.</p><label>Email<input name="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com"></label>`:`<label>Email or username<input name="identifier" autocomplete="username" required maxlength="254" placeholder="Your email or login name"></label>`}<label for="account-password">Password</label><div class="account-password-row"><input id="account-password" name="password" type="password" autocomplete="${register?'new-password':'current-password'}" required ${register?'minlength="10"':''} maxlength="128" placeholder="${register?'Create a password':'Your password'}"><button type="button" class="icon-button" data-account-action="password" aria-label="Show password">${icon('eye')}</button></div>${register?`<p class="account-field-help">10–128 characters. Use a password you don’t use elsewhere.</p>`:''}<p id="account-error" class="account-error" role="alert"></p><button type="submit" class="button button-primary account-submit" ${navigator.onLine?'':'disabled'}>${register?'Create my account':'Sign in'} ${icon('arrow')}</button><p class="account-offline" ${navigator.onLine?'hidden':''}>Go online to sign in or create an account.</p><p id="entry-session-status" class="entry-session-status" role="status"></p></form><p class="account-privacy">${register?'Your email is private. Your progress follows you when you sign in on another device.':'Sign in to continue your daily ritual. Your progress is waiting for you.'}</p>`;
+    surface.innerHTML=`${surface===dialog?`<button class="icon-button dialog-close" data-account-action="close" aria-label="Close account">${icon('close')}</button>`:''}<span class="eyebrow">YOUR PERSONAL CORNER OF LEXI</span><h2 id="account-title" class="auth-copy"><span>${register?'A new chapter.':'Welcome back.'}</span><span class="auth-copy-measure" aria-hidden="true">${register?'Welcome back.':'A new chapter.'}</span></h2><p class="account-intro auth-copy"><span>${register?'Make your daily ritual yours.':'Your words. Your world. Right where you left them.'}</span><span class="auth-copy-measure" aria-hidden="true">${register?'Your words. Your world. Right where you left them.':'Make your daily ritual yours.'}</span></p><div class="account-tabs" role="group" aria-label="Account action"><button data-account-action="login-tab" aria-pressed="${!register}">Sign in</button><button data-account-action="register-tab" aria-pressed="${register}">Create account</button></div>${authForm(register)}<p class="account-privacy auth-copy"><span>${register?'Your email is private. Your progress follows you when you sign in on another device.':'Sign in to continue your daily ritual. Your progress is waiting for you.'}</span><span class="auth-copy-measure" aria-hidden="true">${register?'Sign in to continue your daily ritual. Your progress is waiting for you.':'Your email is private. Your progress follows you when you sign in on another device.'}</span></p>`;
     if(surface===entry) {
       const guest=document.createElement('div');guest.className='account-guest';
       guest.innerHTML=`<button type="button" class="button button-outline" data-account-action="guest" aria-describedby="guest-help">Continue as guest ${icon('arrow')}</button><p id="guest-help">No account needed. Progress disappears when you sign out, reload, or close this tab.</p>`;
@@ -86,7 +104,7 @@ export function installAccountUI(account,{toast,openOnboarding}) {
     const nextForm=surface.querySelector('#account-auth-form');
     for(const [name,value] of Object.entries(drafts[view]))if(nextForm.elements.namedItem(name))nextForm.elements.namedItem(name).value=value;
     const indicator=document.createElement('span');indicator.className='account-tab-indicator';indicator.setAttribute('aria-hidden','true');
-    surface.querySelector('.account-tabs').append(indicator);positionAuthIndicator(surface);
+    surface.querySelector('.account-tabs').append(indicator);sizeAuthCard(surface);positionAuthIndicator(surface);
     animateAuth(surface,previous,view);
     if(keepFocus)surface.querySelector(`.account-tabs>[data-account-action="${view}-tab"]`).focus({preventScroll:true});
     authAvailability();
@@ -94,14 +112,14 @@ export function installAccountUI(account,{toast,openOnboarding}) {
   }
 
   function profile() {
-    stopAuthMotion();
+    stopAuthMotion();releaseAuthCard();
     const user=account.user;
     if(!user){auth();return;}
     dialog.innerHTML=`<button class="icon-button dialog-close" data-account-action="close" aria-label="Close account">${icon('close')}</button><span class="eyebrow">YOUR PERSONAL CORNER OF LEXI</span><h2 id="account-title">Hello, ${escape(user.username)}<span class="accent">.</span></h2><p class="account-intro">A little more you. A little more knowledge.</p><div class="profile-summary" data-profile-owner="${user.id}"><div class="profile-avatar">${preview||user.avatarUrl?`<img id="profile-photo-preview" src="${escape(preview||user.avatarUrl)}" alt="Your profile photo">`:`<span>${initials()}</span>`}</div><div class="profile-identity"><strong>${escape(user.username)}</strong><span>${escape(user.email)}</span><p id="account-sync-status" class="account-sync-status" role="status">${statusLabel()}</p></div></div><form id="profile-photo-form"><label class="button button-outline photo-picker">${icon('camera')}Choose photo<input id="profile-photo-input" name="photo" type="file" accept="image/jpeg,image/png,image/webp"></label><p class="account-field-help">JPG, PNG, or WebP · up to 5 MB · up to 16 megapixels</p><div class="photo-actions"><button type="submit" class="button button-primary" ${file?'':'disabled'}>Save photo ${icon('check')}</button>${user.avatarUrl?`<button type="button" class="text-link" data-account-action="remove-photo">Remove photo ${icon('trash')}</button>`:''}</div><p id="account-error" class="account-error" role="alert"></p></form><div class="profile-learning"><span class="micro">YOUR GROWING WORLD</span><p>Saved words, history, interests, appearance, daily time, and memory cards are linked to this account.</p></div><div class="profile-bottom"><button class="text-link" data-account-action="logout">Sign out ${icon('logout')}</button><button class="button button-outline" data-account-action="close">Keep exploring ${icon('arrow')}</button></div>`;
   }
 
   function guestProfile() {
-    stopAuthMotion();
+    stopAuthMotion();releaseAuthCard();
     clearPhoto();
     dialog.innerHTML=`<button class="icon-button dialog-close" data-account-action="close" aria-label="Close account">${icon('close')}</button><span class="eyebrow">A LITTLE LOOK AROUND</span><h2 id="account-title">Hello, curious guest<span class="accent">.</span></h2><p class="account-intro">Your words are here for this visit.</p><div class="profile-learning"><span class="micro">TEMPORARY PROGRESS</span><p>History, saved words, interests, settings, and card positions disappear when you sign out, reload, or close this tab.</p><p>Sign in or create an account for your own lasting progress. Guest progress will not be transferred.</p></div><div class="guest-account-actions"><button class="button button-primary" data-account-action="register-tab">Create account ${icon('arrow')}</button><button class="button button-outline" data-account-action="login-tab">Sign in</button></div><p id="account-error" class="account-error" role="alert"></p><div class="profile-bottom"><button class="text-link" data-account-action="guest-exit">Exit guest mode ${icon('logout')}</button><button class="button button-outline" data-account-action="close">Keep exploring ${icon('arrow')}</button></div>`;
   }
@@ -151,7 +169,7 @@ export function installAccountUI(account,{toast,openOnboarding}) {
     if($('#onboarding-dialog').open)$('#onboarding-dialog').close();
     if(account.user){profile();syncStatus();}else if(account.isGuest&&view!=='register')guestProfile();else auth(view);
     if(!dialog.open)dialog.showModal();
-    positionAuthIndicator(dialog);
+    sizeAuthCard(dialog);positionAuthIndicator(dialog);
   }
 
   document.addEventListener('click',async event=>{
@@ -236,8 +254,9 @@ export function installAccountUI(account,{toast,openOnboarding}) {
   });
   window.addEventListener('online',authAvailability);
   window.addEventListener('offline',authAvailability);
-  window.addEventListener('resize',()=>{positionAuthIndicator(entry);positionAuthIndicator(dialog);});
-  document.fonts.ready.then(()=>{positionAuthIndicator(entry);positionAuthIndicator(dialog);});
+  function resizeAuthCards(){for(const surface of [entry,dialog]){sizeAuthCard(surface);positionAuthIndicator(surface);}}
+  window.addEventListener('resize',resizeAuthCards);
+  document.fonts.ready.then(resizeAuthCards);
   reducedMotion.addEventListener('change',()=>{if(reducedMotion.matches)stopAuthMotion();});
   window.addEventListener('pagehide',()=>{clearAuthDrafts();stopAuthMotion();});
   $('#entry-motion-toggle').addEventListener('click',event=>{
