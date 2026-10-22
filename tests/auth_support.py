@@ -12,6 +12,15 @@ def advance_guide_time(page):
         page.locator('#onboarding-next').click()
 
 
+def finish_reading_guide(page):
+    from playwright.sync_api import expect
+    for phase in ('definition','synonyms','examples','save','saved','deep'):
+        expect(page.locator('#settings-guide-dialog')).to_have_attribute('data-guide-phase',phase,timeout=15000)
+        expect(page.locator('#guide-settings-done')).to_be_enabled(timeout=15000)
+        page.locator('#guide-settings-done').click()
+    expect(page.locator('#settings-guide-dialog')).not_to_be_visible()
+
+
 def finish_onboarding(page):
     from playwright.sync_api import expect
     page.locator('#begin-button').click()
@@ -21,7 +30,7 @@ def finish_onboarding(page):
         page.locator('#guide-settings-done').click()
         expect(page.locator('#settings-guide-dialog')).to_have_attribute('data-guide-phase','word')
         page.locator('#guide-settings-done').click()
-        expect(page.locator('#settings-guide-dialog')).not_to_be_visible()
+        finish_reading_guide(page)
 
 
 def signed_in_client(app):

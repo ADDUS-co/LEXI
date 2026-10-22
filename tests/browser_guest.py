@@ -162,7 +162,6 @@ def run():
         check(fresh(page) and not page.locator('#guest-banner').is_visible(), 'Creating an account from guest mode starts a clean account')
         begin(page, 'culture', '10:05')
         account_word = page.locator('[data-action="save"]').first.get_attribute('data-word')
-        page.locator('[data-action="save"]').first.click()
         wait_synced(page)
         account_progress = state(page)
         page.locator('#account-button').click()

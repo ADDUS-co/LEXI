@@ -5,7 +5,7 @@ Run against a disposable database; creates one synthetic account.
 import os
 import shutil
 from playwright.sync_api import sync_playwright, expect
-from auth_support import BrowserAccount
+from auth_support import BrowserAccount, finish_reading_guide
 
 BASE=os.environ.get('LEXI_TEST_URL','http://127.0.0.1:5000').rstrip('/')
 checks=[]
@@ -37,7 +37,7 @@ def run():
         other=second.new_page();other.goto(BASE,wait_until='networkidle')
         expect(other.locator('#settings-guide-dialog')).to_have_attribute('data-guide-phase','word')
         check(state(other)['guideLanguage']=='ru' and other.locator('#guide-daily-word').inner_text()==word_text,'Another device resumes the same guide language and daily word')
-        other.locator('#guide-settings-done').click();expect(other.locator('#settings-guide-dialog')).not_to_be_visible();synced(other)
+        other.locator('#guide-settings-done').click();finish_reading_guide(other);synced(other)
         page.reload(wait_until='networkidle')
         check(state(page)['guideStep']=='done' and not page.locator('#settings-guide-dialog').is_visible(),'Completion on another device prevents the word step from reopening after reload')
         first.close();second.close()
@@ -49,6 +49,11 @@ def run():
         check(continuity,'Next during the settings entrance fades from the current position and opacity without a jump')
         expect(page.locator('#settings-guide-dialog')).to_have_attribute('data-guide-phase','word')
         check(page.locator('#guide-daily-word').count()==1 and page.locator('.settings-guide-circle').count()==1,'Interrupting the entrance creates one word highlight and one explanation circle')
+        page.locator('#guide-settings-done').click()
+        page.evaluate("location.hash='home'")
+        expect(page.locator('#settings-guide-dialog')).to_have_attribute('data-guide-phase','definition',timeout=15000)
+        expect(page.locator('#guide-settings-done')).to_be_enabled(timeout=15000)
+        check(page.locator('.guide-content-spotlight').count()==1 and page.locator('#guide-daily-word').count()==0 and page.locator('.settings-guide-circle').count()==1,'A render during the word fade hands over to one definition highlight without stale layers')
         fast.close()
         hidden=browser.new_context(viewport={'width':320,'height':568},timezone_id='Asia/Bishkek')
         fixture.authenticate(hidden,{'onboarded':True,'interests':['ielts'],'guideLanguage':'ru','guideStep':'word','hiddenWords':[word_id]})

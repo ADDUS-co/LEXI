@@ -19,7 +19,7 @@ export function normalizeStore(raw) {
     history:Array.isArray(raw.history)?raw.history.filter(item=>item&&typeof item.id==='string'&&validDate(item.date)):[],
     onboarded:raw.onboarded===true, reduceMotion:raw.reduceMotion===true,
     guideLanguage:['ru','kk','en'].includes(raw.guideLanguage)?raw.guideLanguage:null,
-    guideStep:['language','time','collections','settings','word','done'].includes(raw.guideStep)?raw.guideStep:raw.onboarded===true?'done':'language',
+    guideStep:['language','time','collections','settings','word','definition','synonyms','examples','save','saved','deep','done'].includes(raw.guideStep)?raw.guideStep:raw.onboarded===true?'done':'language',
     updateTime:typeof raw.updateTime==='string'&&/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(raw.updateTime)?raw.updateTime:raw.onboarded===true?'00:00':'08:00',
   };
 }

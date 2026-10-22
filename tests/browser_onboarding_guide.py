@@ -8,7 +8,7 @@ from pathlib import Path
 import shutil
 
 from playwright.sync_api import sync_playwright, expect
-from auth_support import BrowserAccount
+from auth_support import BrowserAccount, finish_reading_guide
 
 BASE=os.environ.get('LEXI_TEST_URL','http://127.0.0.1:5000').rstrip('/')
 OUTPUT=Path(__file__).resolve().parents[1]/'test-results'
@@ -230,6 +230,7 @@ def run():
                 check(state(page)['guideStep']=='word' and len(state(page)['history'])==1,'Offline reload resumes the word explanation without duplicating history')
                 context.set_offline(False);synced(page)
             page.locator('#guide-settings-done').click()
+            finish_reading_guide(page)
             expect(page.locator('#settings-guide-dialog')).not_to_be_visible()
             check(state(page)['guideStep']=='done' and page.locator('#guide-daily-word').count()==0 and page.locator('#main-content #daily-word').count()==1,f'{language}: finishing removes the glow layer and keeps the real word intact')
             synced(page);page.reload(wait_until='networkidle')

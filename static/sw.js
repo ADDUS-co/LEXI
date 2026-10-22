@@ -1,10 +1,10 @@
 // Bump this version after changing the app shell or vocabulary schema.
-const CACHE = 'lexi-shell-v20';
+const CACHE = 'lexi-shell-v21';
 const SHELL = [
   '/', '/manifest.webmanifest', '/static/css/style.css', '/static/css/experience.css', '/static/css/account.css', '/static/css/entry.css', '/static/js/app.js',
   '/static/js/theme-init.js', '/static/js/selection.js', '/static/js/storage.js',
   '/static/js/icons.js', '/static/js/schedule.js', '/static/js/recall.js', '/static/fonts/Syne.ttf', '/static/fonts/DMSans.ttf',
-  '/static/js/account-service.js', '/static/js/account-ui.js', '/static/js/onboarding-guide.js', '/static/css/onboarding-guide.css',
+  '/static/js/account-service.js', '/static/js/account-ui.js', '/static/js/onboarding-guide.js', '/static/js/reading-guide.js', '/static/css/onboarding-guide.css',
   '/static/assets/orbit.svg', '/static/icons/icon.svg', '/static/icons/icon-192.png',
   '/static/icons/icon-512.png',
 ];

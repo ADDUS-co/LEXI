@@ -171,7 +171,6 @@ def run():
         finish_onboarding(page)
         expect(page.locator('#daily-word')).to_be_visible()
         word_id=state(page)['history'][0]['id']
-        page.locator('[data-action="save"]').first.click()
         page.locator('#daily-word').dblclick()
         expect(page.locator('#recall-form')).to_be_visible()
         page.locator('#account-button').click()
@@ -306,7 +305,6 @@ def run():
         finish_onboarding(page)
         expect(page.locator('#daily-word')).to_be_visible()
         b_word=state(page)['history'][0]['id']
-        page.locator('[data-action="save"]').first.click()
         synced(page)
         page.locator('#account-button').click()
         page.locator('[data-account-action="logout"]').click()

@@ -39,7 +39,7 @@ let lastTouch;
 let ignoreDoubleClickUntil = 0;
 let revealPressAt = 0;
 const account = createAccountService();
-const guide = createOnboardingGuide({dialog:onboarding,account,getState:()=>preferences,saveState:patch=>(preferences=updateStore(patch))});
+const guide = createOnboardingGuide({dialog:onboarding,account,getState:()=>preferences,saveState:patch=>(preferences=updateStore(patch)),getWord:()=>dailyWord,navigate,saveWord:id=>{if(!preferences.saved.includes(id))toggleSave(id);}});
 installAccountUI(account,{toast,openOnboarding:()=>{if(catalog&&initialized)showOnboarding();}});
 
 function isHidden(word) { return preferences.hiddenWords.includes(word.id); }
@@ -230,7 +230,7 @@ function listRecords(page, query = '') {
       lastDate = date;
       heading = `<h2 class="history-date micro">${date === today ? 'TODAY · ' : ''}${formatDate(date)}</h2>`;
     }
-    return `${heading}<article class="word-card"><a class="word-card-main" href="#word/${escape(word.id)}"><span class="micro muted">${escape(collectionFor(word).name)}</span><h${page === 'history' ? '3' : '2'}>${isHidden(word) ? 'A word to recall' : escape(word.word)}<span class="list-word-class">${escape(word.partOfSpeech)}</span></h${page === 'history' ? '3' : '2'}><p>${escape(isHidden(word) ? withoutAnswer(word.shortDefinition,word.word) : word.shortDefinition)}</p></a><div class="word-card-actions">${page === 'saved' ? `<button class="icon-button is-saved" data-action="save" data-word="${escape(word.id)}" aria-label="Remove ${isHidden(word) ? 'this word' : escape(word.word)} from Saved">${icon('bookmark')}</button>` : ''}<a class="icon-button" href="#word/${escape(word.id)}" aria-label="${isHidden(word) ? 'Practice this word' : 'Read ' + escape(word.word)}">${icon('arrowUp')}</a></div></article>`;
+    return `${heading}<article class="word-card" data-word-card="${escape(word.id)}"><a class="word-card-main" href="#word/${escape(word.id)}"><span class="micro muted">${escape(collectionFor(word).name)}</span><h${page === 'history' ? '3' : '2'}>${isHidden(word) ? 'A word to recall' : escape(word.word)}<span class="list-word-class">${escape(word.partOfSpeech)}</span></h${page === 'history' ? '3' : '2'}><p>${escape(isHidden(word) ? withoutAnswer(word.shortDefinition,word.word) : word.shortDefinition)}</p></a><div class="word-card-actions">${page === 'saved' ? `<button class="icon-button is-saved" data-action="save" data-word="${escape(word.id)}" aria-label="Remove ${isHidden(word) ? 'this word' : escape(word.word)} from Saved">${icon('bookmark')}</button>` : ''}<a class="icon-button" href="#word/${escape(word.id)}" aria-label="${isHidden(word) ? 'Practice this word' : 'Read ' + escape(word.word)}">${icon('arrowUp')}</a></div></article>`;
   }).join('');
 }
 

@@ -48,6 +48,22 @@
 .guide-settings-target{z-index:2;background:var(--surface);color:var(--text);border:1px solid var(--text);border-radius:50%;box-shadow:0 0 0 8px color-mix(in srgb,var(--bg) 75%,transparent)}
 .guide-settings-target:hover{transform:none;background:var(--panel)}
 [data-theme=studio] .guide-circle{background:var(--paper)}
+.settings-guide-dialog.is-reading-guide::backdrop{backdrop-filter:blur(10px)}
+.is-reading-guide .settings-guide-circle{z-index:3;gap:10px;padding:26px}
+.is-reading-guide .guide-settings-arrow{z-index:2;pointer-events:none}
+.is-reading-guide .guide-settings-arrow path{stroke:#eef0ec;opacity:.75;filter:none}
+.guide-content-spotlight{position:fixed;z-index:2;padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);box-shadow:0 12px 36px #0002;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.guide-content-spotlight>:first-child{margin:0;opacity:1;transform:none;animation:none;transition:none}
+.guide-content-spotlight .synonym{display:inline-flex;align-items:center;gap:12px}
+.guide-content-spotlight .word-card{border:0;pointer-events:none}
+.guide-content-spotlight .word-card-main{display:block;padding:4px 0}
+.guide-content-spotlight .button-save{pointer-events:none}
+.guide-content-spotlight:focus-visible{outline:2px solid var(--text);outline-offset:3px}
+.guide-save-destination{position:fixed;z-index:4;display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:0 12px;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--text);pointer-events:none}
+.guide-save-destination>.icon{width:17px;height:17px}
+.guide-flying-bookmark{position:fixed;z-index:5;left:0;top:0;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);box-shadow:0 6px 18px #0003;pointer-events:none}
+.guide-flying-bookmark>.icon{width:20px;height:20px;fill:currentColor}
+[data-theme=studio] .guide-content-spotlight,[data-theme=studio] .guide-save-destination,[data-theme=studio] .guide-flying-bookmark{background:var(--paper)}
 @media(max-width:800px){
  .onboarding-dialog.is-guided{padding:24px;width:calc(100% - 24px);max-height:calc(100dvh - 24px)}
  .onboarding-dialog.is-guided:not([data-guide-step=language]){height:calc(100dvh - 24px)}
