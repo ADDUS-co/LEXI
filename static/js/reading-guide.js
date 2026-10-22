@@ -1,6 +1,7 @@
 import {icon} from './icons.js';
+import {createRecallDemo} from './recall-demo.js';
 
-const steps=['definition','synonyms','examples','save','saved','deep'];
+const steps=['definition','synonyms','examples','save','saved','deep','recall'];
 const copy={
   ru:{next:'Далее',done:'Понятно',show:'Показать сохранение',return:'Вернуться к слову',saving:'Сохраняем…',
     definition:['Что значит слово?','Здесь представлено краткое значение слова. Оно помогает быстро понять основную мысль.'],
@@ -8,21 +9,24 @@ const copy={
     examples:['Слово в контексте','Это пример использования слова в предложении. Так легче понять, как применять его в речи.'],
     save:['Понравилось слово?','Его можно сохранить этой кнопкой. Сейчас LEXI сама добавит слово в Saved и покажет, где его найти.'],
     saved:['Слово сохранено','Вот оно в Saved! Слово останется в вашем аккаунте. Теперь вернёмся на главный экран и посмотрим подробнее.'],
-    deep:['Немного глубже','Ниже находится подробное значение слова: больше контекста и нюансов. Рядом — объяснение простыми словами, дальше — ещё примеры.']},
+    deep:['Немного глубже','Ниже находится подробное значение слова: больше контекста и нюансов. Рядом — объяснение простыми словами, дальше — ещё примеры.'],
+    recall:['Проверьте память','Двойное нажатие переворачивает карточку. Напишите слово по памяти: покажем ошибку, исправление и возвращение слова.'],recallDone:['Получилось!','Верное написание открывает слово. Вернуть его можно и двойным нажатием. Теперь попробуйте сами!'],skip:'Пропустить показ'},
   kk:{next:'Келесі',done:'Түсінікті',show:'Сақтауды көрсету',return:'Сөзге оралу',saving:'Сақталуда…',
     definition:['Сөз нені білдіреді?','Мұнда сөздің қысқаша мағынасы берілген. Ол негізгі ойды тез түсінуге көмектеседі.'],
     synonyms:['Мағынасы жақын сөздер','Бұлар — синонимдер. Олар мағынаның реңктерін көрсетеді. Кейін кез келгенін басып, толығырақ біле аласыз.'],
     examples:['Сөйлемдегі қолданысы','Бұл — сөздің сөйлемде қолданылу үлгісі. Ол сөзді сөйлеуде қалай қолдануға болатынын көрсетеді.'],
     save:['Сөз ұнады ма?','Осы батырмамен сақтауға болады. Қазір LEXI сөзді Saved бөліміне өзі қосып, қайдан табуға болатынын көрсетеді.'],
     saved:['Сөз сақталды','Міне, ол Saved бөлімінде! Сөз аккаунтыңызда қалады. Енді басты экранға оралып, толығырақ қарайық.'],
-    deep:['Тереңірек түсіну','Төменде сөздің толық мағынасы мен ерекшеліктері берілген. Жанында — қарапайым түсіндірме, әрі қарай — басқа мысалдар.']},
+    deep:['Тереңірек түсіну','Төменде сөздің толық мағынасы мен ерекшеліктері берілген. Жанында — қарапайым түсіндірме, әрі қарай — басқа мысалдар.'],
+    recall:['Есте сақтап көріңіз','Екі рет басу карточканы аударады. Сөзді есте сақтап жазыңыз: қатені, түзетуді және сөздің қайта ашылуын көрсетеміз.'],recallDone:['Дұрыс шықты!','Дұрыс жазу сөзді ашады. Оны екі рет басып та ашуға болады. Енді өзіңіз көріңіз!'],skip:'Көрсетуді өткізу'},
   en:{next:'Next',done:'Got it',show:'Show me how to save',return:'Back to the word',saving:'Saving…',
     definition:['What does it mean?','Here is the short definition. It helps you quickly understand the main idea of the word.'],
     synonyms:['Close in meaning','These are synonyms. They reveal different shades of meaning. Later, tap any one to learn more about it.'],
     examples:['A word in context','Here is an example of the word in a sentence. It shows how you can use it in conversation.'],
     save:['A word worth keeping?','Use this button to save it. LEXI will now add the word to Saved and show you where to find it.'],
     saved:['A little knowledge, kept','Here it is in Saved! This word stays in your account. Let’s return to the main screen and look a little closer.'],
-    deep:['A little deeper','Below is the full definition, with more context and nuance. Beside it is a simpler explanation, followed by more examples.']},
+    deep:['A little deeper','Below is the full definition, with more context and nuance. Beside it is a simpler explanation, followed by more examples.'],
+    recall:['Make it a memory','Double-tap to turn the card over. Type the word from memory: watch a mistake, a correction and the word coming back.'],recallDone:['You’ve got it!','The correct spelling reveals the word. Another double-tap can reveal it too. Now try it yourself!'],skip:'Skip demonstration'},
 };
 
 // Continue in the same native modal: the background stays blurred and inert.
@@ -34,12 +38,18 @@ export function createReadingGuide({hint,account,getState,saveState,getWord,save
   const language=()=>Object.hasOwn(copy,getState().guideLanguage)?getState().guideLanguage:'en';
   const text=()=>copy[language()];
   const reduced=()=>media.matches||getState().reduceMotion;
+  const memory=createRecallDemo({getWord,reduced,onStatus:status=>{
+    if(phase!=='recall'||!owner)return;
+    const t=text(),message=t[status==='complete'?'recallDone':'recall'];
+    hint.querySelector('#guide-settings-title').textContent=message[0];hint.querySelector('#guide-settings-copy').textContent=message[1];
+    button.textContent=status==='complete'?t.done:t.skip;
+  }});
   const valid=token=>token===generation&&owner===account.scope&&account.hasAccess&&!account.isGuest;
   const route=()=>phase==='saved'?'saved':'home';
   function source() {
     if(phase==='saved')return document.querySelector(`#main-content [data-word-card="${CSS.escape(getWord()?.id||'')}"]`)||document.querySelector('#main-content [data-word-card]');
     if(!['','#home'].includes(location.hash)||!document.querySelector('#main-content #daily-word'))return null;
-    return document.querySelector({definition:'.short-definition',synonyms:'.synonym-pills',examples:'.hero-example',save:'.word-tools .button-save',deep:'.definition-block'}[phase]);
+    return document.querySelector({definition:'.short-definition',synonyms:'.synonym-pills',examples:'.hero-example',save:'.word-tools .button-save',deep:'.definition-block',recall:'.word-wrap'}[phase]);
   }
   function stopAnimations(){animations.forEach(a=>a.cancel());animations=[];}
   async function animate(nodes,keyframes,duration) {
@@ -63,7 +73,8 @@ export function createReadingGuide({hint,account,getState,saveState,getWord,save
   function makePanel(target) {
     panel?.remove();panel=document.createElement('section');panel.className='guide-content-spotlight';
     panel.setAttribute('aria-labelledby','guide-settings-title');panel.dataset.guideContent=phase;
-    panel.append(cleanCopy(target.cloneNode(true)));hint.insertBefore(panel,circle);
+    if(phase==='recall')memory.mount(panel,language());else panel.append(cleanCopy(target.cloneNode(true)));
+    hint.insertBefore(panel,circle);
   }
   function geometry(target) {
     const box=target.getBoundingClientRect(),diameter=circle.getBoundingClientRect().width;
@@ -71,6 +82,7 @@ export function createReadingGuide({hint,account,getState,saveState,getWord,save
     const width=wide?Math.min(box.width+32,innerWidth-diameter-gap-64):Math.min(box.width+32,innerWidth-32);
     panel.style.width=`${Math.max(100,width)}px`;
     panel.style.maxHeight=`${wide?innerHeight-64:Math.max(96,innerHeight-diameter-gap-48)}px`;
+    if(phase==='recall')memory.fit();
     const height=panel.getBoundingClientRect().height;
     let left,top,circleLeft,circleTop;
     if(wide){
@@ -141,15 +153,15 @@ export function createReadingGuide({hint,account,getState,saveState,getWord,save
     panel.style.opacity='0';circle.style.opacity='0';arrow.style.opacity='0';
     await scrollToTarget(target,token,{returning});if(!valid(token))return;
     const t=text();hint.lang=language();hint.dataset.guidePhase=phase;hint.classList.add('is-reading-guide');
-    hint.querySelector('.guide-number').textContent=`LEXI / ${String(steps.indexOf(phase)+2).padStart(2,'0')} / 07`;
+    hint.querySelector('.guide-number').textContent=`LEXI / ${String(steps.indexOf(phase)+2).padStart(2,'0')} / 08`;
     hint.querySelector('#guide-settings-title').textContent=t[phase][0];hint.querySelector('#guide-settings-copy').textContent=t[phase][1];
-    button.textContent=phase==='save'?t.show:phase==='saved'?t.return:phase==='deep'?t.done:t.next;
+    button.textContent=phase==='save'?t.show:phase==='saved'?t.return:phase==='recall'?t.skip:t.next;
     if(!hint.open)hint.showModal();geometry(target);
     stopAnimations();panel.style.opacity='';circle.style.opacity='';arrow.style.opacity='';
     const entrance=animate([panel,circle,arrow],[{opacity:0,transform:'translateY(10px)'},{opacity:1,transform:'translateY(0)'}],500);
     button.disabled=false;moving=false;circle.querySelector('h2').focus({preventScroll:true});
     await entrance;
-    if(valid(token)&&!moving)stopAnimations();
+    if(valid(token)&&!moving){stopAnimations();if(phase==='recall')memory.play();}
   }
   async function flyBookmark(token) {
     if(reduced())return;
@@ -167,6 +179,7 @@ export function createReadingGuide({hint,account,getState,saveState,getWord,save
   async function next() {
     if(!owner||moving||owner!==account.scope||!account.hasAccess)return;
     const token=++generation;moving=true;button.disabled=true;
+    if(phase==='recall')memory.cancel();
     if(phase==='save'){
       const word=getWord();if(!word){cancel();hint.close();return;}
       saveWord(word.id);button.textContent=text().saving;
@@ -183,7 +196,7 @@ export function createReadingGuide({hint,account,getState,saveState,getWord,save
     panel?.remove();panel=null;phase=nextStep;saveState({guideStep:nextStep});
     if(nextStep==='done'){
       cancel();hint.close();
-      const title=document.querySelector('.definition-block h3');title?.setAttribute('tabindex','-1');title?.focus({preventScroll:true});return;
+      document.querySelector('#daily-word')?.focus({preventScroll:true});return;
     }
     await show(token,{returning:previous==='saved'});
   }
@@ -200,6 +213,7 @@ export function createReadingGuide({hint,account,getState,saveState,getWord,save
     show(++generation);return true;
   }
   function cancel() {
+    memory.cancel();
     ++generation;cancelAnimationFrame(frame);frame=0;stopAnimations();
     panel?.remove();flight?.remove();destination?.remove();panel=null;flight=null;destination=null;
     owner=null;phase=null;moving=false;button.disabled=false;
@@ -213,12 +227,17 @@ export function createReadingGuide({hint,account,getState,saveState,getWord,save
     if(getState().guideStep!==phase){cancel();if(hint.open)hint.close();resume();return;}
     const target=source();
     if(!target){cancel();if(hint.open)hint.close();return;}
+    if(phase==='recall'){
+      if(memory.wordId!==getWord()?.id){cancel();hint.close();resume();return;}
+      if(reduced()&&memory.playing)memory.finish();
+      geometry(target);return;
+    }
     makePanel(target);geometry(target);
   }
   window.addEventListener('resize',()=>{if(owner&&!moving&&source())geometry(source());});
   window.addEventListener('scroll',()=>{if(owner&&!moving&&source())geometry(source());},{passive:true});
   window.addEventListener('lexi:accountchange',()=>{if(owner&&owner!==account.scope){cancel();if(hint.open)hint.close();}});
-  media.addEventListener('change',()=>{if(media.matches)stopAnimations();});
+  media.addEventListener('change',()=>{if(media.matches){stopAnimations();if(phase==='recall')memory.finish();}});
   hint.addEventListener('close',()=>{if(!hint.open)cancel();});
   return {resume,next,refresh,cancel,get active(){return !!owner;}};
 }

@@ -67,6 +67,26 @@
 .guide-flying-bookmark{position:fixed;z-index:5;left:0;top:0;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);box-shadow:0 6px 18px #0003;pointer-events:none}
 .guide-flying-bookmark>.icon{width:20px;height:20px;fill:currentColor}
 [data-theme=studio] .guide-content-spotlight,[data-theme=studio] .guide-save-destination,[data-theme=studio] .guide-flying-bookmark{background:var(--paper)}
+.guide-memory-card{position:relative;min-height:140px;transform-origin:center;perspective:1000px}
+.guide-memory-front{min-height:140px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:12px;cursor:default;touch-action:manipulation;user-select:none}
+.guide-memory-front>.micro{font-size:9px;letter-spacing:.1em}
+.guide-memory-word{display:block;width:100%;font-family:Syne,Arial,sans-serif;font-weight:700;line-height:1.15;letter-spacing:-.055em;text-align:center;overflow-wrap:anywhere;color:var(--word-color)}
+.guide-memory-tap{display:flex;align-items:center;gap:8px;color:var(--muted-readable)}
+.guide-memory-tap>.icon{width:15px;height:15px}
+.guide-memory-pulse{position:absolute;pointer-events:none;left:50%;top:50%;width:44px;height:44px;border-radius:50%;border:2px solid var(--text);background:color-mix(in srgb,var(--text) 10%,transparent)}
+.guide-memory-back{margin:0;min-height:140px;display:flex;flex-direction:column;justify-content:center}
+.guide-memory-back>label{font-size:11px;margin-bottom:8px;letter-spacing:0}
+.guide-memory-back .recall-input-row{flex-direction:row;gap:8px}
+.guide-memory-back .recall-input-row>input{font-size:16px;min-height:44px;padding:8px 10px;caret-color:var(--text)}
+.guide-memory-back .recall-input-row>.button{font-size:11px;min-height:44px;padding:8px 10px;gap:6px;white-space:nowrap;pointer-events:none}
+.guide-memory-back .recall-input-row>.button>.icon{width:15px;height:15px}
+.guide-memory-back .recall-feedback{font-size:12px;line-height:1.5;min-height:36px;margin-top:8px}
+[data-recall-stage=correct] .guide-memory-back input{border-color:var(--accent-text)}
+[data-recall-stage=correct] .guide-memory-back .recall-feedback{color:var(--accent-text)}
+.guide-memory-footer{min-height:26px;display:flex;align-items:center;justify-content:center}
+.guide-memory-footer .text-link{font-size:11px;min-height:26px}
+.guide-memory-front:focus-visible{outline:2px solid var(--accent-text);outline-offset:3px;border-radius:5px}
+html:has(.is-reading-guide[data-guide-phase=recall]) #main-content .word-wrap{opacity:0;transition:opacity 350ms ease}
 @media(max-width:800px){
  .onboarding-dialog.is-guided{padding:24px;width:calc(100% - 24px);max-height:calc(100dvh - 24px)}
  .onboarding-dialog.is-guided:not([data-guide-step=language]){height:calc(100dvh - 24px)}

@@ -331,6 +331,8 @@ class AccountTests(unittest.TestCase):
                       {'guideLanguage': None, 'guideStep': 'time'},
                       {'guideLanguage': None, 'guideStep': 'word'},
                       {'guideLanguage': None, 'guideStep': 'saved'},
+                      {'guideLanguage': None, 'guideStep': 'recall'},
+                      {'guideLanguage': 'ru', 'guideStep': 'recall', 'onboarded': False},
                       {'guideLanguage': 'en', 'guideStep': 'deep', 'onboarded': False},
                       {'guideLanguage': 'ru', 'guideStep': 'word', 'onboarded': False}):
             self.assertEqual(self.save(data, self.state(**patch)).status_code, 400, patch)
@@ -356,13 +358,13 @@ class AccountTests(unittest.TestCase):
         response = self.save(ada, old_client, revision=4)
         self.assertEqual(response.status_code, 200)
         self.assertEqual((response.json['state']['guideLanguage'], response.json['state']['guideStep']), ('en', 'word'))
-        for revision, step in enumerate(('definition', 'synonyms', 'examples', 'save', 'saved', 'deep'), start=5):
+        for revision, step in enumerate(('definition', 'synonyms', 'examples', 'save', 'saved', 'deep', 'recall'), start=5):
             response = self.save(ada, self.state(guideLanguage='en', guideStep=step), revision=revision)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json['state']['guideStep'], step)
-        response = self.save(ada, old_client, revision=11)
+        response = self.save(ada, old_client, revision=12)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json['state']['guideStep'], 'deep')
+        self.assertEqual(response.json['state']['guideStep'], 'recall')
         other = self.app.test_client()
         bob = self.register(other, 'Bob_guide', 'bob-guide@example.com')
         self.assertIsNone(bob['state'])

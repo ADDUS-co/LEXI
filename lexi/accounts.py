@@ -314,7 +314,7 @@ def clean_preferences(value, previous=None):
     if result['guideLanguage'] not in (None, 'ru', 'kk', 'en'):
         raise ValueError('Choose Russian, Kazakh, or English for the guide.')
     result['guideStep'] = value.get('guideStep', previous.get('guideStep', 'done' if result['onboarded'] else 'language'))
-    reading_steps = ('word', 'definition', 'synonyms', 'examples', 'save', 'saved', 'deep')
+    reading_steps = ('word', 'definition', 'synonyms', 'examples', 'save', 'saved', 'deep', 'recall')
     if result['guideStep'] not in ('language', 'time', 'collections', 'settings', *reading_steps, 'done'):
         raise ValueError('Choose a valid guide step.')
     if result['guideStep'] in ('time', 'collections', 'settings', *reading_steps) and result['guideLanguage'] is None:
