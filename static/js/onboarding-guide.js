@@ -77,7 +77,7 @@ export function createOnboardingGuide({dialog,account,getState,saveState}) {
       {transform:`translate(${previous.left-current.left}px,${previous.top-current.top}px)`},
       {transform:'translate(0,0)'},
     ]:[{opacity:0,transform:'translateY(16px) scale(.96)'},{opacity:1,transform:'translateY(0) scale(1)'}],
-    {duration:travelling?(step==='collections'?950:1200):800,easing:'cubic-bezier(.42,0,.58,1)'});
+    {duration:travelling?(step==='collections'?650:1200):800,easing:'cubic-bezier(.42,0,.58,1)'});
     motion=animation;motionScrollTo=scrollTo;
     const follow=()=>{
       if(motion!==animation)return;
