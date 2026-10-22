@@ -11,25 +11,69 @@ export function createOnboardingGuide({dialog,account,getState,saveState}) {
   const $=selector=>dialog.querySelector(selector);
   const language=$('#onboarding-language'),content=$('.onboarding-content');
   const time=$('#onboarding-time'),topics=$('#onboarding-topics'),coach=$('#onboarding-coach');
+  const pointer=$('.guide-pointer'),pointerPath=pointer.querySelector('.guide-pointer-line'),pointerHead=pointer.querySelector('.guide-pointer-head');
   const back=$('#onboarding-back'),next=$('#onboarding-next'),begin=$('#begin-button');
   const hint=document.querySelector('#settings-guide-dialog'),hintCircle=hint.querySelector('.guide-circle');
   const media=matchMedia('(prefers-reduced-motion: reduce)');
-  let step=null,scope=null,motion=null,hintScheduled=false,hintTarget=null,placeholder=null,targetStyle='',targetLabel='',hintScope=null,hintGeneration=0;
+  let step=null,scope=null,motion=null,motionFrame=0,motionScrollTo=null,pointerFrame=0,hintScheduled=false,hintTarget=null,placeholder=null,targetStyle='',targetLabel='',hintScope=null,hintGeneration=0;
   const lang=()=>Object.hasOwn(copy,getState().guideLanguage)?getState().guideLanguage:'en';
   const text=()=>copy[lang()];
   const reduced=()=>media.matches||getState().reduceMotion;
   const selected=()=>[...dialog.querySelectorAll('input[name="onboarding"]:checked')].map(input=>input.value);
   const value=()=>$('#onboarding-update-time')?.value;
-  function stopMotion(){motion?.cancel();motion=null;}
-  function moveCircle(previous) {
+  function stopMotion({finish=false}={}){cancelAnimationFrame(motionFrame);motionFrame=0;motion?.cancel();motion=null;if(finish&&motionScrollTo!==null)dialog.scrollTop=motionScrollTo;motionScrollTo=null;pointer.style.opacity='1';}
+  function positionPointer() {
+    if(!dialog.open||coach.hidden||account.isGuest||!['time','collections'].includes(step)){pointer.setAttribute('hidden','');return;}
+    const bubble=coach.getBoundingClientRect(),bounds=dialog.getBoundingClientRect();
+    const target=(step==='time'?$('#onboarding-update-time'):$('.onboarding-prompt')).getBoundingClientRect();
+    const narrow=innerWidth<=600;
+    const end=narrow?{x:target.left+target.width/2,y:target.top-12}:
+      {x:step==='time'?target.left-14:target.right+12,y:target.top+target.height/2};
+    const center={x:bubble.left+bubble.width/2,y:bubble.top+bubble.height/2};
+    const angle=Math.atan2(end.y-center.y,end.x-center.x),radius=bubble.width/2+8;
+    const start={x:center.x+Math.cos(angle)*radius,y:center.y+Math.sin(angle)*radius};
+    // Keep the decorative line inside the visible dialog; it never takes a click.
+    const outside=end.y<bounds.top+8||end.y>bounds.bottom-8||end.x<bounds.left+8||end.x>bounds.right-8;
+    pointer.toggleAttribute('hidden',outside);
+    if(outside)return;
+    pointer.style.clipPath=`inset(${Math.max(0,bounds.top+1)}px ${Math.max(0,innerWidth-bounds.right+1)}px ${Math.max(0,innerHeight-bounds.bottom+1)}px ${Math.max(0,bounds.left+1)}px)`;
+    const bend=Math.max(18,Math.min(80,Math.hypot(end.x-start.x,end.y-start.y)*.55));
+    const direction=step==='time'?1:-1;
+    const c1={x:start.x+Math.cos(angle)*bend,y:start.y+Math.sin(angle)*bend};
+    const c2=narrow?{x:end.x,y:end.y-bend}:{x:end.x-direction*bend,y:end.y};
+    const heading=Math.atan2(end.y-c2.y,end.x-c2.x),head=9,spread=.6;
+    pointerPath.setAttribute('d',`M ${start.x} ${start.y} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${end.x} ${end.y}`);
+    pointerHead.setAttribute('d',`M ${end.x-head*Math.cos(heading-spread)} ${end.y-head*Math.sin(heading-spread)} L ${end.x} ${end.y} L ${end.x-head*Math.cos(heading+spread)} ${end.y-head*Math.sin(heading+spread)}`);
+  }
+  function queuePointer(){if(!motion&&!pointerFrame)pointerFrame=requestAnimationFrame(()=>{pointerFrame=0;positionPointer();});}
+  function moveCircle(previous,scrollFrom,scrollTo) {
     stopMotion();
-    if(reduced()||!coach.animate)return;
+    if(reduced()||!coach.animate){positionPointer();return;}
+    // Scroll and travel share one clock, so the panel does not jump underneath the circle.
+    if(previous?.width)dialog.scrollTop=scrollFrom;
+    scrollFrom=dialog.scrollTop;
     const current=coach.getBoundingClientRect();
-    motion=coach.animate([
-      {opacity:previous?.width ? .7 : 0,transform:previous?.width?`translate(${previous.left-current.left}px,${previous.top-current.top}px) scale(.96)`:'translateY(22px) scale(.86)'},
-      {opacity:1,transform:'translate(0,0) scale(1)'},
-    ],{duration:480,easing:'cubic-bezier(.22,1,.36,1)'});
-    motion.finished.catch(()=>{});
+    const travelling=!!previous?.width;
+    const animation=coach.animate(travelling?[
+      {transform:`translate(${previous.left-current.left}px,${previous.top-current.top}px)`},
+      {transform:'translate(0,0)'},
+    ]:[{opacity:0,transform:'translateY(16px) scale(.96)'},{opacity:1,transform:'translateY(0) scale(1)'}],
+    {duration:travelling?1200:800,easing:'cubic-bezier(.42,0,.58,1)'});
+    motion=animation;motionScrollTo=scrollTo;
+    const follow=()=>{
+      if(motion!==animation)return;
+      const progress=animation.effect.getComputedTiming().progress??0;
+      if(scrollFrom!==scrollTo)dialog.scrollTop=scrollFrom+(scrollTo-scrollFrom)*progress;
+      // Reveal the new arrow as the circle arrives, rather than drawing across the controls in transit.
+      pointer.style.opacity=String(travelling?Math.max(0,(progress-.94)/.06):progress);
+      positionPointer();motionFrame=requestAnimationFrame(follow);
+    };
+    follow();
+    animation.finished.then(()=>{
+      if(motion!==animation)return;
+      cancelAnimationFrame(motionFrame);motionFrame=0;motion=null;motionScrollTo=null;
+      dialog.scrollTop=scrollTo;pointer.style.opacity='1';positionPointer();
+    }).catch(()=>{});
   }
   function mute(node,value){node.classList.toggle('guide-muted',value);node.inert=value;if(value)node.setAttribute('aria-hidden','true');else node.removeAttribute('aria-hidden');}
   function syncControls() {
@@ -52,6 +96,8 @@ export function createOnboardingGuide({dialog,account,getState,saveState}) {
   function render(newStep,{animate=true}={}) {
     const changed=step!==newStep||scope!==account.scope;
     const previous=!coach.hidden&&changed?coach.getBoundingClientRect():null;
+    const scrollFrom=dialog.scrollTop;
+    if(changed)stopMotion();
     scope=account.scope;step=newStep;dialog.classList.add('is-guided');dialog.dataset.guideStep=step;
     const choosing=step==='language';language.hidden=!choosing;content.hidden=choosing;
     coach.hidden=choosing;back.hidden=false;next.hidden=step!=='time';begin.hidden=step!=='collections';
@@ -71,13 +117,14 @@ export function createOnboardingGuide({dialog,account,getState,saveState}) {
       else dialog.scrollTo({top:0,behavior:'instant'});
       if(choosing)$('#guide-language-title').focus({preventScroll:true});
       else {
-        if(animate)moveCircle(previous);
+        if(animate)moveCircle(previous,scrollFrom,dialog.scrollTop);
         (step==='time'?$('#onboarding-update-time'):coach.querySelector('h2')).focus({preventScroll:true});
       }
     }
+    positionPointer();
   }
   function useGuest() {
-    stopMotion();step=null;scope=account.scope;
+    stopMotion();pointer.setAttribute('hidden','');step=null;scope=account.scope;
     dialog.classList.remove('is-guided');delete dialog.dataset.guideStep;dialog.lang='en';
     language.hidden=true;content.hidden=false;coach.hidden=true;next.hidden=true;back.hidden=true;begin.hidden=false;
     for(const node of [time,topics,$('.guide-chrome')])mute(node,false);
@@ -144,7 +191,7 @@ export function createOnboardingGuide({dialog,account,getState,saveState}) {
       hint.querySelector('#guide-settings-title').textContent=t.settingsTitle;hint.querySelector('#guide-settings-copy').textContent=t.settingsBody;
       hint.querySelector('#guide-settings-done').textContent=t.done;
       hint.showModal();positionHint();hint.querySelector('h2').focus({preventScroll:true});
-      if(!reduced())hintCircle.animate([{opacity:0,transform:'translateY(18px) scale(.88)'},{opacity:1,transform:'translateY(0) scale(1)'}],{duration:480,easing:'cubic-bezier(.22,1,.36,1)'});
+      if(!reduced())hintCircle.animate([{opacity:0,transform:'translateY(16px) scale(.96)'},{opacity:1,transform:'translateY(0) scale(1)'}],{duration:800,easing:'cubic-bezier(.42,0,.58,1)'});
     });
   }
   hint.addEventListener('click',event=>{if(event.target.closest('#guide-settings-done'))finishHint();else if(event.target.closest('.guide-settings-target')){event.preventDefault();finishHint(true);}});
@@ -156,13 +203,15 @@ export function createOnboardingGuide({dialog,account,getState,saveState}) {
       restoreTarget();if(hint.open)hint.close();
     }
   });
-  window.addEventListener('resize',positionHint);
-  media.addEventListener('change',()=>{if(media.matches){stopMotion();hintCircle.getAnimations().forEach(animation=>animation.cancel());}});
+  dialog.addEventListener('scroll',queuePointer,{passive:true});
+  dialog.addEventListener('close',()=>{if(!dialog.open){stopMotion();pointer.setAttribute('hidden','');}});
+  window.addEventListener('resize',()=>{stopMotion();queuePointer();positionHint();});
+  media.addEventListener('change',()=>{if(media.matches){stopMotion({finish:true});queuePointer();hintCircle.getAnimations().forEach(animation=>animation.cancel());}});
   return {
     open(){if(account.isGuest){useGuest();return;}const state=getState();render(!state.guideLanguage||state.guideStep==='language'?'language':state.guideStep==='collections'?'collections':'time');},
     useGuest,resumeSettingsHint,
     get active(){return !account.isGuest&&dialog.classList.contains('is-guided');},
     canComplete(){return step==='collections'&&validUpdateTime(value())&&selected().length>0;},
-    cancel(){++hintGeneration;stopMotion();step=null;scope=null;hintScheduled=false;restoreTarget();if(hint.open)hint.close();},
+    cancel(){++hintGeneration;stopMotion();pointer.setAttribute('hidden','');step=null;scope=null;hintScheduled=false;restoreTarget();if(hint.open)hint.close();},
   };
 }

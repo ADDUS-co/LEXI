@@ -37,6 +37,30 @@ def circle(page,selector):
     return box and abs(box['width']-box['height'])<2
 
 
+def settle(page,selector='#onboarding-coach'):
+    page.wait_for_function("selector=>[...document.querySelector(selector).getAnimations()].every(a=>a.playState!=='running')",arg=selector)
+    page.evaluate('()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))')
+
+
+def points_to_active(page):
+    return page.evaluate("""()=>{
+      const dialog=document.querySelector('#onboarding-dialog'),svg=dialog.querySelector('.guide-pointer');
+      if(svg.hasAttribute('hidden')||svg.getBoundingClientRect().width<1||getComputedStyle(svg).pointerEvents!=='none'||svg.getAttribute('aria-hidden')!=='true')return false;
+      const path=svg.querySelector('.guide-pointer-line'),end=path.getPointAtLength(path.getTotalLength());
+      const target=dialog.querySelector(dialog.dataset.guideStep==='time'?'#onboarding-update-time':'.onboarding-prompt').getBoundingClientRect();
+      const box=svg.getBoundingClientRect(),x=end.x+box.left,y=end.y+box.top;
+      const near=innerWidth<=600?Math.abs(y-target.top+12)<2&&x>=target.left&&x<=target.right:
+        Math.abs(y-(target.top+target.height/2))<2&&Math.abs(x-(dialog.dataset.guideStep==='time'?target.left-14:target.right+12))<2;
+      const style=getComputedStyle(path),accent=getComputedStyle(dialog).getPropertyValue('--accent-text').trim();
+      return near&&style.strokeWidth==='2.5px'&&getComputedStyle(svg).color===style.stroke&&!!accent;
+    }""")
+
+
+def show_collections(page):
+    page.evaluate("()=>document.querySelector(innerWidth<=600?'#onboarding-coach':'#onboarding-topics').scrollIntoView({block:'start',behavior:'instant'})")
+    page.evaluate('()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))')
+
+
 def run():
     with sync_playwright() as p:
         fixture=BrowserAccount(p,BASE)
@@ -64,22 +88,41 @@ def run():
             page.reload(wait_until='networkidle')
             expect(page.locator('#onboarding-dialog')).to_have_attribute('data-guide-step','time')
             check(page.locator('#onboarding-update-time').input_value()=='09:25' and not page.locator('#onboarding-language').is_visible(),f'{language}: reload resumes the saved time step and language')
-            page.wait_for_timeout(520)
+            settle(page)
             check(circle(page,'#onboarding-coach'),f'{language}: time explanation is a real circle')
+            check(points_to_active(page),f'{language}: an accent arrow points to the time input without taking clicks or focus')
             time_box=page.locator('#onboarding-update-time').bounding_box();zone_box=page.locator('#onboarding-schedule .schedule-timezone').bounding_box()
             check(zone_box['y']>=time_box['y']+time_box['height'] or zone_box['x']>=time_box['x']+time_box['width']+6,f'{language}: time and timezone never overlap')
             if language=='en':check(page.locator('#onboarding-coach').evaluate('e=>e.getAnimations().length===0'),'Reduced motion keeps the coach static')
             first=page.locator('#onboarding-coach').bounding_box()
             page.screenshot(path=str(OUTPUT/f'guide-{language}-time.png'))
+            for viewport in (320,390,768,1440):
+                page.set_viewport_size({'width':viewport,'height':1000});page.wait_for_timeout(80)
+                page.locator('#onboarding-update-time').scroll_into_view_if_needed();page.wait_for_timeout(50)
+                check(points_to_active(page),f'{language}: time arrow remains on target at {viewport}px')
+            page.set_viewport_size({'width':width,'height':1000});page.wait_for_timeout(80)
+            page.locator('#onboarding-dialog').evaluate("e=>e.scrollTo({top:0,behavior:'instant'})");page.wait_for_timeout(50)
             if language=='ru':
                 page.evaluate('navigator.serviceWorker.ready')
                 page.wait_for_function("async()=>!!await caches.match('/api/catalog')")
                 context.set_offline(True)
-            page.locator('#onboarding-next').click()
+            if language=='ru':
+                frames=page.evaluate("""async()=>{
+                  const circle=document.querySelector('#onboarding-coach');
+                  const points=[],start=performance.now(),read=()=>{const b=circle.getBoundingClientRect();points.push({t:performance.now()-start,x:b.x,y:b.y,opacity:getComputedStyle(circle).opacity});};
+                  read();document.querySelector('#onboarding-next').click();read();
+                  await new Promise(resolve=>{function sample(){read();if(performance.now()-start<1320)requestAnimationFrame(sample);else resolve();}requestAnimationFrame(sample);});return points;
+                }""")
+                check(len(frames)>20 and abs(frames[1]['x']-frames[0]['x'])<2 and abs(frames[1]['y']-frames[0]['y'])<2,'The circle starts its trip from its previous position without a jump')
+                early=next(f for f in frames if f['t']>=180)
+                check(early['x']>frames[0]['x'] and early['x']<frames[-1]['x']-200 and all(f['opacity']=='1' for f in frames),'Side-to-side movement accelerates gently and keeps the circle fully visible')
+                check(all(((b['x']-a['x'])**2+(b['y']-a['y'])**2)**.5<=max(8,(b['t']-a['t'])*2.2) for a,b in zip(frames,frames[1:])),'Frame-by-frame circle travel and scrolling have no abrupt position changes')
+            else:page.locator('#onboarding-next').click()
             expect(page.locator('#onboarding-dialog')).to_have_attribute('data-guide-step','collections')
             check(page.locator('#onboarding-time').evaluate('e=>e.inert&&getComputedStyle(e).filter.includes("blur")') and not page.locator('#onboarding-topics').evaluate('e=>e.inert'),f'{language}: spotlight moves from time to the collections')
             check(page.locator('#begin-button').is_disabled(),f'{language}: one or more collections are required')
-            page.wait_for_timeout(520)
+            settle(page)
+            check(points_to_active(page),f'{language}: the arrow now points to collections')
             second=page.locator('#onboarding-coach').bounding_box()
             check(second['y']>=0 and second['y']+second['height']<=1000,f'{language}: the collections explanation is visible before selecting topics')
             if width==1440:check(second['x']>first['x']+200,'The same coach moves from the left to the right of the panel')
@@ -94,14 +137,26 @@ def run():
             page.locator('#onboarding-back').click()
             expect(page.locator('#onboarding-dialog')).to_have_attribute('data-guide-step','time')
             check(page.locator('#onboarding-update-time').input_value()=='09:25' and state(page)['interests'],f'{language}: Back preserves the chosen time and collections')
+            if language=='ru':
+                page.wait_for_timeout(180);page.emulate_media(reduced_motion='reduce');settle(page)
+                check(page.locator('#onboarding-coach').evaluate('e=>e.getAnimations().length===0') and points_to_active(page),'Enabling reduced motion mid-trip finishes scrolling and keeps the time arrow in place')
+                page.emulate_media(reduced_motion='no-preference')
             page.locator('#onboarding-next').click()
+            if language=='ru':
+                page.evaluate("""async()=>{document.querySelector('#onboarding-back').click();await new Promise(r=>setTimeout(r,160));document.querySelector('#onboarding-next').click();}""")
+                settle(page)
+                check(points_to_active(page) and state(page)['guideStep']=='collections','Quick direction changes leave one circle and an arrow at the correct collection step')
             for viewport in (320,390,768,1440):
                 page.set_viewport_size({'width':viewport,'height':1000});page.wait_for_timeout(80)
+                show_collections(page)
                 check(page.locator('#onboarding-dialog').evaluate('e=>e.scrollWidth<=e.clientWidth+1') and page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'{language}: setup has no horizontal overflow at {viewport}px')
-            page.set_viewport_size({'width':width,'height':1000});page.wait_for_timeout(520)
+                check(points_to_active(page),f'{language}: collections arrow remains on target at {viewport}px')
+            page.set_viewport_size({'width':width,'height':1000});settle(page)
+            show_collections(page)
+            check(points_to_active(page),f'{language}: the collections arrow follows the layout after resizing and scrolling')
             page.screenshot(path=str(OUTPUT/f'guide-{language}-collections.png'))
             page.locator('#begin-button').click()
-            expect(page.locator('#settings-guide-dialog')).to_be_visible();page.wait_for_timeout(520)
+            expect(page.locator('#settings-guide-dialog')).to_be_visible();settle(page,'.settings-guide-circle')
             check(not page.locator('#onboarding-dialog').is_visible() and state(page)['onboarded'] and len(state(page)['history'])==1,f'{language}: completing collections closes the panel and starts real learning')
             check(page.locator('.settings-link').evaluate('e=>e.closest("#settings-guide-dialog")!==null') and page.locator('.guide-settings-placeholder').count()==1,f'{language}: the hint highlights the real gear instead of a disconnected copy')
             check(page.locator('#settings-guide-dialog').get_attribute('lang')==language and state(page)['guideStep']=='settings',f'{language}: the final hint uses the chosen language and remains unfinished until acknowledged')
