@@ -36,7 +36,7 @@ class AccountTests(unittest.TestCase):
     def state(self, **patch):
         return {'theme': 'studio', 'interests': ['ielts'], 'saved': [], 'history': [],
                 'hiddenWords': [], 'updateTime': '09:15', 'onboarded': True,
-                'reduceMotion': True, **patch}
+                'reduceMotion': True, 'guideLanguage': None, 'guideStep': 'done', **patch}
 
     def save(self, account, state=None, revision=0, client=None):
         return (client or self.client).put('/api/account/state', json={
@@ -326,11 +326,32 @@ class AccountTests(unittest.TestCase):
         data = self.register()
         for patch in ({'history': [{'id': 'word', 'date': '2026-02-30'}]},
                       {'updateTime': '25:00'}, {'theme': 'missing'}, {'interests': 'ielts'},
-                      {'onboarded': 1}, {'saved': [1]}, {'history': [None]}):
+                      {'onboarded': 1}, {'saved': [1]}, {'history': [None]},
+                      {'guideLanguage': 'de'}, {'guideLanguage': ['ru']}, {'guideStep': 'unknown'},
+                      {'guideLanguage': None, 'guideStep': 'time'}):
             self.assertEqual(self.save(data, self.state(**patch)).status_code, 400, patch)
         for revision in (True, -1, '0'):
             self.assertEqual(self.save(data, revision=revision).status_code, 400)
         self.assertEqual(self.client.get('/api/account/session').json['revision'], 0)
+
+    def test_guide_language_and_step_persist_per_account_and_survive_older_clients(self):
+        ada = self.register()
+        partial = self.state(onboarded=False, interests=[], guideLanguage='ru', guideStep='time')
+        self.assertEqual(self.save(ada, partial).status_code, 200)
+        state = self.client.get('/api/account/session').json['state']
+        self.assertEqual((state['guideLanguage'], state['guideStep']), ('ru', 'time'))
+        old_client = {key: value for key, value in partial.items() if key not in ('guideLanguage', 'guideStep')}
+        response = self.save(ada, old_client, revision=1)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual((response.json['state']['guideLanguage'], response.json['state']['guideStep']), ('ru', 'time'))
+        for revision, language in enumerate(('kk', 'en'), start=2):
+            response = self.save(ada, self.state(guideLanguage=language, guideStep='settings'), revision=revision)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json['state']['guideLanguage'], language)
+        other = self.app.test_client()
+        bob = self.register(other, 'Bob_guide', 'bob-guide@example.com')
+        self.assertIsNone(bob['state'])
+        self.assertEqual(self.client.get('/api/account/session').json['state']['guideLanguage'], 'en')
 
     def test_photo_is_resized_reencoded_and_can_be_deleted(self):
         data = self.register()

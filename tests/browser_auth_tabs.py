@@ -74,6 +74,7 @@ def run():
             page.locator(f'[data-entry-theme-choice="{theme}"]').click()
             for width in (320, 390, 768, 1440):
                 page.set_viewport_size({'width': width, 'height': 1000})
+                page.evaluate('async()=>{await new Promise(requestAnimationFrame);await new Promise(requestAnimationFrame);}')
                 before_tabs = tab_positions(page)
                 for mode, expected in (('login', login), ('register', registration)):
                     switch(page, mode)
@@ -115,6 +116,7 @@ def run():
         check(values(page) == registration, 'The guest account dialog supports the same reversible tab switch')
         for width in (320,390,768,1440):
             page.set_viewport_size({'width':width,'height':844})
+            page.evaluate('async()=>{await new Promise(requestAnimationFrame);await new Promise(requestAnimationFrame);}')
             before_tabs=tab_positions(page)
             switch(page,'login');settled(page)
             login_tabs=tab_positions(page)

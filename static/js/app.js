@@ -5,6 +5,7 @@ import {dailySchedule, deviceTimezone, validUpdateTime} from './schedule.js';
 import {answerMatches, withoutAnswer} from './recall.js';
 import {createAccountService} from './account-service.js';
 import {installAccountUI} from './account-ui.js';
+import {createOnboardingGuide} from './onboarding-guide.js';
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const main = $('#main-content');
@@ -38,6 +39,7 @@ let lastTouch;
 let ignoreDoubleClickUntil = 0;
 let revealPressAt = 0;
 const account = createAccountService();
+const guide = createOnboardingGuide({dialog:onboarding,account,getState:()=>preferences,saveState:patch=>(preferences=updateStore(patch))});
 installAccountUI(account,{toast,openOnboarding:()=>{if(catalog&&initialized)showOnboarding();}});
 
 function isHidden(word) { return preferences.hiddenWords.includes(word.id); }
@@ -309,12 +311,15 @@ function observeReveals() {
 
 function showOnboarding() {
   if (!account.hasAccess || !catalog || $('#account-dialog').open) return;
-  $('#onboarding-data-note').textContent=account.isGuest?'Guest progress disappears when you sign out, reload, or close this tab.':'Your own little world of words. Saved to your account, every day.';
   $('#onboarding-guest-exit').hidden=!account.isGuest;
   $('#onboarding-schedule').innerHTML = scheduleFields('onboarding');
   $('#onboarding-collections').innerHTML = catalog.collections.map((collection, index) => collectionCard(collection, index, preferences.interests.includes(collection.id), 'onboarding')).join('');
   $('#begin-button').disabled = !preferences.interests.length;
-  if (!onboarding.open) onboarding.showModal();
+  if(account.isGuest) {
+    guide.useGuest();
+    $('#onboarding-data-note').textContent='Guest progress disappears when you sign out, reload, or close this tab.';
+    if(!onboarding.open)onboarding.showModal();
+  } else guide.open();
 }
 
 function openDetail(title, content) {
@@ -528,16 +533,19 @@ document.addEventListener('pointerup', event => {
 });
 
 $('#begin-button').addEventListener('click', () => {
+  const guided=guide.active;
+  if(guided&&!guide.canComplete())return;
   const selected = [...onboarding.querySelectorAll('input[name="onboarding"]:checked')].map(input => input.value);
   if (!selected.length) return;
   const timeInput = $('#onboarding-update-time');
   if (!validUpdateTime(timeInput.value)) { timeInput.reportValidity(); return; }
-  preferences = updateStore({interests: selected, updateTime:timeInput.value, onboarded: true});
+  preferences = updateStore({interests: selected, updateTime:timeInput.value, onboarded: true, guideStep:guided?'settings':'done'});
   calculateDaily();
   onboarding.close();
   renderApp();
   initialized = true;
-  toast('Welcome to your daily ritual. A little more knowledge starts here.');
+  if(guided)guide.resumeSettingsHint();
+  else toast('Welcome to your daily ritual. A little more knowledge starts here.');
 });
 
 onboarding.addEventListener('cancel', event => event.preventDefault());
@@ -565,11 +573,12 @@ window.addEventListener('storage', event => {
   calculateDaily();
   renderApp({scroll: false});
   if (!preferences.onboarded) showOnboarding();
-  else if (onboarding.open) onboarding.close();
+  else {if(onboarding.open)onboarding.close();guide.resumeSettingsHint();}
 });
 
 window.addEventListener('lexi:accesschange',()=>{
   if(account.hasAccess)return;
+  guide.cancel();
   observer?.disconnect();
   catalog=null;currentWord=null;dailyWord=null;schedule=null;initialized=false;
   preferences=readStore();collectionDraft=new Set();lastTouch=null;revealPressAt=0;
@@ -584,7 +593,7 @@ window.addEventListener('lexi:accountstate',async()=>{
   preferences=readStore();
   sanitizePreferences();applyAppearance();calculateDaily();renderApp({scroll:false});
   if(!preferences.onboarded)showOnboarding();
-  else if(onboarding.open)onboarding.close();
+  else {if(onboarding.open)onboarding.close();guide.resumeSettingsHint();}
 });
 
 function updateNetwork() {
@@ -657,6 +666,7 @@ async function loadCatalog(owner) {
     renderFooter();
     renderApp();
     if (!preferences.onboarded) showOnboarding();
+    else guide.resumeSettingsHint();
     initialized = true;
     if (!storageAvailable) toast('Browser storage is unavailable. Changes will last for this visit only.');
     updateNetwork();

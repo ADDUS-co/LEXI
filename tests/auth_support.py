@@ -2,6 +2,25 @@
 import secrets
 
 
+def choose_guide_language(page, language='en'):
+    if page.locator('#onboarding-language').is_visible():
+        page.locator(f'[data-guide-language="{language}"]').click()
+
+
+def advance_guide_time(page):
+    if page.locator('#onboarding-next').is_visible():
+        page.locator('#onboarding-next').click()
+
+
+def finish_onboarding(page):
+    from playwright.sync_api import expect
+    page.locator('#begin-button').click()
+    guided = page.evaluate("async()=>{const s=(await import('/static/js/storage.js')).readStore();return s.guideStep==='settings'&&!!s.guideLanguage;}")
+    if guided:
+        expect(page.locator('#settings-guide-dialog')).to_be_visible()
+        page.locator('#guide-settings-done').click()
+
+
 def signed_in_client(app):
     client = app.test_client()
     token = client.get('/api/account/session').json['csrfToken']
@@ -32,7 +51,7 @@ class BrowserAccount:
         session = self.api.get('/api/account/session').json()
         state = {'version': 2, 'theme': 'noir', 'interests': [], 'saved': [], 'history': [],
                  'hiddenWords': [], 'updateTime': '08:00', 'onboarded': False,
-                 'reduceMotion': False, **(state or {})}
+                 'reduceMotion': False, 'guideLanguage': None, 'guideStep':'done' if (state or {}).get('onboarded') else 'language', **(state or {})}
         response = self.api.put('/api/account/state', data={'state': state, 'revision': session['revision'], 'progressVersion': session['progressVersion']}, headers={
             'X-CSRF-Token': session['csrfToken'], 'X-Account-Id': str(session['user']['id']),
         })

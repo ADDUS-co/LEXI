@@ -8,6 +8,7 @@ import shutil
 import time
 
 from playwright.sync_api import sync_playwright, expect
+from auth_support import choose_guide_language, advance_guide_time, finish_onboarding
 
 BASE = os.environ.get('LEXI_TEST_URL', 'http://127.0.0.1:5000').rstrip('/')
 checks = []
@@ -41,9 +42,11 @@ def enter(page):
 
 
 def begin(page, collection='ielts', update_time='09:15'):
-    page.locator(f'input[name="onboarding"][value="{collection}"]').check()
+    choose_guide_language(page)
     page.locator('#onboarding-update-time').fill(update_time)
-    page.locator('#begin-button').click()
+    advance_guide_time(page)
+    page.locator(f'input[name="onboarding"][value="{collection}"]').check()
+    finish_onboarding(page)
     expect(page.locator('#onboarding-dialog')).not_to_be_visible()
     page.evaluate("location.hash='home'")
     expect(page.locator('#daily-word')).to_be_visible()

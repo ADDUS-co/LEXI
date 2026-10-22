@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="/static/css/experience.css">
   <link rel="stylesheet" href="/static/css/account.css">
   <link rel="stylesheet" href="/static/css/entry.css">
+  <link rel="stylesheet" href="/static/css/onboarding-guide.css">
   <script type="module" src="/static/js/app.js"></script>
 </head>
 <body>
@@ -80,16 +81,37 @@
   <footer id="site-footer" class="site-footer"></footer>
   </div>
   <dialog id="onboarding-dialog" class="onboarding-dialog" aria-labelledby="onboarding-title">
+    <section id="onboarding-language" class="guide-language" hidden aria-labelledby="guide-language-title">
+      <span class="eyebrow">LEXI / YOUR FIRST STEPS</span>
+      <h1 id="guide-language-title" tabindex="-1">Choose your guide language<span class="accent">.</span></h1>
+      <p lang="ru">На каком языке объяснить настройки?</p><p lang="kk">Баптауларды қай тілде түсіндірейік?</p>
+      <div class="guide-language-options" role="group" aria-label="Guide language">
+        <button data-guide-language="ru" lang="ru"><span><strong>Русский</strong><small>Подсказки на русском</small></span><span data-icon="arrow"></span></button>
+        <button data-guide-language="kk" lang="kk"><span><strong>Қазақша</strong><small>Қазақ тіліндегі нұсқаулық</small></span><span data-icon="arrow"></span></button>
+        <button data-guide-language="en" lang="en"><span><strong>English</strong><small>Explanations in English</small></span><span data-icon="arrow"></span></button>
+      </div>
+    </section>
     <div class="onboarding-content">
+      <div class="guide-chrome">
       <div class="onboarding-heading"><span class="eyebrow">YOUR NEXT CHAPTER STARTS HERE</span><span class="onboarding-mark" data-icon="asterisk" aria-hidden="true"></span></div>
       <h1 id="onboarding-title">Welcome to LEXI<span class="accent">.</span></h1>
       <p class="onboarding-subtitle">Words that match your world.</p>
-      <fieldset class="onboarding-rhythm"><legend>Your daily rhythm</legend><div id="onboarding-schedule"></div><p>Choose when your next word arrives, in your device’s timezone.</p></fieldset>
-      <div class="onboarding-prompt"><h2>What interests you?</h2><span>Choose one or more. Follow your curiosity.</span></div>
+      </div>
+      <div class="onboarding-guide-grid">
+      <aside id="onboarding-coach" class="guide-circle" hidden aria-labelledby="guide-step-title"></aside>
+      <fieldset id="onboarding-time" class="onboarding-rhythm"><legend>Your daily rhythm</legend><div id="onboarding-schedule"></div><p>Choose when your next word arrives, in your device’s timezone.</p></fieldset>
+      <section id="onboarding-topics" role="group" aria-labelledby="onboarding-collections-title">
+      <div class="onboarding-prompt"><h2 id="onboarding-collections-title">What interests you?</h2><span>Choose one or more. Follow your curiosity.</span></div>
       <div id="onboarding-collections" class="onboarding-grid"></div>
-      <div class="onboarding-bottom"><p id="onboarding-data-note">Your own little world of words.<br>Saved to your account, every day.</p><button id="begin-button" class="button button-primary" disabled>Discover my word <span data-icon="arrow"></span></button></div>
+      </section>
+      </div>
+      <div class="onboarding-bottom"><p id="onboarding-data-note">Your own little world of words.<br>Saved to your account, every day.</p><div class="guide-step-actions"><button id="onboarding-back" class="text-link" hidden>Back</button><button id="onboarding-next" class="button button-primary" hidden>Next <span data-icon="arrow"></span></button><button id="begin-button" class="button button-primary" disabled>Discover my word <span data-icon="arrow"></span></button></div></div>
       <button id="onboarding-guest-exit" class="text-link" data-account-action="guest-exit" hidden>Exit guest mode <span data-icon="logout"></span></button>
     </div>
+  </dialog>
+  <dialog id="settings-guide-dialog" class="settings-guide-dialog" aria-labelledby="guide-settings-title">
+    <svg class="guide-settings-arrow" aria-hidden="true"><path></path></svg>
+    <section class="guide-circle settings-guide-circle"><span class="guide-number">LEXI / SETTINGS</span><h2 id="guide-settings-title" tabindex="-1"></h2><p id="guide-settings-copy"></p><button class="button button-primary" id="guide-settings-done"></button></section>
   </dialog>
   <dialog id="detail-dialog" class="detail-dialog" aria-labelledby="detail-title"></dialog>
   <dialog id="account-dialog" class="account-dialog" aria-labelledby="account-title"></dialog>

@@ -19,7 +19,7 @@ export function mergeChanges(base,local,remote) {
   const result={...remote};
   for (const key of ['saved','hiddenWords']) result[key]=mergeSet(base[key],local[key],remote[key]);
   result.history=mergeSet(base.history,local.history,remote.history,historyKey);
-  for (const key of ['theme','interests','updateTime','onboarded','reduceMotion']) if (!equal(base[key],local[key])) result[key]=local[key];
+  for (const key of ['theme','interests','updateTime','onboarded','reduceMotion','guideLanguage','guideStep']) if (!equal(base[key],local[key])) result[key]=local[key];
   return normalizeStore(result);
 }
 

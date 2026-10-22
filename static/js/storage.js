@@ -3,7 +3,7 @@ const GUEST_KEY = 'lexi:guest:memory';
 let activeKey = GUEST_KEY;
 const memories = new Map();
 export let storageAvailable = true;
-const defaults = () => ({version:2, theme:'noir', interests:[], saved:[], history:[], hiddenWords:[], updateTime:'08:00', onboarded:false, reduceMotion:false});
+const defaults = () => ({version:2, theme:'noir', interests:[], saved:[], history:[], hiddenWords:[], updateTime:'08:00', onboarded:false, reduceMotion:false, guideLanguage:null, guideStep:'language'});
 
 function validDate(value) {
   return typeof value==='string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
@@ -18,6 +18,8 @@ export function normalizeStore(raw) {
     interests:list('interests'), saved:list('saved'), hiddenWords:list('hiddenWords'),
     history:Array.isArray(raw.history)?raw.history.filter(item=>item&&typeof item.id==='string'&&validDate(item.date)):[],
     onboarded:raw.onboarded===true, reduceMotion:raw.reduceMotion===true,
+    guideLanguage:['ru','kk','en'].includes(raw.guideLanguage)?raw.guideLanguage:null,
+    guideStep:['language','time','collections','settings','done'].includes(raw.guideStep)?raw.guideStep:raw.onboarded===true?'done':'language',
     updateTime:typeof raw.updateTime==='string'&&/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(raw.updateTime)?raw.updateTime:raw.onboarded===true?'00:00':'08:00',
   };
 }

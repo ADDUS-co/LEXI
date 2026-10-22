@@ -9,7 +9,7 @@ from pathlib import Path
 import shutil
 import sys
 import tempfile
-from auth_support import BrowserAccount
+from auth_support import BrowserAccount, choose_guide_language, advance_guide_time, finish_onboarding
 
 from playwright.sync_api import sync_playwright, expect
 
@@ -61,13 +61,15 @@ def run():
         page.clock.install(time=datetime.fromisoformat('2026-10-19T11:59:00+00:00'))
         page.goto(BASE,wait_until='networkidle')
         expect(page.locator('#onboarding-dialog')).to_be_visible()
+        choose_guide_language(page)
         check(page.locator('#onboarding-update-time').input_value()=='08:00','New visitors can choose their update time during onboarding')
         check('America/New York' in page.locator('#onboarding-schedule').inner_text(),'Onboarding identifies the actual device timezone')
         check(page.locator('input[name="onboarding"]').count()==len(catalog['collections']),'All collections are generated from metadata')
         for collection in ('ielts','science','psychology','culture'):
             check(page.locator(f'input[name="onboarding"][value="{collection}"]').count()==1,f'New collection available: {collection}')
+        advance_guide_time(page)
         page.locator('input[name="onboarding"][value="ielts"]').check()
-        page.locator('#begin-button').click()
+        finish_onboarding(page)
         before=select_word(catalog['collections'],catalog['words'],['ielts'],'2026-10-18')
         after=select_word(catalog['collections'],catalog['words'],['ielts'],'2026-10-19')
         expect(page.locator('#daily-word')).to_have_text(before['word']+'.')
@@ -229,9 +231,11 @@ def run():
         page=context.new_page()
         page.goto(BASE,wait_until='networkidle')
         expect(page.locator('#onboarding-dialog')).to_be_visible()
+        choose_guide_language(page)
         check(page.locator('#onboarding-dialog').evaluate('e=>e.scrollWidth<=e.clientWidth'),'Onboarding has no horizontal overflow at 320px')
+        advance_guide_time(page)
         page.locator('input[name="onboarding"][value="culture"]').check()
-        page.locator('#begin-button').click()
+        finish_onboarding(page)
         expect(page.locator('#daily-word')).to_be_visible()
         check(True,'A new category and schedule can be selected in mobile onboarding')
         context.close()

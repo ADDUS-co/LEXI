@@ -273,7 +273,7 @@ def delete_avatar():
     return jsonify(user=user_json(user))
 
 
-def clean_preferences(value):
+def clean_preferences(value, previous=None):
     if not isinstance(value, dict):
         raise ValueError('Learning preferences must be a JSON object.')
     collections, words, _ = load_catalog(Path(current_app.root_path))
@@ -308,6 +308,16 @@ def clean_preferences(value):
             raise ValueError(f'Invalid {field} setting.')
         result[field] = value.get(field, False)
     result['onboarded'] = result['onboarded'] and bool(result['interests'])
+    # Older clients omit guide metadata; keep the account's existing guide.
+    previous = previous if isinstance(previous, dict) else {}
+    result['guideLanguage'] = value.get('guideLanguage', previous.get('guideLanguage'))
+    if result['guideLanguage'] not in (None, 'ru', 'kk', 'en'):
+        raise ValueError('Choose Russian, Kazakh, or English for the guide.')
+    result['guideStep'] = value.get('guideStep', previous.get('guideStep', 'done' if result['onboarded'] else 'language'))
+    if result['guideStep'] not in ('language', 'time', 'collections', 'settings', 'done'):
+        raise ValueError('Choose a valid guide step.')
+    if result['guideStep'] in ('time', 'collections', 'settings') and result['guideLanguage'] is None:
+        raise ValueError('Choose a guide language first.')
     return result
 
 
@@ -327,7 +337,7 @@ def save_state():
         return jsonify(error='Your learning profile has been reset. Reload LEXI before continuing.',
                        code='progress_reset', progressVersion=PROGRESS_VERSION), 409
     try:
-        state = clean_preferences(data.get('state'))
+        state = clean_preferences(data.get('state'), user.preferences)
     except (ValueError, TypeError) as error:
         return jsonify(error=str(error)), 400
     database = get_db()

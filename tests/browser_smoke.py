@@ -11,7 +11,7 @@ from pathlib import Path
 import shutil
 import sys
 import time
-from auth_support import BrowserAccount
+from auth_support import BrowserAccount, choose_guide_language, advance_guide_time, finish_onboarding
 
 from playwright.sync_api import sync_playwright, expect
 
@@ -60,12 +60,14 @@ def run():
         page.on("pageerror", lambda error: errors.append(str(error)))
         page.goto(BASE, wait_until="networkidle")
         expect(page.locator("#onboarding-dialog")).to_be_visible()
+        choose_guide_language(page)
         check(page.locator("#begin-button").is_disabled(), "First visit requires at least one interest")
         check(state(page)["history"] == [], "Onboarding preview does not record a word")
         page.locator("#onboarding-update-time").fill("00:00")
+        advance_guide_time(page)
         for collection in ("law", "technology"):
             page.locator(f'input[name="onboarding"][value="{collection}"]').check()
-        page.locator("#begin-button").click()
+        finish_onboarding(page)
         expect(page.locator("#onboarding-dialog")).not_to_be_visible()
         initial_id = state(page)["history"][0]["id"]
         initial_word = next(word for word in catalog["words"] if word["id"] == initial_id)
@@ -178,6 +180,7 @@ def run():
         page.locator('[data-action="reset"]').click()
         page.locator('[data-action="confirm-reset"]').click()
         expect(page.locator("#onboarding-dialog")).to_be_visible()
+        choose_guide_language(page)
         cleared = state(page)
         check(cleared is None or (cleared["history"] == [] and cleared["saved"] == []), "Confirmed reset clears data and returns to onboarding")
         check(not errors, "No uncaught JavaScript errors in user flows")
@@ -193,6 +196,7 @@ def run():
         page.unroute("**/api/catalog")
         page.locator('[data-action="retry"]').click()
         expect(page.locator("#onboarding-dialog")).to_be_visible()
+        choose_guide_language(page)
         check(True, "Failed data load displays an error and Retry recovers")
         context.close()
 
@@ -219,8 +223,10 @@ def run():
         page = context.new_page()
         page.add_init_script("Storage.prototype.setItem=function(){throw new DOMException('Storage is full','QuotaExceededError')}")
         page.goto(BASE,wait_until="networkidle")
+        choose_guide_language(page)
+        advance_guide_time(page)
         page.locator('input[name="onboarding"][value="law"]').check()
-        page.locator("#begin-button").click()
+        finish_onboarding(page)
         page.locator('[data-action="save"]').first.click()
         go(page,"settings")
         page.locator('[data-theme-choice="studio"]').click()

@@ -13,6 +13,7 @@ import time
 
 from PIL import Image, ImageChops
 from playwright.sync_api import sync_playwright, expect
+from auth_support import choose_guide_language, advance_guide_time, finish_onboarding
 
 BASE = os.environ.get('LEXI_TEST_URL', 'http://127.0.0.1:5000').rstrip('/')
 OUTPUT = Path(__file__).resolve().parents[1] / 'test-results'
@@ -162,10 +163,12 @@ def run():
         check(state(page)['history']==[] and state(page)['saved']==[] and state(page)['hiddenWords']==[], 'A new account ignores old guest history and dirty caches from previous accounts')
         check(state(page)['interests']==[] and not state(page)['onboarded'], 'A new account must choose its own interests')
         check(state(page)['updateTime']=='08:00', 'A new account starts with a fresh daily schedule')
-        page.locator('input[name="onboarding"][value="ielts"]').check()
+        choose_guide_language(page)
         page.locator('#onboarding-update-time').fill('09:15')
+        advance_guide_time(page)
+        page.locator('input[name="onboarding"][value="ielts"]').check()
         page.evaluate("location.hash='home'")
-        page.locator('#begin-button').click()
+        finish_onboarding(page)
         expect(page.locator('#daily-word')).to_be_visible()
         word_id=state(page)['history'][0]['id']
         page.locator('[data-action="save"]').first.click()
@@ -296,9 +299,11 @@ def run():
         check(state(page)['saved'] == [] and state(page)['hiddenWords'] == [], 'Another account starts without the previous account or guest words')
         check(state(page)['theme']=='experimental' and page.locator('html').get_attribute('data-theme')=='experimental','The selected entry theme carries into a newly registered account')
 
-        page.locator('input[name="onboarding"][value="culture"]').check()
+        choose_guide_language(page)
         page.locator('#onboarding-update-time').fill('10:05')
-        page.locator('#begin-button').click()
+        advance_guide_time(page)
+        page.locator('input[name="onboarding"][value="culture"]').check()
+        finish_onboarding(page)
         expect(page.locator('#daily-word')).to_be_visible()
         b_word=state(page)['history'][0]['id']
         page.locator('[data-action="save"]').first.click()
@@ -358,8 +363,10 @@ def run():
         expect(fresh.locator('#onboarding-dialog')).to_be_visible()
         check(third.request.get(BASE+'/api/account/session').json()['state'] is None,'A brand-new account has no inherited learning data on the server')
         third.set_offline(True)
+        choose_guide_language(fresh)
+        advance_guide_time(fresh)
         fresh.locator('input[name="onboarding"][value="science"]').check()
-        fresh.locator('#begin-button').click()
+        finish_onboarding(fresh)
         fresh.locator('[data-action="save"]').first.click()
         offline_saved=state(fresh)['saved']
         third.set_offline(False)
