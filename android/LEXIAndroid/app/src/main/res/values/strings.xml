@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loading">Opening LEXI…</string>
+    <string name="load_error">Could not open LEXI. Check your internet connection and try again.</string>
+    <string name="retry">Try again</string>
+    <string name="share_word">Share word</string>
+    <string name="photo_unavailable">Could not open the photo picker.</string>
+    <string name="voice_unavailable">An English voice is not available. Check your device’s text-to-speech settings.</string>
+    <string name="export_saved">Your progress has been exported.</string>
+    <string name="export_failed">Could not export your progress. Please try again.</string>
+    <string name="export_pending">Finish choosing a file first.</string>
+    <string name="link_unavailable">Could not open this link.</string>
+</resources>

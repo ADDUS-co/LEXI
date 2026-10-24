@@ -6,6 +6,8 @@
 
 Первый инструктаж: [описание и превью](docs/ONBOARDING.md).
 
+**Android Studio:** готовый проект находится в [`android/LEXIAndroid`](android/LEXIAndroid/README.md). Выберите **File → Open → эту папку**. Он открывает существующий сайт `https://lexi-m388.onrender.com/` внутри Android; веб-интерфейс сохранён.
+
 Превью стартового экрана: [Noir](docs/previews/entry-noir.png) · [Studio](docs/previews/entry-studio.png) · [Experimental](docs/previews/entry-experimental.png).
 
 **Начинаете программировать? Откройте [NOTES_FOR_ADA.md](NOTES_FOR_ADA.md).** Там пошагово объяснены запуск, изменение слов, коллекций, дизайна и публикация.

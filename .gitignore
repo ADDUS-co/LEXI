@@ -15,3 +15,13 @@ instance/
 *.sqlite3-shm
 *.sqlite3-wal
 
+# Android build outputs and machine-specific SDK locations.
+**/.gradle/
+**/build/
+**/local.properties
+**/.idea/
+*.apk
+*.aab
+*.jks
+*.keystore
+

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loading">Открываем LEXI…</string>
+    <string name="load_error">Не удалось открыть LEXI. Проверьте подключение к интернету и попробуйте ещё раз.</string>
+    <string name="retry">Попробовать ещё раз</string>
+    <string name="share_word">Поделиться словом</string>
+    <string name="photo_unavailable">Не удалось открыть выбор фотографии.</string>
+    <string name="voice_unavailable">Английский голос недоступен. Проверьте настройки озвучивания текста на устройстве.</string>
+    <string name="export_saved">Ваш прогресс экспортирован.</string>
+    <string name="export_failed">Не удалось экспортировать прогресс. Попробуйте ещё раз.</string>
+    <string name="export_pending">Сначала завершите выбор файла.</string>
+    <string name="link_unavailable">Не удалось открыть ссылку.</string>
+</resources>
