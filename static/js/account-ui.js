@@ -17,7 +17,7 @@ export function installAccountUI(account,{toast,openOnboarding}) {
     if(persist)try{localStorage.setItem('lexi:entry-theme',theme);}catch{}
     if(gated)document.querySelector('meta[name=theme-color]').setAttribute('content',entryColors[theme]);
   }
-  let mode='login', file=null, preview='', headerKey='', authBusy=false;
+  let mode='login', file=null, preview='', headerKey='', authBusy=false, authWaitTimer;
   let drafts={login:{},register:{}}, draftScope=account.scope, authAnimations=[], motionGeneration=0;
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
   function stopAuthMotion() {
@@ -143,7 +143,7 @@ export function installAccountUI(account,{toast,openOnboarding}) {
     form.querySelector('[type=submit]').disabled=!account.ready||!navigator.onLine;
     const offline=form.querySelector('.account-offline');if(offline)offline.hidden=navigator.onLine;
     const status=form.querySelector('#entry-session-status');
-    if(status)status.textContent=!account.ready?'Checking your session…':account.status==='expired'?'Your session ended. Sign in again to continue.':'';
+    if(status)status.textContent=!account.ready?'Connecting to LEXI… Your first visit may take a little longer.':account.status==='expired'?'Your session ended. Sign in again to continue.':account.status==='unavailable'?'LEXI could not be reached. Check your connection, then try again.':'';
   }
   function syncAccess() {
     const allowed=account.hasAccess;
@@ -163,7 +163,16 @@ export function installAccountUI(account,{toast,openOnboarding}) {
     }
     if(wasGated!==gated)window.dispatchEvent(new Event('lexi:accesschange'));
   }
-  function busy(form,value){form.querySelectorAll('button,input').forEach(node=>node.disabled=value);form.setAttribute('aria-busy',String(value));}
+  function busy(form,value){
+    form.querySelectorAll('button,input').forEach(node=>node.disabled=value);form.setAttribute('aria-busy',String(value));
+    if(form.id!=='account-auth-form')return;
+    clearTimeout(authWaitTimer);
+    const status=form.querySelector('#entry-session-status');
+    if(status)status.textContent=value?'Connecting to LEXI…':'';
+    if(value)authWaitTimer=setTimeout(()=>{
+      if(status&&form.isConnected&&form.getAttribute('aria-busy')==='true')status.textContent='Still connecting… Please keep this page open. This may take a little longer on your first visit.';
+    },4000);
+  }
   function open(view='login') {
     if(!account.hasAccess){auth(view);return;}
     if($('#onboarding-dialog').open)$('#onboarding-dialog').close();
@@ -224,8 +233,8 @@ export function installAccountUI(account,{toast,openOnboarding}) {
         form.reset();clearAuthDrafts();stopAuthMotion();
         toast(register?'Welcome to your own little world of words.':'Welcome back. Your words are here.');
         if(!fromEntry){if(!readStore().onboarded)dialog.close();else profile();}
-      } catch(failure){error(failure.message||'Your account could not be reached. Please try again.');busy(form,false);}
-      finally {authBusy=false;authAvailability();}
+      } catch(failure){error(failure.message||'Your account could not be reached. Please try again.');}
+      finally {authBusy=false;busy(form,false);authAvailability();}
     } else if(form.id==='profile-photo-form'&&file) {
       busy(form,true);error('');
       try {await account.uploadPhoto(file);clearPhoto();profile();toast('Your profile photo is ready.');}
