@@ -53,19 +53,19 @@ export function createOnboardingGuide({dialog,account,getState,saveState,getWord
     let start={x:center.x+Math.cos(angle)*radius,y:center.y+Math.sin(angle)*radius};
     let line,lastControl;
     if(step==='collections') {
-      start={x:center.x+(narrow?20:0),y:bubble.bottom+10};
+      start={x:center.x,y:bubble.bottom+8};
       if(narrow) {
         const gap=end.y-start.y;
-        line=`M ${start.x} ${start.y} C ${start.x+34} ${start.y+gap*.3}, ${start.x+16} ${start.y+gap*.65}, ${start.x-12} ${start.y+gap*.52} C ${start.x-42} ${start.y+gap*.38}, ${start.x-28} ${start.y+gap*.08}, ${start.x-8} ${start.y+gap*.25} C ${start.x+12} ${start.y+gap*.45}, ${end.x-12} ${end.y-16}, ${end.x} ${end.y}`;
-        lastControl={x:end.x-12,y:end.y-16};
+        // A single soft bend fits the mobile gap without a decorative loop.
+        lastControl={x:end.x+6,y:end.y-gap*.35};
+        line=`M ${start.x} ${start.y} C ${start.x+6} ${start.y+gap*.35}, ${lastControl.x} ${lastControl.y}, ${end.x} ${end.y}`;
       } else {
-        // The loose loop lives in the empty column below the explanation, beside the cards.
+        // Stay below the circle and beside the cards, clear of both outlines.
         const floor=$('.onboarding-bottom').getBoundingClientRect().top-20;
         const room=Math.min(180,Math.max(0,floor-start.y));
-        const width=Math.min(180,start.x-target.right-12);
         end={x:target.right+12,y:start.y+room*.66};
-        line=`M ${start.x} ${start.y} C ${start.x+width*.16} ${start.y+room*.32}, ${start.x+width*.1} ${start.y+room*.66}, ${start.x-width*.18} ${start.y+room*.64} C ${start.x-width*.46} ${start.y+room*.62}, ${start.x-width*.4} ${start.y+room*.34}, ${start.x-width*.22} ${start.y+room*.42} C ${start.x+width*.08} ${start.y+room*.56}, ${start.x-width*.04} ${start.y+room*.98}, ${start.x-width*.4} ${start.y+room*.92} C ${start.x-width*.66} ${start.y+room*.88}, ${end.x+28} ${end.y+18}, ${end.x} ${end.y}`;
-        lastControl={x:end.x+28,y:end.y+18};
+        lastControl={x:end.x+Math.min(36,(start.x-end.x)*.5),y:end.y};
+        line=`M ${start.x} ${start.y} C ${start.x} ${start.y+room*.5}, ${lastControl.x} ${lastControl.y}, ${end.x} ${end.y}`;
       }
     } else {
       const bend=Math.max(18,Math.min(80,Math.hypot(end.x-start.x,end.y-start.y)*.55));
@@ -79,7 +79,7 @@ export function createOnboardingGuide({dialog,account,getState,saveState,getWord
     pointer.toggleAttribute('hidden',outside);
     if(outside)return;
     pointer.style.clipPath=`inset(${Math.max(0,bounds.top+1)}px ${Math.max(0,innerWidth-bounds.right+1)}px ${Math.max(0,innerHeight-bounds.bottom+1)}px ${Math.max(0,bounds.left+1)}px)`;
-    const heading=Math.atan2(end.y-lastControl.y,end.x-lastControl.x),head=6.5,spread=.55;
+    const heading=Math.atan2(end.y-lastControl.y,end.x-lastControl.x),head=5.5,spread=.52;
     pointerPath.setAttribute('d',line);
     pointerHead.setAttribute('d',`M ${end.x-head*Math.cos(heading-spread)} ${end.y-head*Math.sin(heading-spread)} L ${end.x} ${end.y} L ${end.x-head*Math.cos(heading+spread)} ${end.y-head*Math.sin(heading+spread)}`);
   }
@@ -231,10 +231,21 @@ export function createOnboardingGuide({dialog,account,getState,saveState,getWord
     Object.assign(hintTarget.style,{position:'fixed',left:`${target.left}px`,top:`${target.top}px`,width:`${target.width}px`,height:`${target.height}px`,minWidth:'0',minHeight:'0'});
     const width=hintCircle.getBoundingClientRect().width;
     const left=Math.max(16,Math.min(innerWidth-width-16,target.left+target.width/2-width/2));
-    const top=Math.max(16,Math.min(innerHeight-width-16,target.bottom+34));
+    const top=Math.max(16,Math.min(innerHeight-width-16,target.bottom+48));
     Object.assign(hintCircle.style,{left:`${left}px`,top:`${top}px`});
-    const endX=target.left+target.width/2,endY=target.bottom+7,startX=left+width/2,startY=top+7;
-    hint.querySelector('path').setAttribute('d',`M ${startX} ${startY} Q ${startX} ${(startY+endY)/2} ${endX} ${endY} M ${endX-5} ${endY+8} L ${endX} ${endY} L ${endX+5} ${endY+8}`);
+    const center={x:left+width/2,y:top+width/2};
+    const gear={x:target.left+target.width/2,y:target.top+target.height/2};
+    const distance=Math.hypot(gear.x-center.x,gear.y-center.y);
+    const direction={x:(gear.x-center.x)/distance,y:(gear.y-center.y)/distance};
+    const start={x:center.x+direction.x*(width/2+8),y:center.y+direction.y*(width/2+8)};
+    // Stop outside the gear's elliptical outline and its eight-pixel halo.
+    const gearRadius=1/Math.hypot(direction.x/(target.width/2),direction.y/(target.height/2))+14;
+    const end={x:gear.x-direction.x*gearRadius,y:gear.y-direction.y*gearRadius};
+    const length=distance-width/2-8-gearRadius;
+    const bend=Math.min(8,Math.max(0,length)*.18);
+    const control={x:(start.x+end.x)/2-direction.y*bend,y:(start.y+end.y)/2+direction.x*bend};
+    const angle=Math.atan2(end.y-control.y,end.x-control.x),head=5.5,spread=.52;
+    hint.querySelector('path').setAttribute('d',length<16?'':`M ${start.x} ${start.y} Q ${control.x} ${control.y} ${end.x} ${end.y} M ${end.x-head*Math.cos(angle-spread)} ${end.y-head*Math.sin(angle-spread)} L ${end.x} ${end.y} L ${end.x-head*Math.cos(angle+spread)} ${end.y-head*Math.sin(angle+spread)}`);
   }
   function showWordHint(owner) {
     if(owner!==account.scope||!account.hasAccess||account.isGuest||getState().guideStep!=='word'||!wordSource())return false;
