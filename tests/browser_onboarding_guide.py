@@ -144,7 +144,7 @@ def run():
                 check(early['x']>frames[0]['x'] and early['x']<frames[-1]['x']-200 and all(f['opacity']=='1' for f in frames),'Side-to-side movement accelerates gently and keeps the circle fully visible')
                 check(all(((b['x']-a['x'])**2+(b['y']-a['y'])**2)**.5<=max(8,(b['t']-a['t'])*3.2) for a,b in zip(frames,frames[1:])),'Frame-by-frame circle travel and scrolling have no abrupt position changes')
                 check(next(f['t'] for f in frames if abs(f['x']-frames[-1]['x'])<1 and abs(f['y']-frames[-1]['y'])<1)<800,'The time-to-collections trip now finishes in under 800 ms')
-                check(any(0<f['draw']<1 for f in frames) and frames[-1]['draw']==0 and frames[-1]['head']==1,'The arrow smoothly draws through its loop and finishes with a visible tip')
+                check(any(0<f['draw']<1 for f in frames) and frames[-1]['draw']==0 and frames[-1]['head']==1,'The arrow smoothly draws along its curve and finishes with a visible tip')
             else:page.locator('#onboarding-next').click()
             expect(page.locator('#onboarding-dialog')).to_have_attribute('data-guide-step','collections')
             check(page.locator('#onboarding-time').evaluate('e=>e.inert&&getComputedStyle(e).filter.includes("blur")') and not page.locator('#onboarding-topics').evaluate('e=>e.inert'),f'{language}: spotlight moves from time to the collections')
