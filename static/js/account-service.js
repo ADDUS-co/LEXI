@@ -40,18 +40,42 @@ export function createAccountService() {
     const headers=new Headers(options.headers);
     if (options.method&&options.method!=='GET') headers.set('X-CSRF-Token',csrf);
     if (options.owned) headers.set('X-Account-Id',String(options.ownerId??user?.id??''));
-    const response=await fetch('/api/account'+path,{...options,headers,credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(8000)});
-    const data=await response.json();
-    if (!response.ok) {
-      if (response.status===403&&data.code==='csrf'&&retry) {
-        const session=await request('/session',{},false);csrf=session.csrfToken;
-        return request(path,options,false);
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),['/session','/register','/login','/guest'].includes(path)?90000:30000);
+    const checkingSession=path==='/session'&&(!options.method||options.method==='GET');
+    try {
+      for(let attempt=0;;attempt++) {
+        const response=await fetch('/api/account'+path,{...options,headers,credentials:'same-origin',cache:'no-store',signal:controller.signal});
+        let data;
+        try {data=await response.json();}
+        catch(error) {if(error.name!=='SyntaxError')throw error;}
+        const valid=data&&typeof data==='object'&&!Array.isArray(data);
+        const unavailable=response.status>=500||(!valid&&response.ok);
+        // Only this read can be repeated safely while the host is starting.
+        // Never replay registration, login, or other writes after a lost response.
+        if(checkingSession&&unavailable&&attempt<2) {
+          await new Promise(resolve=>setTimeout(resolve,1500*(attempt+1)));
+          continue;
+        }
+        if(unavailable||!valid)throw Object.assign(new Error('LEXI is not responding yet. Please wait a moment and try again.'),{code:'unavailable',status:response.status});
+        if (!response.ok) {
+          if (response.status===403&&data.code==='csrf'&&retry) {
+            const session=await request('/session',{},false);csrf=session.csrfToken;
+            return request(path,options,false);
+          }
+          const error=new Error(data.error||'Your account could not be reached.');
+          error.status=response.status;error.data=data;throw error;
+        }
+        if(data.csrfToken)csrf=data.csrfToken;
+        return data;
       }
-      const error=new Error(data.error||'Your account could not be reached.');
-      error.status=response.status;error.data=data;throw error;
+    } catch(error) {
+      if(controller.signal.aborted||['TimeoutError','AbortError'].includes(error.name))throw Object.assign(new Error('LEXI is taking longer than usual to respond. Please wait a moment and try again.'),{code:'timeout'});
+      if(error instanceof TypeError)throw Object.assign(new Error('Could not connect to LEXI. Check your connection and try again.'),{code:'network'});
+      throw error;
+    } finally {
+      clearTimeout(timeout);
     }
-    if(data.csrfToken)csrf=data.csrfToken;
-    return data;
   }
 
   function scheduleSync() {
@@ -75,7 +99,7 @@ export function createAccountService() {
           dirty=!equal(readStore(),snapshot);saveMeta();status=dirty?'syncing':'synced';emit();
         } catch(error) {
           if(user?.id!==id||owner!==id)return false;
-          if(error.status===409&&error.data.code==='conflict') {
+          if(error.status===409&&error.data?.code==='conflict') {
             const latest=normalizeStore(error.data.state);
             const merged=mergeChanges(base,readStore(),latest);
             base=latest;revision=error.data.revision;cache(merged);dirty=true;saveMeta();
@@ -174,7 +198,12 @@ export function createAccountService() {
     async register(fields,initialTheme) {
       const generation=++authGeneration;
       await request('/session');
-      const data=await request('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(fields)});
+      let data;
+      try {data=await request('/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(fields)});}
+      catch(error) {
+        if(['timeout','network','unavailable'].includes(error.code))error.message='We could not confirm your registration. Choose Sign in and use the same email and password before registering again.';
+        throw error;
+      }
       if(generation!==authGeneration)return;
       await activate(data,{fresh:true,initialTheme});channel?.postMessage({type:'session-changed'});return user;
     },
