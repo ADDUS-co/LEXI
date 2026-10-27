@@ -78,7 +78,8 @@ export function createReadingGuide({hint,account,getState,saveState,getWord,save
   }
   function geometry(target) {
     const box=target.getBoundingClientRect(),diameter=circle.getBoundingClientRect().width;
-    const wide=innerWidth>=1000&&innerHeight>=620,gap=wide?36:24;
+    const landscape=innerWidth>=560&&innerHeight<=560;
+    const wide=(innerWidth>=1000&&innerHeight>=620)||landscape,gap=wide?36:24;
     const width=wide?Math.min(box.width+32,innerWidth-diameter-gap-64):Math.min(box.width+32,innerWidth-32);
     panel.style.width=`${Math.max(100,width)}px`;
     panel.style.maxHeight=`${wide?innerHeight-64:Math.max(96,innerHeight-diameter-gap-48)}px`;
@@ -90,7 +91,8 @@ export function createReadingGuide({hint,account,getState,saveState,getWord,save
       circleLeft=right?innerWidth-diameter-24:24;
       left=right?Math.max(24,Math.min(box.left-16,circleLeft-gap-width)):Math.min(innerWidth-width-24,Math.max(diameter+gap+24,box.left-16));
       top=Math.max(32,Math.min(box.top-16,innerHeight-height-32));
-      circleTop=Math.max(24,Math.min(innerHeight-diameter-24,top+height/2-diameter/2));
+      const inset=landscape?16:24;
+      circleTop=Math.max(inset,Math.min(innerHeight-diameter-inset,top+height/2-diameter/2));
     }else{
       left=Math.max(16,Math.min(innerWidth-width-16,box.left-16));
       top=Math.max(16,Math.min(box.top-16,innerHeight-height-diameter-gap-16));
