@@ -55,9 +55,9 @@ def run():
                     selector={'definition':'.short-definition','synonyms':'.synonym-pills','examples':'.hero-example','deep':'.definition-block'}[phase]
                     original=page.locator('#main-content '+selector).inner_text()
                     check(' '.join(original.split())==' '.join(page.locator('.guide-content-spotlight').inner_text().split()),f'{language}/{phase}: highlight contains the real daily-word content')
-                for width in (320,390,768,1440):
-                    page.set_viewport_size({'width':width,'height':568 if width==320 else 844});page.wait_for_timeout(90)
-                    check(fits(page),f'{language}/{phase}: content and circle fit without overlap at {width}px')
+                for width,height in ((320,568),(390,844),(768,844),(1440,844),(844,390),(568,320)):
+                    page.set_viewport_size({'width':width,'height':height});page.wait_for_timeout(90)
+                    check(fits(page),f'{language}/{phase}: content and circle fit without overlap at {width} × {height}')
                 if phase=='definition' and language=='ru':
                     synced(page);context.set_offline(True);page.reload(wait_until='networkidle');ready(page,phase)
                     check(len(state(page)['history'])==1,'An offline reload resumes the definition without duplicate history')
@@ -106,7 +106,7 @@ def run():
         expect(page.locator('#auth-screen')).to_be_visible()
         check(page.locator('.guide-content-spotlight').count()==0 and not page.locator('#settings-guide-dialog').is_visible(),'Session loss removes copied content and closes the tour')
         context.close()
-        context=browser.new_context(viewport={'width':390,'height':844})
+        context=browser.new_context(viewport={'width':390,'height':844},timezone_id='Asia/Bishkek')
         fixture.authenticate(context,{'onboarded':True,'interests':['ielts'],'guideLanguage':'en','guideStep':'definition','hiddenWords':[word_id]})
         page=context.new_page();page.goto(BASE,wait_until='networkidle')
         check(page.locator('#recall-form').is_visible() and page.locator('.guide-content-spotlight').count()==0,'A pending reading tour never exposes a hidden recall card')

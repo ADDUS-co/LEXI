@@ -66,6 +66,13 @@ def run():
         page.wait_for_function("()=>document.querySelector('#settings-guide-dialog').getAnimations({subtree:true}).every(a=>a.playState!=='running')")
         check(page.locator('#guide-daily-word').inner_text()==word_text and state(page)['hiddenWords']==[],'Revealing the card explicitly resumes the word explanation with the correct answer')
         check(page.locator('.settings-guide-circle').evaluate('e=>e.getBoundingClientRect().bottom<=innerHeight-12'),'The word explanation fits a 320 × 568 screen')
+        for width,height in ((844,390),(568,320),(390,844)):
+            page.set_viewport_size({'width':width,'height':height});page.wait_for_timeout(90)
+            check(page.evaluate("""()=>{
+              const c=document.querySelector('.settings-guide-circle').getBoundingClientRect(),w=document.querySelector('#guide-daily-word').getBoundingClientRect(),b=document.querySelector('#guide-settings-done').getBoundingClientRect();
+              const inside=r=>r.left>=12&&r.top>=12&&r.right<=innerWidth-12&&r.bottom<=innerHeight-12;
+              return inside(c)&&inside(w)&&inside(b)&&(c.left>=w.right||w.left>=c.right||c.top>=w.bottom||w.top>=c.bottom);
+            }"""),f'The word, circle and Next button remain separate and visible after rotation to {width} × {height}')
         hidden.clear_cookies()
         page.evaluate("async()=>{const s=await import('/static/js/storage.js');s.updateStore({updateTime:'21:25'});}")
         expect(page.locator('#auth-screen')).to_be_visible()

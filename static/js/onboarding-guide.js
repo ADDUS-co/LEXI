@@ -210,15 +210,26 @@ export function createOnboardingGuide({dialog,account,getState,saveState,getWord
   function positionWord(ensureVisible=false) {
     const source=wordSource();if(!source||!wordSpotlight)return false;
     const width=hintCircle.getBoundingClientRect().width;
+    const landscape=innerWidth>=560&&innerHeight<=560;
     let glyph=glyphBounds(source);
     if(ensureVisible){
-      const top=Math.max(24,Math.min(120,innerHeight-width-glyph.height-64));
+      const top=landscape?Math.max(24,(innerHeight-glyph.height)/2):Math.max(24,Math.min(120,innerHeight-width-glyph.height-64));
       window.scrollBy({top:glyph.top-top,behavior:'instant'});glyph=glyphBounds(source);
     }
     const box=source.getBoundingClientRect(),style=getComputedStyle(source);
     wordSpotlight.textContent=source.textContent;
     Object.assign(wordSpotlight.style,{left:`${box.left}px`,top:`${box.top}px`,width:`${box.width}px`,height:`${box.height}px`});
     for(const property of ['fontFamily','fontSize','fontWeight','fontStyle','letterSpacing','lineHeight','whiteSpace','overflowWrap','wordBreak','paddingBottom'])wordSpotlight.style[property]=style[property];
+    if(landscape){
+      // Measure a single line, even when a long source word wraps on the page.
+      const available=innerWidth-width-72;
+      Object.assign(wordSpotlight.style,{left:'24px',width:`${available}px`,height:'auto',paddingBottom:'0',whiteSpace:'nowrap'});
+      const scale=Math.min(1,available/Math.max(1,glyphBounds(wordSpotlight).width));
+      Object.assign(wordSpotlight.style,{fontSize:`${parseFloat(style.fontSize)*scale}px`,lineHeight:`${parseFloat(style.lineHeight)*scale}px`,letterSpacing:`${(parseFloat(style.letterSpacing)||0)*scale}px`});
+      wordSpotlight.style.top=`${Math.max(16,(innerHeight-wordSpotlight.getBoundingClientRect().height)/2)}px`;
+      Object.assign(hintCircle.style,{left:`${innerWidth-width-24}px`,top:`${(innerHeight-width)/2}px`});
+      return true;
+    }
     const left=Math.max(16,Math.min(innerWidth-width-16,glyph.left+glyph.width/2-width/2));
     Object.assign(hintCircle.style,{left:`${left}px`,top:`${glyph.bottom+24}px`});
     return true;
@@ -230,8 +241,9 @@ export function createOnboardingGuide({dialog,account,getState,saveState,getWord
     const target=placeholder.getBoundingClientRect();
     Object.assign(hintTarget.style,{position:'fixed',left:`${target.left}px`,top:`${target.top}px`,width:`${target.width}px`,height:`${target.height}px`,minWidth:'0',minHeight:'0'});
     const width=hintCircle.getBoundingClientRect().width;
-    const left=Math.max(16,Math.min(innerWidth-width-16,target.left+target.width/2-width/2));
-    const top=Math.max(16,Math.min(innerHeight-width-16,target.bottom+48));
+    const landscape=innerWidth>=560&&innerHeight<=560;
+    const left=Math.max(16,Math.min(innerWidth-width-16,landscape?target.left-width-48:target.left+target.width/2-width/2));
+    const top=landscape?(innerHeight-width)/2:Math.max(16,Math.min(innerHeight-width-16,target.bottom+48));
     Object.assign(hintCircle.style,{left:`${left}px`,top:`${top}px`});
     const center={x:left+width/2,y:top+width/2};
     const gear={x:target.left+target.width/2,y:target.top+target.height/2};

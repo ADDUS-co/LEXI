@@ -71,7 +71,7 @@ html:not([data-access=granted]) body{background:var(--entry-bg);color:var(--entr
 .entry-card .account-tabs>button{font-size:12px}
 .entry-card .account-auth-form>label{margin-top:15px;font-size:11px}
 .entry-card .account-auth-form input{border-radius:4px}
-.entry-card .account-auth-form>label>input:not([type=checkbox]),.entry-card .account-password-row>input{font-size:14px;min-height:46px}
+.entry-card .account-auth-form>label>input:not([type=checkbox]),.entry-card .account-password-row>input{font-size:16px;min-height:46px}
 .entry-card .account-field-help{font-size:10px;margin-top:6px}
 .entry-card .account-privacy{font-size:10px;margin-top:16px}
 .entry-card .account-submit{font-size:12px;margin-top:20px}
@@ -109,3 +109,4 @@ html:not([data-access=granted]) body{background:var(--entry-bg);color:var(--entr
 @media(prefers-reduced-motion:reduce){.word-track{animation:none!important;will-change:auto}#entry-motion-toggle{display:none}}
 .reduce-motion .word-track{animation:none!important;will-change:auto}
 .reduce-motion #entry-motion-toggle{display:none}
+@media(any-pointer:coarse){.entry-theme-picker>button{min-height:44px}}
