@@ -13,7 +13,7 @@ from sqlalchemy import delete, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from .database import PROGRESS_VERSION, RateBucket, User, get_db
+from .database import PROGRESS_VERSION, RateBucket, OAuthIdentity, User, get_db
 from .catalog import load_catalog
 from .schedule import validate_time
 from datetime import date
@@ -57,7 +57,8 @@ def account_owner_error(user):
 def user_json(user):
     return {'id': user.id, 'username': user.username, 'email': user.email,
             'avatarUrl': f'/api/account/avatar?v={user.avatar_version}' if user.avatar else None,
-            'createdAt': user.created_at}
+            'createdAt': user.created_at,
+            'linkedProviders': list(get_db().scalars(select(OAuthIdentity.provider).where(OAuthIdentity.user_id == user.id).order_by(OAuthIdentity.provider)))}
 
 
 def account_payload(user):
@@ -120,7 +121,13 @@ def private_response(response):
 
 @accounts.get('/session')
 def get_session():
-    return jsonify(account_payload(current_user()))
+    from .oauth import NOTICE_COOKIE, read_notice
+    data = account_payload(current_user())
+    data['oauthNotice'] = read_notice()
+    response = jsonify(data)
+    if NOTICE_COOKIE in request.cookies:
+        response.delete_cookie(NOTICE_COOKIE, path='/api/account', httponly=True, secure=current_app.config['SESSION_COOKIE_SECURE'], samesite='Lax')
+    return response
 
 
 @accounts.post('/register')

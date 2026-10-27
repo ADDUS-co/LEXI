@@ -33,6 +33,14 @@
 .account-guest{border-top:1px solid var(--border);margin-top:22px;padding-top:18px}
 .account-guest>.button{width:100%;min-height:44px;font-size:12px}
 .account-guest>p{font-size:10px;line-height:1.8;color:var(--muted-readable);margin-top:10px}
+.oauth-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.oauth-button{width:100%;min-width:0;min-height:46px;padding:10px 12px;gap:9px;font-size:12px;white-space:normal;text-align:left}
+.oauth-button>.icon{width:19px;height:19px}
+.oauth-button small{display:block;font-size:9px;font-weight:400;margin-top:2px}
+.oauth-divider{display:flex;align-items:center;gap:12px;margin:18px 0 4px;color:var(--muted-readable);font-size:10px}
+.oauth-divider:before,.oauth-divider:after{content:'';flex:1;height:1px;background:var(--border)}
+.profile-methods{border-top:1px solid var(--border);padding-top:22px;margin-top:24px}
+.profile-methods h3{font-size:14px;font-weight:500;margin-bottom:14px}
 .guest-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:12px;border-bottom:1px solid var(--border);color:var(--muted-readable)}
 .guest-banner>p{display:flex;flex-wrap:wrap;column-gap:14px;row-gap:4px;font-size:11px;line-height:1.6}
 .guest-banner strong{font-weight:500;color:var(--accent-text)}

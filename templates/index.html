@@ -20,6 +20,7 @@
   <script type="module" src="/static/js/app.js"></script>
 </head>
 <body>
+  <template id="oauth-provider-data">{% for provider in oauth_providers %}<span data-provider="{{ provider }}"></span>{% endfor %}</template>
   <main id="auth-screen" class="auth-screen" aria-labelledby="entry-title">
     <a class="skip-link" href="#auth-entry">Skip to registration</a>
     <div class="auth-drift" aria-hidden="true">

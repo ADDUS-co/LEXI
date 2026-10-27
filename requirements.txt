@@ -4,3 +4,5 @@ tzdata==2025.2
 SQLAlchemy==2.0.55
 psycopg[binary]==3.3.6
 Pillow==13.0.0
+Authlib==1.9.1
+requests==2.34.2

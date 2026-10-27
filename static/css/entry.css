@@ -109,4 +109,12 @@ html:not([data-access=granted]) body{background:var(--entry-bg);color:var(--entr
 @media(prefers-reduced-motion:reduce){.word-track{animation:none!important;will-change:auto}#entry-motion-toggle{display:none}}
 .reduce-motion .word-track{animation:none!important;will-change:auto}
 .reduce-motion #entry-motion-toggle{display:none}
+.entry-layout:has(.has-oauth){padding-block:8px}
+.entry-card.has-oauth{padding-block:28px 24px}
+.entry-card.has-oauth .account-tabs{margin-top:12px;margin-bottom:14px}
+.entry-card.has-oauth .account-auth-form>label{margin-top:11px}
+.entry-card.has-oauth .account-auth-form input{padding-block:10px}
+.entry-card.has-oauth .account-submit{margin-top:16px}
+.entry-card.has-oauth .account-guest{margin-top:16px;padding-top:14px}
+.entry-card.has-oauth .account-privacy{margin-top:12px}
 @media(any-pointer:coarse){.entry-theme-picker>button{min-height:44px}}

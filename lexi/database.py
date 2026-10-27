@@ -6,7 +6,8 @@ import tempfile
 import time
 
 from flask import g
-from sqlalchemy import Integer, String, Text, LargeBinary, JSON, create_engine, event, select, update
+from sqlalchemy import Integer, String, Text, LargeBinary, JSON, ForeignKey, UniqueConstraint, create_engine, event, select, update
+from sqlalchemy.engine import make_url
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -33,6 +34,27 @@ class RateBucket(Base):
     __tablename__ = 'auth_rate_buckets'
     key: Mapped[str] = mapped_column(String(100), primary_key=True)
     count: Mapped[int] = mapped_column(Integer, default=1)
+    expires_at: Mapped[int] = mapped_column(Integer, index=True)
+
+
+class OAuthIdentity(Base):
+    __tablename__ = 'oauth_identities'
+    __table_args__ = (UniqueConstraint('provider', 'subject'), UniqueConstraint('user_id', 'provider'))
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True)
+    provider: Mapped[str] = mapped_column(String(16))
+    subject: Mapped[str] = mapped_column(String(255))
+    created_at: Mapped[int] = mapped_column(Integer, default=lambda: int(time.time()))
+
+
+class OAuthState(Base):
+    """Short-lived authorization metadata, never provider access/refresh tokens."""
+    __tablename__ = 'oauth_states'
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    data: Mapped[str] = mapped_column(Text)
+    binding: Mapped[str] = mapped_column(String(64), index=True)
+    owner_id: Mapped[int | None] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=True)
+    intent: Mapped[str] = mapped_column(String(16))
     expires_at: Mapped[int] = mapped_column(Integer, index=True)
 
 
@@ -67,17 +89,26 @@ def local_secret(instance):
     return value
 
 
-def init_database(app):
-    url = app.config['DATABASE_URL']
+def account_engine(url):
+    """Shared connection policy for the app and the explicit database-copy tool."""
+    url = url.strip()
     if url.startswith('postgres://'):
         url = 'postgresql+psycopg://' + url[len('postgres://'):]
     elif url.startswith('postgresql://'):
         url = 'postgresql+psycopg://' + url[len('postgresql://'):]
+    url = make_url(url)
     options = {'pool_pre_ping': True, 'hide_parameters': True}
-    if url.startswith('sqlite:'):
+    if url.get_backend_name() == 'sqlite':
         options['connect_args'] = {'check_same_thread': False, 'timeout': 15}
-        if ':memory:' in url:
+        if url.database == ':memory:':
             options['poolclass'] = StaticPool
+    elif url.get_backend_name() == 'postgresql':
+        options.update(connect_args={'connect_timeout': 10, 'prepare_threshold': None}, pool_recycle=300, pool_timeout=15)
+        if (url.host or '').lower().endswith('.neon.tech'):
+            if url.query.get('sslmode', 'require') not in ('require', 'verify-ca', 'verify-full'):
+                raise RuntimeError('Neon connections require TLS: use sslmode=require or stronger.')
+            if 'sslmode' not in url.query:
+                url = url.update_query_dict({'sslmode': 'require'})
     engine = create_engine(url, **options)
     if engine.dialect.name not in ('sqlite', 'postgresql'):
         raise RuntimeError('LEXI supports SQLite or PostgreSQL for account data.')
@@ -85,6 +116,11 @@ def init_database(app):
         @event.listens_for(engine, 'connect')
         def sqlite_options(connection, record):
             connection.execute('PRAGMA foreign_keys=ON')
+    return engine
+
+
+def init_database(app):
+    engine = account_engine(app.config['DATABASE_URL'])
     # Serialize schema creation when multiple Gunicorn workers start together.
     with engine.connect() as connection:
         if engine.dialect.name == 'sqlite':

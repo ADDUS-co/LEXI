@@ -24,7 +24,7 @@ export function mergeChanges(base,local,remote) {
 }
 
 export function createAccountService() {
-  let user=null, guestId=null, pendingGuestExit=null, csrf='', base=normalizeStore({}), revision=0, status='signed-out';
+  let user=null, guestId=null, pendingGuestExit=null, csrf='', base=normalizeStore({}), revision=0, status='signed-out', oauthNotice=null;
   let owner=null, identity='', dirty=false, muted=false, timer, inFlight=null, ready=false, authGeneration=0;
   let channel;
   try {channel=new BroadcastChannel('lexi:session');}catch{}
@@ -117,6 +117,7 @@ export function createAccountService() {
   async function activate(data,{fresh=false,initialTheme}={}) {
     if(data.user&&data.progressVersion!==PROGRESS_VERSION)throw new Error('Reload LEXI after the account update.');
     clearTimeout(timer);
+    if(data.oauthNotice)oauthNotice=data.oauthNotice;
     const previousGuest=guestId;
     guestId=typeof data.guestId==='string'?data.guestId:null;
     if(!guestId||previousGuest!==guestId)clearGuestStore();
@@ -148,7 +149,10 @@ export function createAccountService() {
         data=await request('/logout',{method:'POST',headers:{'X-Guest-Id':pendingGuestExit}});
         if(generation!==authGeneration)return;
       }
-      pendingGuestExit=null;await activate(data);
+      let initialTheme;
+      try {initialTheme=localStorage.getItem('lexi:entry-theme');}catch{}
+      pendingGuestExit=null;await activate(data,{initialTheme});
+      if(data.oauthNotice?.sessionChanged)channel?.postMessage({type:'session-changed'});
     }
     catch(error) {
       if(generation!==authGeneration)return;
@@ -182,11 +186,20 @@ export function createAccountService() {
 
   return {
     initialize,flush,
+    takeOAuthNotice(){const notice=oauthNotice;oauthNotice=null;return notice;},
     get user(){return user;},get status(){return status;},get owner(){return owner;},
     get isGuest(){return !!guestId;},
     get scope(){return guestId?`guest:${guestId}`:owner;},
     get ready(){return ready;},
     get hasAccess(){return !!guestId||(!!user&&status!=='expired')||(!user&&!!owner&&status==='offline');},
+    async startOAuth(provider) {
+      if(!['google','github'].includes(provider))throw new Error('Choose Google or GitHub.');
+      if(user){const complete=await flush();if(dirty&&!complete)throw new Error('Reconnect and sync before connecting another sign-in method.');}
+      const data=await request('/oauth/'+provider+'/start',{method:'POST',owned:!!user,headers:{'Content-Type':'application/json'},body:JSON.stringify({intent:user?'link':'signin'})});
+      const url=new URL(data.url);
+      if(url.protocol!=='https:'||!['accounts.google.com','github.com'].includes(url.hostname))throw new Error('The sign-in service returned an unexpected address.');
+      return url.href;
+    },
     async enterGuest(initialTheme) {
       const generation=++authGeneration;
       await request('/session');

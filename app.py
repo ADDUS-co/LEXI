@@ -16,6 +16,7 @@ from lexi.selection import EPOCH, select_word
 from lexi.schedule import daily_schedule
 from lexi.database import init_database, local_secret
 from lexi.accounts import accounts, current_user
+from lexi.oauth import init_oauth
 
 ROOT = Path(__file__).resolve().parent
 
@@ -37,6 +38,7 @@ def create_app(test_config=None):
         SESSION_COOKIE_SAMESITE='Lax', SESSION_COOKIE_SECURE=os.environ.get('LEXI_COOKIE_SECURE') == '1',
         PERMANENT_SESSION_LIFETIME=timedelta(days=7), SESSION_REFRESH_EACH_REQUEST=False,
     )
+    init_oauth(app)
     engine = init_database(app)
     app.extensions['dummy_password_hash'] = generate_password_hash('dummy-password-not-a-user-account', method='scrypt')
     app.register_blueprint(accounts)
@@ -76,7 +78,7 @@ def create_app(test_config=None):
 
     @app.get("/")
     def home():
-        return render_template("index.html")
+        return render_template("index.html", oauth_providers=app.extensions['lexi_oauth_providers'])
 
     @app.get("/api/catalog")
     def catalog():

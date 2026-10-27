@@ -7,6 +7,7 @@ const $=selector=>document.querySelector(selector);
 export function installAccountUI(account,{toast,openOnboarding}) {
   const dialog=$('#account-dialog');
   const entry=$('#auth-entry'), screen=$('#auth-screen'), shell=$('#learning-app');
+  const providers=[...($('#oauth-provider-data')?.content.querySelectorAll('[data-provider]')||[])].map(node=>node.dataset.provider).filter(provider=>['google','github'].includes(provider));
   let gated=true;
   let entryTheme=document.documentElement.dataset.entryTheme||'studio';
   const entryColors={noir:'#101312',studio:'#eeeee8',experimental:'#0a0d23'};
@@ -86,6 +87,14 @@ export function installAccountUI(account,{toast,openOnboarding}) {
     return `<form id="account-auth-form" class="account-auth-form">${register?`<label>Username<input name="username" autocomplete="username" required minlength="3" maxlength="30" pattern="[A-Za-z0-9_]{3,30}" placeholder="Your login name" aria-describedby="username-help"></label><p id="username-help" class="account-field-help">3–30 letters, numbers, or underscores.</p><label>Email<input name="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com"></label>`:`<label>Email or username<input name="identifier" autocomplete="username" required maxlength="254" placeholder="Your email or login name"></label>`}<label for="account-password">Password</label><div class="account-password-row"><input id="account-password" name="password" type="password" autocomplete="${register?'new-password':'current-password'}" required ${register?'minlength="10"':''} maxlength="128" placeholder="${register?'Create a password':'Your password'}"><button type="button" class="icon-button" data-account-action="password" aria-label="Show password">${icon('eye')}</button></div>${register?`<p class="account-field-help">10–128 characters. Use a password you don’t use elsewhere.</p>`:''}<p id="account-error" class="account-error" role="alert"></p><button type="submit" class="button button-primary account-submit" ${navigator.onLine?'':'disabled'}>${register?'Create my account':'Sign in'} ${icon('arrow')}</button><p class="account-offline" ${navigator.onLine?'hidden':''}>Go online to sign in or create an account.</p><p id="entry-session-status" class="entry-session-status" role="status"></p></form>`;
   }
 
+  function socialOptions(link=false) {
+    if(!providers.length)return '';
+    return `<section class="oauth-options" aria-label="${link?'Connected sign-in methods':'Continue with an account'}"><div class="oauth-buttons">${providers.map(provider=>{
+      const label=provider==='google'?'Google':'GitHub',connected=link&&account.user?.linkedProviders?.includes(provider);
+      return `<button type="button" class="button button-outline oauth-button" data-account-action="oauth" data-provider="${provider}" aria-label="${connected?label+' connected':(link?'Connect ':'Continue with ')+label}" ${connected?'disabled':''}>${icon(connected?'check':provider)}<span>${label}${connected?'<small>Connected</small>':''}</span></button>`;
+    }).join('')}</div>${link?'<p class="account-field-help">Connect a service to sign in to this same account. Your progress stays here.</p>':'<div class="oauth-divider"><span>or use email</span></div>'}</section>`;
+  }
+
   function auth(view='login',{animate=false}={}) {
     const surface=account.hasAccess?dialog:entry;
     const form=surface.querySelector('#account-auth-form');
@@ -94,6 +103,7 @@ export function installAccountUI(account,{toast,openOnboarding}) {
     const previous=form&&animate?{indicator:surface.querySelector('.account-tab-indicator')?.getBoundingClientRect()}:null;
     const keepFocus=!!document.activeElement?.closest('.account-tabs');
     stopAuthMotion();mode=view;clearPhoto();
+    surface.classList.toggle('has-oauth',providers.length>0);
     const register=view==='register';
     surface.innerHTML=`${surface===dialog?`<button class="icon-button dialog-close" data-account-action="close" aria-label="Close account">${icon('close')}</button>`:''}<span class="eyebrow">YOUR PERSONAL CORNER OF LEXI</span><h2 id="account-title" class="auth-copy"><span>${register?'A new chapter.':'Welcome back.'}</span><span class="auth-copy-measure" aria-hidden="true">${register?'Welcome back.':'A new chapter.'}</span></h2><p class="account-intro auth-copy"><span>${register?'Make your daily ritual yours.':'Your words. Your world. Right where you left them.'}</span><span class="auth-copy-measure" aria-hidden="true">${register?'Your words. Your world. Right where you left them.':'Make your daily ritual yours.'}</span></p><div class="account-tabs" role="group" aria-label="Account action"><button data-account-action="login-tab" aria-pressed="${!register}">Sign in</button><button data-account-action="register-tab" aria-pressed="${register}">Create account</button></div>${authForm(register)}<p class="account-privacy auth-copy"><span>${register?'Your email is private. Your progress follows you when you sign in on another device.':'Sign in to continue your daily ritual. Your progress is waiting for you.'}</span><span class="auth-copy-measure" aria-hidden="true">${register?'Sign in to continue your daily ritual. Your progress is waiting for you.':'Your email is private. Your progress follows you when you sign in on another device.'}</span></p>`;
     if(surface===entry) {
@@ -102,6 +112,7 @@ export function installAccountUI(account,{toast,openOnboarding}) {
       surface.querySelector('.account-privacy').before(guest);
     }
     const nextForm=surface.querySelector('#account-auth-form');
+    nextForm.insertAdjacentHTML('beforebegin',socialOptions());
     for(const [name,value] of Object.entries(drafts[view]))if(nextForm.elements.namedItem(name))nextForm.elements.namedItem(name).value=value;
     const indicator=document.createElement('span');indicator.className='account-tab-indicator';indicator.setAttribute('aria-hidden','true');
     surface.querySelector('.account-tabs').append(indicator);sizeAuthCard(surface);positionAuthIndicator(surface);
@@ -116,6 +127,12 @@ export function installAccountUI(account,{toast,openOnboarding}) {
     const user=account.user;
     if(!user){auth();return;}
     dialog.innerHTML=`<button class="icon-button dialog-close" data-account-action="close" aria-label="Close account">${icon('close')}</button><span class="eyebrow">YOUR PERSONAL CORNER OF LEXI</span><h2 id="account-title">Hello, ${escape(user.username)}<span class="accent">.</span></h2><p class="account-intro">A little more you. A little more knowledge.</p><div class="profile-summary" data-profile-owner="${user.id}"><div class="profile-avatar">${preview||user.avatarUrl?`<img id="profile-photo-preview" src="${escape(preview||user.avatarUrl)}" alt="Your profile photo">`:`<span>${initials()}</span>`}</div><div class="profile-identity"><strong>${escape(user.username)}</strong><span>${escape(user.email)}</span><p id="account-sync-status" class="account-sync-status" role="status">${statusLabel()}</p></div></div><form id="profile-photo-form"><label class="button button-outline photo-picker">${icon('camera')}Choose photo<input id="profile-photo-input" name="photo" type="file" accept="image/jpeg,image/png,image/webp"></label><p class="account-field-help">JPG, PNG, or WebP · up to 5 MB · up to 16 megapixels</p><div class="photo-actions"><button type="submit" class="button button-primary" ${file?'':'disabled'}>Save photo ${icon('check')}</button>${user.avatarUrl?`<button type="button" class="text-link" data-account-action="remove-photo">Remove photo ${icon('trash')}</button>`:''}</div><p id="account-error" class="account-error" role="alert"></p></form><div class="profile-learning"><span class="micro">YOUR GROWING WORLD</span><p>Saved words, history, interests, appearance, daily time, and memory cards are linked to this account.</p></div><div class="profile-bottom"><button class="text-link" data-account-action="logout">Sign out ${icon('logout')}</button><button class="button button-outline" data-account-action="close">Keep exploring ${icon('arrow')}</button></div>`;
+    if(providers.length){
+      const methods=document.createElement('section');methods.className='profile-methods';
+      methods.innerHTML='<h3>Sign-in methods</h3>'+socialOptions(true);
+      dialog.querySelector('.profile-learning').before(methods);
+    }
+    authAvailability();
   }
 
   function guestProfile() {
@@ -136,6 +153,9 @@ export function installAccountUI(account,{toast,openOnboarding}) {
     }
   }
   function authAvailability() {
+    document.querySelectorAll('[data-account-action="oauth"]').forEach(button=>{
+      button.disabled=authBusy||!account.ready||!navigator.onLine||!!account.user?.linkedProviders?.includes(button.dataset.provider);
+    });
     const guest=entry.querySelector('[data-account-action="guest"]');
     if(guest)guest.disabled=authBusy||!account.ready||!navigator.onLine;
     const form=$('#account-auth-form');
@@ -187,6 +207,17 @@ export function installAccountUI(account,{toast,openOnboarding}) {
     const target=event.target.closest('[data-account-action]');
     if(!target||target.disabled)return;
     const action=target.dataset.accountAction;
+    if(action==='oauth') {
+      if(authBusy)return;
+      const form=$('#account-auth-form');let leaving=false;
+      authBusy=true;if(form)busy(form,true);error('');authAvailability();
+      try {
+        const url=await account.startOAuth(target.dataset.provider);
+        clearAuthDrafts();window.location.assign(url);leaving=true;
+      } catch(failure){error(failure.message||'Sign-in could not be started. Please try again.');}
+      finally {if(!leaving){authBusy=false;if(form)busy(form,false);authAvailability();}}
+      return;
+    }
     if(authBusy&&['guest','login-tab','register-tab'].includes(action))return;
     if(action==='open'||action==='open-register'){open(action==='open-register'?'register':'login');return;}
     if(action==='close'){dialog.close();return;}
@@ -254,6 +285,8 @@ export function installAccountUI(account,{toast,openOnboarding}) {
   window.addEventListener('lexi:accountchange',()=>{
     if(draftScope!==account.scope){draftScope=account.scope;clearAuthDrafts();stopAuthMotion();}
     syncAccess();header();authAvailability();
+    const notice=account.takeOAuthNotice();
+    if(notice){if(account.hasAccess)toast(notice.message);else{if(notice.signin)auth('login');error(notice.message);}}
     if(dialog.open){
       const owner=$('[data-profile-owner]')?.dataset.profileOwner;
       if(account.user&&owner&&owner!==String(account.user.id))profile();
@@ -263,6 +296,12 @@ export function installAccountUI(account,{toast,openOnboarding}) {
   });
   window.addEventListener('online',authAvailability);
   window.addEventListener('offline',authAvailability);
+  window.addEventListener('pageshow',event=>{
+    if(!event.persisted)return;
+    authBusy=false;
+    const form=$('#account-auth-form');if(form)busy(form,false);
+    authAvailability();
+  });
   function resizeAuthCards(){for(const surface of [entry,dialog]){sizeAuthCard(surface);positionAuthIndicator(surface);}}
   window.addEventListener('resize',resizeAuthCards);
   document.fonts.ready.then(resizeAuthCards);
