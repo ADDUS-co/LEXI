@@ -142,9 +142,22 @@ export function createAccountService() {
 
   async function initialize() {
     const generation=++authGeneration;
+    const completingOAuth=document.documentElement.hasAttribute('data-oauth-return');
+    const completionError={message:'We could not finish your sign-in. Choose Google or GitHub to try again. If it happens again, check that cookies are allowed for LEXI.',signin:true};
     try {
       let data=await request('/session');
       if(generation!==authGeneration)return;
+      const completionNotice=completingOAuth?data.oauthNotice:null;
+      // Read back the real session after the cross-site redirect. The return
+      // page is only a UI hint and can never authenticate a user by itself.
+      for(let attempt=0;completingOAuth&&!data.user&&attempt<2;attempt++) {
+        await new Promise(resolve=>setTimeout(resolve,500));
+        if(generation!==authGeneration)return;
+        data=await request('/session');
+        if(generation!==authGeneration)return;
+      }
+      if(completingOAuth&&data.user&&!data.oauthNotice)data.oauthNotice=completionNotice;
+      if(completingOAuth&&!data.user){data.guestId=null;data.oauthNotice=completionError;}
       if(pendingGuestExit&&data.guestId===pendingGuestExit) {
         data=await request('/logout',{method:'POST',headers:{'X-Guest-Id':pendingGuestExit}});
         if(generation!==authGeneration)return;
@@ -156,11 +169,17 @@ export function createAccountService() {
     }
     catch(error) {
       if(generation!==authGeneration)return;
-      if(!ready) {
+      if(!ready&&!completingOAuth) {
         owner=cachedOwner();switchStore(owner);
         if(owner) {const meta=readMeta(owner);if(meta?.progressVersion===PROGRESS_VERSION&&typeof meta.identity==='string'){identity=meta.identity;base=normalizeStore(meta.base);revision=meta.revision||0;dirty=meta.dirty||false;}else{owner=null;identity='';switchStore();marker(null);}}
       }
+      if(completingOAuth&&!user)oauthNotice=completionError;
       status=guestId?'guest':owner?'offline':'unavailable';ready=true;emit();
+    } finally {
+      if(completingOAuth&&generation===authGeneration) {
+        document.documentElement.removeAttribute('data-oauth-return');
+        if(location.pathname==='/auth/complete')history.replaceState(null,'','/#home');
+      }
     }
   }
 

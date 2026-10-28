@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="noir" data-entry-theme="studio" data-access="pending">
+<html lang="en" data-theme="noir" data-entry-theme="studio" data-access="pending"{% if oauth_return %} data-oauth-return{% endif %}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -20,6 +20,7 @@
   <script type="module" src="/static/js/app.js"></script>
 </head>
 <body>
+  <section id="oauth-completing" class="oauth-completing" role="status" aria-live="polite"><span class="oauth-completing-mark" aria-hidden="true"></span><h1>Finishing your sign-in</h1><p>Bringing you back to your words…</p></section>
   <template id="oauth-provider-data">{% for provider in oauth_providers %}<span data-provider="{{ provider }}"></span>{% endfor %}</template>
   <main id="auth-screen" class="auth-screen" aria-labelledby="entry-title">
     <a class="skip-link" href="#auth-entry">Skip to registration</a>

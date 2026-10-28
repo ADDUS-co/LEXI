@@ -118,6 +118,22 @@ class OAuthTests(unittest.TestCase):
             self.assertTrue(user.password_hash.startswith('scrypt:'))
         self.assertIsNone(self.session()['oauthNotice'])
 
+    def test_google_continue_establishes_session_before_completion_page(self):
+        data, _ = self.google_callback(self.start())
+        self.assertEqual(self.last_callback.headers['Location'], '/auth/complete')
+        response = self.client.get('/auth/complete')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'data-oauth-return', response.data)
+        self.assertIn('no-store', response.headers['Cache-Control'])
+        self.assertEqual(self.session()['user']['id'], data['user']['id'])
+        self.assertEqual(self.client.get('/api/catalog').status_code, 200)
+
+    def test_completion_page_does_not_authenticate_an_anonymous_visitor(self):
+        response = self.client.get('/auth/complete')
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(self.session()['user'])
+        self.assertEqual(self.client.get('/api/catalog').status_code, 401)
+
     def test_returning_subject_restores_same_progress_after_email_and_name_change(self):
         first, _ = self.google_callback(self.start())
         with self.app.app_context():
@@ -196,6 +212,7 @@ class OAuthTests(unittest.TestCase):
         data, _ = self.google_callback(self.start())
         self.assertIsNone(data['user'])
         self.assertTrue(data['oauthNotice']['signin'])
+        self.assertEqual(self.last_callback.headers['Location'], '/#home')
         self.assertEqual(self.counts(), (1, 0))
         with self.app.app_context():
             self.assertEqual(get_db().get(User, original['user']['id']).username, 'Local_Ada')

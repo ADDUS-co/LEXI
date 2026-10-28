@@ -1,5 +1,13 @@
 /* The entry shares the three LEXI atmospheres, with a clearly visible word flow. */
 [hidden]{display:none!important}
+.oauth-completing{display:none}
+html[data-oauth-return] #auth-screen,html[data-oauth-return] #learning-app{display:none!important}
+html[data-oauth-return] .oauth-completing{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px;text-align:center;background:var(--entry-bg);color:var(--entry-text)}
+.oauth-completing h1{font-size:clamp(24px,6vw,36px);line-height:1.2;margin:0}
+.oauth-completing p{color:var(--entry-muted);margin:0}
+.oauth-completing-mark{width:32px;height:32px;border:2px solid var(--entry-border);border-top-color:var(--entry-accent);border-radius:50%;animation:oauth-completing-spin .85s linear infinite}
+@keyframes oauth-completing-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.oauth-completing-mark{animation:none}}
 :root,[data-entry-theme=studio]{
  --entry-bg:#eeeee8;--entry-text:#30372f;--entry-muted:#535e4c;--entry-accent:#52614b;
  --entry-button-text:#fffef7;--entry-surface:#f1f3ea;--entry-border:#bdc6b1;

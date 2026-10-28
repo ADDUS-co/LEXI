@@ -119,7 +119,7 @@ def notice(code, provider=None):
     # A separate short-lived cookie cannot restore a login cookie from an old
     # in-flight link request after another tab signs out or switches accounts.
     serializer = URLSafeTimedSerializer(current_app.secret_key, salt='lexi-oauth-notice')
-    response = redirect('/#home', code=303)
+    response = redirect('/auth/complete' if code in ('linked', 'signed-in') else '/#home', code=303)
     response.set_cookie(NOTICE_COOKIE, serializer.dumps({'code': code, 'provider': provider}), max_age=120,
                         httponly=True, secure=current_app.config['SESSION_COOKIE_SECURE'], samesite='Lax', path='/api/account')
     return response

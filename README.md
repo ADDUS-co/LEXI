@@ -83,6 +83,7 @@ python tests/browser_smoke.py
 python tests/browser_v2.py
 python tests/browser_accounts.py
 python tests/browser_oauth.py
+python tests/browser_oauth_return.py
 python tests/browser_account_connection.py
 python tests/browser_guest.py
 python tests/browser_auth_tabs.py
@@ -94,7 +95,7 @@ python tests/browser_recall_guide.py
 
 Сайт должен быть запущен в другом терминале. Браузерные проверки создают синтетические аккаунты: используйте отдельную тестовую базу через `DATABASE_URL`, без реальных пользователей. Необязательные настройки: `LEXI_TEST_URL`, `CHROMIUM_PATH`. Скриншоты сохраняются в игнорируемую папку `test-results/`.
 
-Для `browser_oauth.py` запустите в другом терминале `.venv/bin/python tests/oauth_browser_server.py` (в Windows — `.\.venv\Scripts\python.exe tests/oauth_browser_server.py`). Этот локальный сервер использует временную SQLite, только тестовые ключи и локально заданные Google discovery metadata; настоящие аккаунты и Neon не используются. Внешний переход перехватывается браузерным тестом. По умолчанию порт — 5010; для другого задайте серверу `LEXI_OAUTH_TEST_PORT`, а браузерному тесту соответствующий `LEXI_TEST_URL`. Остальные браузерные сценарии по умолчанию используют порт 5000.
+Для `browser_oauth.py` и `browser_oauth_return.py` запустите в другом терминале `.venv/bin/python tests/oauth_browser_server.py` (в Windows — `.\.venv\Scripts\python.exe tests/oauth_browser_server.py`). Этот локальный сервер использует временную SQLite, только тестовые ключи и локально заданные Google discovery metadata; настоящие аккаунты и Neon не используются. Внешний переход перехватывается браузерным тестом. `browser_oauth_return.py` также проходит настоящие callback/session/UI с локально подписанным ID token и имитацией Continue; тестовые маршруты существуют только в этом отдельном сервере. По умолчанию порт — 5010; для другого задайте серверу `LEXI_OAUTH_TEST_PORT`, а браузерному тесту соответствующий `LEXI_TEST_URL`. Остальные браузерные сценарии по умолчанию используют порт 5000.
 
 ## Структура
 

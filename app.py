@@ -80,6 +80,12 @@ def create_app(test_config=None):
     def home():
         return render_template("index.html", oauth_providers=app.extensions['lexi_oauth_providers'])
 
+    @app.get('/auth/complete')
+    def complete_signin():
+        response = app.make_response(render_template('index.html', oauth_providers=app.extensions['lexi_oauth_providers'], oauth_return=True))
+        response.headers['Cache-Control'] = 'no-store, private'
+        return response
+
     @app.get("/api/catalog")
     def catalog():
         data = catalog_response()

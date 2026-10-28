@@ -1,5 +1,5 @@
 // Bump this version after changing the app shell or vocabulary schema.
-const CACHE = 'lexi-shell-v27';
+const CACHE = 'lexi-shell-v28';
 const SHELL = [
   '/', '/manifest.webmanifest', '/static/css/style.css', '/static/css/experience.css', '/static/css/account.css', '/static/css/entry.css', '/static/js/app.js',
   '/static/js/theme-init.js', '/static/js/selection.js', '/static/js/storage.js',
@@ -27,7 +27,7 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (event.request.method !== 'GET' || url.origin !== self.location.origin) return;
   // Account responses, profile photos, and CSRF tokens are never cached.
-  if (url.pathname.startsWith('/api/account')) return;
+  if (url.pathname.startsWith('/api/account') || url.pathname === '/auth/complete') return;
   if (!(event.request.mode === 'navigate' || url.pathname.startsWith('/static/') || url.pathname === '/api/catalog' || url.pathname === '/manifest.webmanifest')) return;
   // Network first: online edits are visible after refresh; offline uses last good data.
   event.respondWith(fetch(event.request).then(async response => {
