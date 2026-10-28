@@ -242,13 +242,7 @@ function renderList(page) {
 
 function guideReplaySection() {
   if(!account.user)return '';
-  const translations={
-    ru:{title:'Нужно напомнить?',body:'Посмотрите объяснение настроек, слова дня и карточек ещё раз. Ваш прогресс сохранится.',button:'Объяснить ещё раз'},
-    kk:{title:'Еске түсіргіңіз келе ме?',body:'Баптаулар, күн сөзі және карточкалар туралы түсіндірмені қайта көріңіз. Ілгерілеуіңіз сақталады.',button:'Қайта түсіндіру'},
-    en:{title:'Need a refresher?',body:'Replay the setup, daily word, and memory-card walkthrough. Your progress stays with you.',button:'Explain again'},
-  };
-  const text=translations[preferences.guideLanguage]||translations.en;
-  return `<section class="settings-section guide-replay-section"><div class="settings-row"><div><h2>${text.title}</h2><p>${text.body}</p></div><button type="button" class="button button-outline" data-action="restart-guide">${text.button} ${icon('arrow')}</button></div></section>`;
+  return `<section class="settings-section guide-replay-section"><div class="settings-row"><div><h2>Need a refresher?</h2><p>Replay the setup, daily word, and memory-card walkthrough. Your progress stays with you.</p></div><button type="button" class="button button-outline" data-action="restart-guide">Explain again ${icon('arrow')}</button></div></section>`;
 }
 
 function renderSettings() {

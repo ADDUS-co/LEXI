@@ -31,7 +31,7 @@ def run():
         daily=fixture.api.get('/api/daily',params={'collections':'ielts,science','timezone':'Asia/Bishkek','update_time':'09:25'}).json()['word']['id']
         other=[word['id'] for word in fixture.catalog['words'] if word['id']!=daily]
         browser=p.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH') or shutil.which('chromium'),args=['--no-sandbox'])
-        for language,theme,width,label in (('ru','studio',1440,'Объяснить ещё раз'),('kk','noir',390,'Қайта түсіндіру'),('en','experimental',320,'Explain again')):
+        for language,theme,width in (('ru','studio',1440),('kk','noir',390),('en','experimental',320)):
             context=browser.new_context(viewport={'width':width,'height':1000 if width==1440 else 844},timezone_id='Asia/Bishkek',reduced_motion='reduce')
             fixture.authenticate(context,{'onboarded':True,'guideLanguage':language,'guideStep':'done','theme':theme,
                                          'interests':['ielts','science'],'updateTime':'09:25','saved':other[:2],
@@ -42,7 +42,7 @@ def run():
             page.goto(BASE,wait_until='networkidle');expect(page.locator('#daily-word')).to_be_visible();synced(page)
             initial=state(page);owner=context.request.get(BASE+'/api/account/session').json()['user']['id']
             page.locator('.site-header .settings-link').click()
-            replay=page.get_by_role('button',name=label,exact=True)
+            replay=page.get_by_role('button',name='Explain again',exact=True)
             expect(replay).to_be_visible()
             check(replay.evaluate("button=>button.classList.contains('button-outline')") and page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'{language}: neutral replay button is available in Settings without overflow at {width}px')
             replay.click();expect(page.locator('#onboarding-language')).to_be_visible()
@@ -72,7 +72,7 @@ def run():
             check(final['onboarded'] and final['guideStep']=='done' and remote['user']['id']==owner,f'{language}: the entire setup and word walkthrough finishes on the same account')
             check(all(final[key]==initial[key] for key in ('history','hiddenWords','interests','updateTime','theme','reduceMotion')) and set(initial['saved']).issubset(final['saved']) and daily in final['saved'],f'{language}: the complete replay preserves progress and adds the demonstration word only once')
             check(remote['state']['guideStep']=='done' and remote['state']['hiddenWords']==initial['hiddenWords'],f'{language}: guide completion and preserved data are synchronized to the server')
-            page.locator('.site-header .settings-link').click();page.get_by_role('button',name=label,exact=True).click()
+            page.locator('.site-header .settings-link').click();page.get_by_role('button',name='Explain again',exact=True).click()
             expect(page.locator('#onboarding-language')).to_be_visible()
             check(not registrations and not errors,f'{language}: the same profile can replay again without registration or browser errors')
             synced(page);context.close()
