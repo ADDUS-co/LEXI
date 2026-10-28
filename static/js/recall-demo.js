@@ -50,10 +50,10 @@ export function createRecallDemo({getWord,reduced,onStatus}) {
     word.style.whiteSpace=word.scrollWidth>width?'normal':'nowrap';
   }
   async function flip(render,token){
-    await motion(card,[{transform:'perspective(1000px) rotateX(0deg)',opacity:1},{transform:'perspective(1000px) rotateX(-85deg)',opacity:.15}],230,token);
+    await motion(card,[{transform:'perspective(1000px) rotateX(0deg)',opacity:1},{transform:'perspective(1000px) rotateX(-85deg)',opacity:.15}],100,token);
     if(!valid(token))return;
     const hadFocus=card.contains(document.activeElement);render();
-    await motion(card,[{transform:'perspective(1000px) rotateX(85deg)',opacity:.15},{transform:'perspective(1000px) rotateX(0deg)',opacity:1}],310,token);
+    await motion(card,[{transform:'perspective(1000px) rotateX(85deg)',opacity:.15},{transform:'perspective(1000px) rotateX(0deg)',opacity:1}],140,token);
     if(valid(token)&&hadFocus)card.querySelector('input,[tabindex="0"]')?.focus({preventScroll:true});
   }
   async function type(input,value,token){
