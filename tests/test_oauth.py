@@ -98,6 +98,9 @@ class OAuthTests(unittest.TestCase):
             self.assertNotIn('client_secret', query)
             if provider == 'google':
                 self.assertTrue(query['nonce'][0])
+                self.assertEqual(query['prompt'], ['select_account'])
+            else:
+                self.assertNotIn('prompt', query)
 
     def test_valid_google_creates_clean_account_and_never_stores_tokens(self):
         query = self.start()
@@ -197,6 +200,38 @@ class OAuthTests(unittest.TestCase):
         with self.app.app_context():
             self.assertEqual(get_db().get(User, original['user']['id']).username, 'Local_Ada')
 
+    def test_google_retry_after_email_collision_can_select_another_account(self):
+        original = self.password_account()
+        with self.app.app_context():
+            user = get_db().get(User, original['user']['id'])
+            original_hash = user.password_hash
+            user.preferences = {'saved': ['law-equity'], 'theme': 'studio'}
+            user.revision = 4
+            get_db().commit()
+        self.logout()
+        first = self.start()
+        data, _ = self.google_callback(first)
+        self.assertIsNone(data['user'])
+        self.assertTrue(data['oauthNotice']['signin'])
+        self.assertEqual(self.counts(), (1, 0))
+
+        retry = self.start()
+        self.assertEqual(retry['prompt'], ['select_account'])
+        for key in ('state', 'nonce', 'code_challenge'):
+            self.assertNotEqual(retry[key], first[key])
+        data, _ = self.google_callback(retry, {'sub': 'another-google-subject', 'email': 'another@example.com', 'name': 'Another learner'})
+        self.assertEqual(data['user']['email'], 'another@example.com')
+        self.assertNotEqual(data['user']['id'], original['user']['id'])
+        self.assertEqual(data['user']['linkedProviders'], ['google'])
+        self.assertIsNone(data['state'])
+        self.assertEqual(self.counts(), (2, 1))
+        with self.app.app_context():
+            user = get_db().get(User, original['user']['id'])
+            self.assertEqual(user.password_hash, original_hash)
+            self.assertEqual(user.preferences, {'saved': ['law-equity'], 'theme': 'studio'})
+            self.assertEqual(user.revision, 4)
+            self.assertEqual(get_db().scalar(select(OAuthIdentity)).user_id, data['user']['id'])
+
     def test_explicit_link_preserves_password_profile_and_progress(self):
         original = self.password_account()
         with self.app.app_context():
@@ -206,6 +241,7 @@ class OAuthTests(unittest.TestCase):
             user.revision = 4
             get_db().commit()
         query = self.start(intent='link', owner=original['user']['id'])
+        self.assertEqual(query['prompt'], ['select_account'])
         before_cookie = self.client.get_cookie('lexi_session').value
         data, _ = self.google_callback(query)
         self.assertEqual(data['user']['id'], original['user']['id'])

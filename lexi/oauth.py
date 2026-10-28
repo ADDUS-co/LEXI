@@ -97,6 +97,7 @@ def init_oauth(app):
     oauth.framework_integration_cls = DatabaseStateIntegration
     if 'google' in enabled:
         oauth.register('google', server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+                       authorize_params={'prompt': 'select_account'},
                        client_kwargs={'scope': 'openid email profile', 'code_challenge_method': 'S256', 'token_endpoint_auth_method': 'client_secret_post', 'default_timeout': 10})
     if 'github' in enabled:
         oauth.register('github', api_base_url='https://api.github.com/',

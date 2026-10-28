@@ -1,6 +1,7 @@
 """OAuth entry/link UI; outbound provider navigation is intercepted, never completed.
 
 Run against a disposable server with both providers configured with test keys.
+Preload test-only Google discovery metadata on that server to avoid external discovery.
 Creates one synthetic password account. No real provider account is used.
 """
 import os
@@ -102,6 +103,19 @@ def run():
         expect(page.locator('[data-account-action="login-tab"]')).to_have_attribute('aria-pressed','true')
         expect(page.locator('#account-error')).to_contain_text('connect Google')
         check(True,'An existing-email return explains linking and opens Sign in')
+        page.route('https://accounts.google.com/o/oauth2/v2/auth**',lambda route:route.fulfill(content_type='text/html',body='Google account selection intercepted for this test.'))
+        google_queries=[]
+        for attempt in (1,2):
+            expect(page.get_by_role('button',name='Continue with Google',exact=True)).to_be_enabled()
+            page.get_by_role('button',name='Continue with Google',exact=True).click()
+            page.wait_for_url('https://accounts.google.com/o/oauth2/v2/auth**')
+            query=parse_qs(urlsplit(page.url).query);google_queries.append(query)
+            check(query.get('prompt')==['select_account'] and query.get('code_challenge_method')==['S256'] and 'client_secret' not in query,f'Google attempt {attempt} after an email collision requests account selection with PKCE')
+            page.go_back(wait_until='networkidle')
+            expect(page.locator('#account-error')).to_contain_text('connect Google')
+            expect(page.get_by_role('button',name='Continue with Google',exact=True)).to_be_enabled()
+            check(True,f'Google attempt {attempt} returns to a usable form and permits another account attempt')
+        check(all(google_queries[0][key]!=google_queries[1][key] for key in ('state','nonce','code_challenge')),'Each Google retry gets a fresh state, nonce, and PKCE challenge')
         context.close();browser.close();fixture.dispose()
         check(not errors,'No uncaught browser errors during OAuth entry, failure, or connection')
     print(f'All {len(checks)} OAuth browser checks passed.',flush=True)
