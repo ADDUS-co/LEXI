@@ -1,14 +1,14 @@
 import {icon} from './icons.js';
 import {createRecallDemo} from './recall-demo.js';
 
-const steps=['definition','synonyms','examples','save','saved','deep','recall'];
+const steps=['definition','synonyms','examples','deep','save','saved','recall'];
 const copy={
   ru:{next:'Далее',done:'Понятно',show:'Показать сохранение',return:'Вернуться к слову',saving:'Сохраняем…',
     definition:['Что значит слово?','Здесь представлено краткое значение слова. Оно помогает быстро понять основную мысль.'],
     synonyms:['Близкие по смыслу','Здесь — синонимы. Они помогают увидеть оттенки значения. Позже можно нажать на любой из них и узнать больше.'],
     examples:['Слово в контексте','Это пример использования слова в предложении. Так легче понять, как применять его в речи.'],
     save:['Понравилось слово?','Его можно сохранить этой кнопкой. Сейчас LEXI сама добавит слово в Saved и покажет, где его найти.'],
-    saved:['Слово сохранено','Вот оно в Saved! Слово останется в вашем аккаунте. Теперь вернёмся на главный экран и посмотрим подробнее.'],
+    saved:['Слово сохранено','Вот оно в Saved! Слово останется в вашем аккаунте. Теперь вернёмся к слову и потренируем его написание по памяти.'],
     deep:['Немного глубже','Ниже находится подробное значение слова: больше контекста и нюансов. Рядом — объяснение простыми словами, дальше — ещё примеры.'],
     recall:['Проверьте память','Двойное нажатие переворачивает карточку. Напишите слово по памяти: покажем ошибку, исправление и возвращение слова.'],recallDone:['Получилось!','Верное написание открывает слово. Вернуть его можно и двойным нажатием. Теперь попробуйте сами!'],skip:'Пропустить показ'},
   kk:{next:'Келесі',done:'Түсінікті',show:'Сақтауды көрсету',return:'Сөзге оралу',saving:'Сақталуда…',
@@ -16,7 +16,7 @@ const copy={
     synonyms:['Мағынасы жақын сөздер','Бұлар — синонимдер. Олар мағынаның реңктерін көрсетеді. Кейін кез келгенін басып, толығырақ біле аласыз.'],
     examples:['Сөйлемдегі қолданысы','Бұл — сөздің сөйлемде қолданылу үлгісі. Ол сөзді сөйлеуде қалай қолдануға болатынын көрсетеді.'],
     save:['Сөз ұнады ма?','Осы батырмамен сақтауға болады. Қазір LEXI сөзді Saved бөліміне өзі қосып, қайдан табуға болатынын көрсетеді.'],
-    saved:['Сөз сақталды','Міне, ол Saved бөлімінде! Сөз аккаунтыңызда қалады. Енді басты экранға оралып, толығырақ қарайық.'],
+    saved:['Сөз сақталды','Міне, ол Saved бөлімінде! Сөз аккаунтыңызда қалады. Енді сөзге оралып, оның жазылуын есте сақтап жаттығайық.'],
     deep:['Тереңірек түсіну','Төменде сөздің толық мағынасы мен ерекшеліктері берілген. Жанында — қарапайым түсіндірме, әрі қарай — басқа мысалдар.'],
     recall:['Есте сақтап көріңіз','Екі рет басу карточканы аударады. Сөзді есте сақтап жазыңыз: қатені, түзетуді және сөздің қайта ашылуын көрсетеміз.'],recallDone:['Дұрыс шықты!','Дұрыс жазу сөзді ашады. Оны екі рет басып та ашуға болады. Енді өзіңіз көріңіз!'],skip:'Көрсетуді өткізу'},
   en:{next:'Next',done:'Got it',show:'Show me how to save',return:'Back to the word',saving:'Saving…',
@@ -24,7 +24,7 @@ const copy={
     synonyms:['Close in meaning','These are synonyms. They reveal different shades of meaning. Later, tap any one to learn more about it.'],
     examples:['A word in context','Here is an example of the word in a sentence. It shows how you can use it in conversation.'],
     save:['A word worth keeping?','Use this button to save it. LEXI will now add the word to Saved and show you where to find it.'],
-    saved:['A little knowledge, kept','Here it is in Saved! This word stays in your account. Let’s return to the main screen and look a little closer.'],
+    saved:['A little knowledge, kept','Here it is in Saved! This word stays in your account. Now let’s return to it and practise recalling its spelling.'],
     deep:['A little deeper','Below is the full definition, with more context and nuance. Beside it is a simpler explanation, followed by more examples.'],
     recall:['Make it a memory','Double-tap to turn the card over. Type the word from memory: watch a mistake, a correction and the word coming back.'],recallDone:['You’ve got it!','The correct spelling reveals the word. Another double-tap can reveal it too. Now try it yourself!'],skip:'Skip demonstration'},
 };

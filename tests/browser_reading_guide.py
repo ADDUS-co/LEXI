@@ -1,4 +1,4 @@
-"""The reading tour highlights real content, saves once and returns to a deeper definition.
+"""The tour scrolls to the deeper definition, returns to save, then shows recall.
 
 Run against a disposable database; creates one synthetic account.
 """
@@ -48,9 +48,15 @@ def run():
             page.goto(BASE,wait_until='networkidle');ready(page,'word')
             word=page.locator('#daily-word').inner_text();word_id=page.locator('.word-tools [data-word]').get_attribute('data-word')
             page.locator('#guide-settings-done').click()
-            for phase in ('definition','synonyms','examples','save','saved','deep'):
+            for phase in ('definition','synonyms','examples','deep','save','saved'):
                 ready(page,phase)
                 check(state(page)['guideStep']==phase and page.locator('#settings-guide-dialog').get_attribute('lang')==language,f'{language}/{phase}: the step and explanation language persist')
+                if phase in ('deep','save'):
+                    samples=page.evaluate('window.guideScroll||[]')
+                    start=page.evaluate('window.guideScrollFrom')
+                    finish=page.evaluate('scrollY')
+                    direction=finish>start+100 if phase=='deep' else finish<start-100
+                    check(page.evaluate('location.hash') in ('','#home') and direction and len(set(round(n) for n in samples))>4,f'{language}: examples scroll down to the deeper definition before the tour scrolls up to save ({phase})')
                 if phase not in ('save','saved'):
                     selector={'definition':'.short-definition','synonyms':'.synonym-pills','examples':'.hero-example','deep':'.definition-block'}[phase]
                     original=page.locator('#main-content '+selector).inner_text()
@@ -80,14 +86,17 @@ def run():
                         other=second.new_page();other.goto(BASE,wait_until='networkidle');ready(other,'saved')
                         check(state(other)['saved']==[word_id] and state(other)['guideLanguage']=='ru','A second device receives the saved word and the current tour step')
                         second.close()
-                    page.evaluate("window.guideScroll=[];window.addEventListener('scroll',()=>window.guideScroll.push(scrollY));")
                 if phase=='deep':
-                    samples=page.evaluate('window.guideScroll||[]')
-                    check(page.evaluate('location.hash')=='#home' and page.evaluate('scrollY')>200 and len(set(round(n) for n in samples))>4,'Returning to Home visibly scrolls down to the deeper definition')
                     page.screenshot(path=str(OUTPUT/f'reading-{language}-deep.png'))
+                if phase in ('examples','deep'):
+                    page.set_viewport_size({'width':1440,'height':1000});page.wait_for_timeout(90)
+                    page.evaluate("""()=>{
+                      window.guideScrollFrom=scrollY;window.guideScroll=[scrollY];
+                      if(!window.recordGuideScroll){window.recordGuideScroll=true;window.addEventListener('scroll',()=>window.guideScroll.push(scrollY));}
+                    }""")
                 page.locator('#guide-settings-done').click()
             ready(page,'recall')
-            check(state(page)['guideStep']=='recall' and state(page)['hiddenWords']==[],'The deep definition continues upward to recall without changing real card positions')
+            check(page.evaluate('location.hash')=='#home' and state(page)['guideStep']=='recall' and state(page)['hiddenWords']==[],'Saved returns to Home and continues directly to recall without repeating the deeper definition')
             page.locator('#guide-settings-done').click()
             expect(page.locator('#settings-guide-dialog')).not_to_be_visible()
             check(state(page)['guideStep']=='done' and state(page)['saved']==[word_id],'Completing the tour keeps the saved word and removes all highlights')
@@ -96,12 +105,13 @@ def run():
             context.close()
         # Existing Saved words must never be toggled off by the demonstration.
         context=browser.new_context(viewport={'width':320,'height':568},reduced_motion='reduce',timezone_id='Asia/Bishkek')
-        fixture.authenticate(context,{'onboarded':True,'interests':['ielts'],'guideLanguage':'ru','guideStep':'save','saved':[word_id]})
-        page=context.new_page();page.on('pageerror',lambda e:errors.append(str(e)));page.goto(BASE,wait_until='networkidle');ready(page,'save')
+        fixture.authenticate(context,{'onboarded':True,'interests':['ielts'],'guideLanguage':'ru','guideStep':'deep','saved':[word_id]})
+        page=context.new_page();page.on('pageerror',lambda e:errors.append(str(e)));page.goto(BASE,wait_until='networkidle');ready(page,'deep')
+        check(fits(page) and page.locator('.guide-content-spotlight').evaluate('e=>e.scrollHeight>e.clientHeight&&e.tabIndex===0'),'Long definitions scroll independently and are keyboard accessible on 320 × 568')
+        page.locator('#guide-settings-done').click();ready(page,'save')
         page.locator('#guide-settings-done').click();ready(page,'saved')
         check(state(page)['saved']==[word_id] and page.locator('.guide-flying-bookmark').count()==0,'An already saved word stays saved and reduced motion skips the flight')
-        page.locator('#guide-settings-done').click();ready(page,'deep')
-        check(fits(page) and page.locator('.guide-content-spotlight').evaluate('e=>e.scrollHeight>e.clientHeight&&e.tabIndex===0'),'Long definitions scroll independently and are keyboard accessible on 320 × 568')
+        page.locator('#guide-settings-done').click();ready(page,'recall')
         context.clear_cookies();page.evaluate("async()=>{(await import('/static/js/storage.js')).updateStore({updateTime:'21:25'});}")
         expect(page.locator('#auth-screen')).to_be_visible()
         check(page.locator('.guide-content-spotlight').count()==0 and not page.locator('#settings-guide-dialog').is_visible(),'Session loss removes copied content and closes the tour')

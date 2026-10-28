@@ -38,7 +38,10 @@ def run():
             context=browser.new_context(viewport={'width':width,'height':1000 if width==1440 else 844},timezone_id='Asia/Bishkek')
             fixture.authenticate(context,{'onboarded':True,'interests':['ielts'],'guideLanguage':language,'guideStep':'deep','theme':theme})
             page=context.new_page();page.on('pageerror',lambda e:errors.append(str(e)));page.goto(BASE,wait_until='networkidle');ready(page,'deep')
-            initial=state(page);word=page.locator('#daily-word').inner_text().rstrip('.');record(page)
+            word=page.locator('#daily-word').inner_text().rstrip('.');record(page)
+            page.locator('#guide-settings-done').click();ready(page,'save')
+            page.locator('#guide-settings-done').click();ready(page,'saved')
+            initial=state(page)
             page.locator('#guide-settings-done').click();ready(page,'recall')
             page.wait_for_function("()=>document.querySelector('[data-guide-content=recall]')?.dataset.recallStage==='complete'",timeout=20000)
             page.evaluate('window.recordRecall=false');frames=page.evaluate('window.recallFrames')
@@ -46,7 +49,7 @@ def run():
             check({'tapping','flipping-back','wrong','erasing','empty','correct','flipping-front'}.issubset(stages),f'{language}: the complete demonstration shows both flips, error, deletion and success')
             check(max(f['pulses'] for f in frames)==2,f'{language}: two visible tap rings demonstrate the double-tap')
             scroll=[f['y'] for f in frames if f.get('stage') in (None,'intro')]
-            check(len(set(round(y) for y in scroll))>6 and scroll[0]>scroll[-1]+200,f'{language}: the page travels smoothly upward from the deeper definition')
+            check(len(set(round(y) for y in scroll))>6 and scroll[0]>scroll[-1]+200,f'{language}: the page travels smoothly upward from the deeper definition through saving to recall')
             wrong=[f for f in frames if f.get('stage')=='wrong']
             check(any(f['invalid']=='true' and f['transform'] not in (None,'none','matrix(1, 0, 0, 1, 0, 0)') for f in wrong),f'{language}: the invalid answer visibly shakes')
             erased=[f['value'] for f in frames if f.get('stage')=='erasing']
