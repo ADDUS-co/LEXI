@@ -88,6 +88,7 @@ python tests/browser_account_connection.py
 python tests/browser_guest.py
 python tests/browser_auth_tabs.py
 python tests/browser_onboarding_guide.py
+python tests/browser_guide_replay.py
 python tests/browser_word_guide.py
 python tests/browser_reading_guide.py
 python tests/browser_recall_guide.py
