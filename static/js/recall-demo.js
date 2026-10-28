@@ -75,7 +75,8 @@ export function createRecallDemo({getWord,reduced,onStatus}) {
     if(playing||!root?.isConnected)return;
     stop();const token=run;playing=true;complete=false;front();root.querySelector('.guide-memory-replay').hidden=true;onStatus('playing');
     if(reduced()){finish();return;}
-    setStage('intro');if(!await wait(850,token))return;
+    // The two tap cues take 540 ms, so the flip starts one second into the demo.
+    setStage('intro');if(!await wait(460,token))return;
     setStage('tapping');
     for(let i=0;i<2;i++){
       const pulse=document.createElement('span');pulse.className='guide-memory-pulse';pulse.setAttribute('aria-hidden','true');card.append(pulse);

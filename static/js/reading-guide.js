@@ -162,8 +162,9 @@ export function createReadingGuide({hint,account,getState,saveState,getWord,save
     stopAnimations();panel.style.opacity='';circle.style.opacity='';arrow.style.opacity='';
     const entrance=animate([panel,circle,arrow],[{opacity:0,transform:'translateY(10px)'},{opacity:1,transform:'translateY(0)'}],500);
     button.disabled=false;moving=false;circle.querySelector('h2').focus({preventScroll:true});
+    if(phase==='recall')memory.play();
     await entrance;
-    if(valid(token)&&!moving){stopAnimations();if(phase==='recall')memory.play();}
+    if(valid(token)&&!moving)stopAnimations();
   }
   async function flyBookmark(token) {
     if(reduced())return;
